@@ -1,0 +1,33 @@
+import { Tile } from './exports.js';
+
+/**
+ * The Door object.
+ *
+ * This object is responsible for progressing through the game. By default,
+ * colliding with a door will increase the Room by one.
+ */
+ export default class Door extends Tile {
+
+	/**
+	 * Construct the Door.
+	 *
+	 * @param {Array}    group
+	 * @param {Position} position
+	 * @param {Size}     size
+	 * @param {Int}      room
+	 */
+	constructor( group = [], position = { x: 0, y: 0 }, size = { w: 1, h: 1 }, room = 1 ) {
+		super( group, position, size, 'Black', 'default', false );
+
+		this.set( room );
+	}
+
+	/**
+	 * Set the Door.
+	 *
+	 * @param {Int} room
+	 */
+	set = ( room = 1 ) => {
+		this.room = room;
+	}
+}

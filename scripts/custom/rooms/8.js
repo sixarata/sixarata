@@ -1,0 +1,27 @@
+export default [
+
+'x                                  ',
+'x       G                          ',
+'x    xxxxxxxxxxxxxx                ',
+'x                  x               ',
+'x                   x              ',
+'x                    x             ',
+'x                     x            ',
+'x                      x           ',
+'x                       x          ',
+'x                        x         ',
+'x                                  ',
+'x                                  ',
+'x                        x         ',
+'x                                  ',
+'x                                  ',
+'x                                  ',
+'x                        x         ',
+'x                       xxx        ',
+'x                      xxxxx       ',
+'x                     xxxxxxx      ',
+'x                    xxxxxxxxx     ',
+'x   B               xxxxxxxxxxx    ',
+'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+
+]
