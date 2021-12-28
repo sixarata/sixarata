@@ -25,3 +25,13 @@ We want to provide open source versions of every cool platforming gaming mechani
 We want people to fork sixarata a million times, recommend changes back into it, and help forge it into a monolithic platforming masterpiece.
 
 We want to share the success of achieving all of these ambitious goals with the entire world.
+
+## why
+
+We love games.
+
+We love games that appear simple, but are exquisitely robust and easily enjoyed by all audiences without barriers.
+
+We love sharing, learning, teaching, experimenting, and believe deeply in the freedom to do these things freely forever.
+
+We believe JavaScript and the Web are currently the best open stack of technologies to work with.
