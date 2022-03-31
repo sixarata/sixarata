@@ -19,9 +19,10 @@ export default class Tile {
 	 * @param {String}   color
 	 * @param {String}   type
 	 * @param {Int}      mass
+	 * @param {Int}      opacity
 	 */
-	constructor( group = [], position = { x: 0, y: 0, scale: 'up' }, size = { w: 1, h: 1, scale: 'up' }, color = 'Green', type = 'default', solid = true, mass = 1 ) {
-		this.set( group, position, size, color, type, solid );
+	constructor( group = [], position = { x: 0, y: 0, scale: 'up' }, size = { w: 1, h: 1, scale: 'up' }, color = 'Green', type = 'default', solid = true, mass = 1, opacity = 1 ) {
+		this.set( group, position, size, color, type, solid, mass, opacity );
 	}
 
 	/**
@@ -33,9 +34,10 @@ export default class Tile {
 	 * @param {String}   color
 	 * @param {String}   type
 	 * @param {Int}      mass
+	 * @param {Int}      opacity
 	 */
-	set = ( group = [], position = { x: 0, y: 0, scale: 'up' }, size = { w: 1, h: 1, scale: 'up' }, color = 'Green', type = 'default', solid = true, mass = 1 ) => {
-		this.reset( group, position, size, color, type, solid );
+	set = ( group = [], position = { x: 0, y: 0, scale: 'up' }, size = { w: 1, h: 1, scale: 'up' }, color = 'Green', type = 'default', solid = true, mass = 1, opacity = 1 ) => {
+		this.reset( group, position, size, color, type, solid, mass, opacity );
 	}
 
 	/**
@@ -48,8 +50,9 @@ export default class Tile {
 	 * @param {String}   type
 	 * @param {Boolean}  solid
 	 * @param {Int}      mass
+	 * @param {Int}      opacity
 	 */
-	reset = ( group = [], position = { x: 0, y: 0, scale: 'up' }, size = { w: 1, h: 1, scale: 'up' }, color = 'Green', type = 'default', solid = true, mass = 1 ) => {
+	reset = ( group = [], position = { x: 0, y: 0, scale: 'up' }, size = { w: 1, h: 1, scale: 'up' }, color = null, type = 'default', solid = true, mass = 1, opacity = 1 ) => {
 
 		// Physics.
 		this.position    = new Position( position.x, position.y, position.scale );
@@ -60,6 +63,7 @@ export default class Tile {
 		// Attributes.
 		this.group   = group;
 		this.color   = color;
+		this.opacity = opacity;
 		this.type    = type;
 		this.solid   = solid;
 		this.visible = true;
@@ -125,7 +129,7 @@ export default class Tile {
 		}
 
 		// Draw the rectangle.
-		view.rect( this.color, offset, this.size );
+		view.rect( this.color, offset, this.size, this.opacity );
 
 		Game.Hooks.do( 'Tile.render', this );
 	}
