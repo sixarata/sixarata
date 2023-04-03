@@ -1,14 +1,20 @@
 # sixarata
 
-Sixarata is a vanilla JavaScript, open-source, 2D platformer game.
+Sixarata is an open-source, 2D adventure game.
 
-It isn't good yet, but with your help, it will be great.
+It is MIT licensed, coded entirely in vanilla JavaScript.
 
-## mission
+Use it as a head start for your own ideas, to educate others, or just to zip around.
 
-We believe in democratizing platforming, and the unlimited freedom that comes with open sourcing the entire gaming experience from the very beginning.
+## run it
 
-We hope to captivate a community of people who love platforming games, to collaborate on and contribute to building a monolithic masterpiece of platforming fun for many years into the future.
+```
+git clone git@github.com:sixarata/sixarata.git
+cd sixarata
+npm install -g http-server
+http-server -c-1
+```
+Visit: http://127.0.0.1:8080
 
 ## favorites
 
@@ -20,20 +26,14 @@ Killer soundtracks. Unique sound effects. Challenging puzzles. Speed running. 10
 
 ## goals
 
-We want to make it easy for everyone to see their name in the credits of a great video game.
-
-We want to provide open source versions of every cool platforming gaming mechanic that has made you think differently about the world.
-
-We want people to fork sixarata a million times, recommend changes back into it, and help forge it into a monolithic platforming masterpiece.
-
-We want to share the success of achieving all of these ambitious goals with the entire world.
+* Make it easy for everyone to see their name in the credits of a great video game.
+* Provide open source versions of every cool platforming gaming mechanic that has made you think differently about the world.
+* A million project forks, recommending changes back into it, forging into a monolithic platforming masterpiece.
+* Share the success of achieving all of these ambitious goals with the entire world.
 
 ## why
 
 We love games.
-
-We love games that appear simple, but are exquisitely robust and easily enjoyed by all audiences without barriers.
-
-We love sharing, learning, teaching, experimenting, and believe deeply in the freedom to do these things freely forever.
-
-We believe JavaScript and the Web are currently the best open stack of technologies to work with.
+Games that appear simple, but are exquisitely robust and easily enjoyed by all audiences, without barriers.
+Sharing, learning, teaching, experimenting, and the freedom to do them freely forever.
+JavaScript (and the Web) are currently the simplest & most accessible to the widest audience.
