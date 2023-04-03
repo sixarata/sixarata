@@ -4,6 +4,17 @@ Sixarata is a vanilla JavaScript, open-source, 2D platformer game.
 
 It isn't good yet, but with your help, it will be great.
 
+## run it
+
+```
+git clone git@github.com:sixarata/sixarata.git
+cd sixarata
+npm install -g http-server
+http-server -c-1
+```
+Visit: http://127.0.0.1:8080
+
+
 ## mission
 
 We believe in democratizing platforming, and the unlimited freedom that comes with open sourcing the entire gaming experience from the very beginning.
