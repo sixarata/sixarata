@@ -1,16 +1,16 @@
 import Point from './point.js';
 
 /**
- * The Accelleration object.
+ * The Acceleration object.
  *
  * This object is responsible for holding, calculating, and adjusting the change
  * in Velocity of a thing. It may be influenced by other physical forces,
  * such as Gravity, Friction, etc...
  */
- export default class Accelleration extends Point {
+ export default class Acceleration extends Point {
 
 	/**
-	 * Construct the Accelleration.
+	 * Construct the Acceleration.
 	 *
 	 * @param {int} x
 	 * @param {int} y
