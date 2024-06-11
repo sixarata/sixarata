@@ -11,22 +11,30 @@ export default class Size {
 	/**
 	 * Construct the object.
 	 *
-	 * @param {Int}    w
-	 * @param {Int}    h
+	 * @param {Number} w
+	 * @param {Number} h
 	 * @param {String} scale
 	 */
-	constructor( w = 0, h = 0, scale = 'up' ) {
+	constructor(
+		w     = 0,
+		h     = 0,
+		scale = 'up'
+	) {
 		this.set( w, h, scale );
 	}
 
 	/**
 	 * Set the object.
 	 *
-	 * @param {Int}    w
-	 * @param {Int}    h
+	 * @param {Number} w
+	 * @param {Number} h
 	 * @param {String} scale
 	 */
-	set = ( w = 0, h = 0, scale = 'up' ) => {
+	set = (
+		w     = 0,
+		h     = 0,
+		scale = 'up'
+	) => {
 
 		// Attributes.
 		this.w = w;
@@ -51,10 +59,12 @@ export default class Size {
 	/**
 	 * Scales the Size.
 	 *
-	 * @param {String} type
+	 * @param   {String} type
 	 * @returns {Size}
 	 */
-	rescale = ( type = 'up' ) => {
+	rescale = (
+		type = 'up'
+	) => {
 
 		if ( ( 'up' === type ) && ( 'up' !== this.scaled ) ) {
 			this.w = this.scale.up( this.scale.x );
