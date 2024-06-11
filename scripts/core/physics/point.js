@@ -1,58 +1,68 @@
 /**
  * The Point object.
  *
- * This object represents a single set of X and Y coordinates, and
- * provides methods to help with calculating against them.
+ * This object represents a single set of X, Y, and Z coordinates,
+ * and provides methods to help with calculating against them.
+ *
+ * Note that the Z coordinate is currently unused. It exists for future
+ * expansion.
+ *
+ * @todo Move "0.0001" to a constant.
  */
 export default class Point {
 
 	/**
-	 * The X value.
+	 * A numeric value along a horizontal plain.
 	 *
 	 * @var {number} x Default 0.
 	 */
 	x = 0;
 
 	/**
-	 * The Y value.
+	 * A numeric value along a vertical plain.
 	 *
 	 * @var {number} y Default 0.
 	 */
 	y = 0;
 
 	/**
-	 * The minimum tolerance for Point comparisons.
+	 * A numeric value along a depth plain.
 	 *
-	 * @var {number} minTolerance Default 0.0001.
+	 * @var {number} z Default 0.
 	 */
-	minTolerance = 0.0001;
+	z = 0;
 
 	/**
 	 * Construct the Point.
 	 *
-	 * @param {Number} x
-	 * @param {Number} y
+	 * @param {Number} x Default 0.
+	 * @param {Number} y Default 0.
+	 * @param {Number} z Default 0.
 	 */
 	constructor(
 		x = 0,
-		y = 0
+		y = 0,
+		z = 0
 	) {
-		this.set( x, y );
+		this.set( x, y, z );
 	}
 
 	/**
 	 * Set the coordinates of the Point.
 	 *
-	 * @param   {Number} x
-	 * @param   {Number} y
+	 * @param   {Number} x Default 0.
+	 * @param   {Number} y Default 0.
+	 * @param   {Number} z Default 0.
 	 * @returns {Point}  This Point, with new values.
 	 */
 	set = (
 		x = 0,
-		y = 0
+		y = 0,
+		z = 0
 	) => {
 		this.x = x;
 		this.y = y;
+		this.z = z;
 
 		return this;
 	}
@@ -63,7 +73,7 @@ export default class Point {
 	 * @returns {Point} The new Point.
 	 */
 	reset = () => {
-		return this.set( 0, 0 );
+		return this.set( 0, 0, 0 );
 	}
 
 	/**
@@ -75,27 +85,30 @@ export default class Point {
 	add = (
 		p = {
 			x: 0,
-			y: 0
+			y: 0,
+			z: 0,
 		}
 	) => {
 		return this.set(
 			( this.x + p.x ),
 			( this.y + p.y ),
+			( this.z + p.z ),
 		);
 	}
 
 	/**
 	 * Add to this Point linearly.
 	 *
-	 * @param   {Number} scale
+	 * @param   {Number} lineal
 	 * @returns {Point}  This Point, with new values.
 	 */
 	addLinear = (
-		scale = 1
+		lineal = 1
 	) => {
 		return this.add( {
-			x: scale,
-			y: scale,
+			x: lineal,
+			y: lineal,
+			z: lineal,
 		} );
 	}
 
@@ -108,27 +121,30 @@ export default class Point {
 	sub = (
 		p = {
 			x: 0,
-			y: 0
+			y: 0,
+			z: 0
 		}
 	) => {
 		return this.set(
 			( this.x - p.x ),
 			( this.y - p.y ),
+			( this.z - p.z ),
 		);
 	}
 
 	/**
 	 * Subtract from this Point linearly.
 	 *
-	 * @param   {Number} scale
+	 * @param   {Number} lineal
 	 * @returns {Point}  This Point, with new values.
 	 */
 	subLinear = (
-		scale = 1
+		lineal = 1
 	) => {
 		return this.sub( {
-			x: scale,
-			y: scale,
+			x: lineal,
+			y: lineal,
+			z: lineal,
 		} );
 	}
 
@@ -141,27 +157,30 @@ export default class Point {
 	multiply = (
 		p = {
 			x: 0,
-			y: 0
+			y: 0,
+			z: 0
 		}
 	) => {
 		return this.set(
 			( this.x * p.x ),
 			( this.y * p.y ),
+			( this.z * p.z ),
 		);
 	}
 
 	/**
 	 * Multiply this Point linearly.
 	 *
-	 * @param   {Number} scale
+	 * @param   {Number} lineal
 	 * @returns {Point}  This Point, with new values.
 	 */
 	multiplyLinear = (
-		scale = 1
+		lineal = 1
 	) => {
 		return this.multiply( {
-			x: scale,
-			y: scale,
+			x: lineal,
+			y: lineal,
+			z: lineal,
 		} );
 	}
 
@@ -174,28 +193,31 @@ export default class Point {
 	divide = (
 		p = {
 			x: 0,
-			y: 0
+			y: 0,
+			z: 0
 		}
 	) => {
 		return this.set(
 			( this.x / p.x ),
 			( this.y / p.y ),
+			( this.z / p.z ),
 		);
 	}
 
 	/**
 	 * Divide this Point linearly.
 	 *
-	 * @param   {Number} scale
+	 * @param   {Number} lineal
 	 * @returns {Point}  This Point, with new values.
 	 */
 	divideLinear = (
-		scale = 1
+		lineal = 1
 	) => {
-		if ( scale ) {
+		if ( lineal ) {
 			return this.divide( {
-				x: scale,
-				y: scale,
+				x: lineal,
+				y: lineal,
+				z: lineal,
 			} );
 		} else {
 			return this.reset();
@@ -211,12 +233,14 @@ export default class Point {
 	import = (
 		p = {
 			x: 0,
-			y: 0
+			y: 0,
+			z: 0
 		}
 	) => {
 		return this.set(
 			p.x,
 			p.y,
+			p.z,
 		);
 	}
 
@@ -229,29 +253,40 @@ export default class Point {
 		return new Point(
 			this.x,
 			this.y,
+			this.z,
 		);
 	}
 
 	/**
-	 * Calculate the square of this Point.
+	 * Calculate a two-dimensional square using 2 properties of this Point.
 	 *
-	 * @returns {Point} The square.
+	 * @param   {String} plain1 Default 'x'.
+	 * @param   {String} plain2 Default 'y'.
+	 * @returns {Number} The square.
 	 */
-	square = () => {
+	square = (
+		plain1 = 'x',
+		plain2 = 'y'
+	) => {
 		return (
-			( this.x * this.x )
+			( this[plain1] * this[plain1] )
 			+
-			( this.y * this.y )
+			( this[plain2] * this[plain2] )
 		);
 	}
 
 	/**
 	 * Get the length of this Point.
 	 *
+	 * @param   {String} plain1 Default 'x'.
+	 * @param   {String} plain2 Default 'y'.
 	 * @returns {Number} The length.
 	 */
-	length = () => {
-		return Math.sqrt( this.square() );
+	length = (
+		plain1 = 'x',
+		plain2 = 'y'
+	) => {
+		return Math.sqrt( this.square( plain1, plain2 ) );
 	}
 
 	/**
@@ -263,16 +298,20 @@ export default class Point {
 	squareDistance = (
 		p = {
 			x: 0,
-			y: 0
+			y: 0,
+			z: 0
 		}
 	) => {
 		let dx = ( this.x - p.x ),
-			dy = ( this.y - p.y );
+			dy = ( this.y - p.y ),
+			dz = ( this.z - p.z );
 
 		return (
 			( dx * dx )
 			+
 			( dy * dy )
+			+
+			( dz * dz )
 		);
 	}
 
@@ -285,7 +324,8 @@ export default class Point {
 	distance = (
 		p = {
 			x: 0,
-			y: 0
+			y: 0,
+			z: 0
 		}
 	) => {
 		return Math.sqrt( this.squareDistance( p ) );
@@ -300,10 +340,11 @@ export default class Point {
 	equals = (
 		p = {
 			x: 0,
-			y: 0
+			y: 0,
+			z: 0
 		}
 	) => {
-		return ( this.distance( p ) < this.minTolerance );
+		return ( this.distance( p ) < 0.0001 );
 	}
 
 	/**
@@ -312,11 +353,11 @@ export default class Point {
 	 * @returns {Boolean} True if empty.
 	 */
 	empty = () => {
-		return ( this.length() < this.minTolerance );
+		return ( this.length() < 0.0001 );
 	}
 
 	/**
-	 * Get the dot product of two Points.
+	 * Get the dot product of any Point and this one.
 	 *
 	 * @param   {Point}  p
 	 * @returns {Number} The dot product.
@@ -324,13 +365,16 @@ export default class Point {
 	dot = (
 		p = {
 			x: 0,
-			y: 0
+			y: 0,
+			z: 0
 		}
 	) => {
 		return (
 			( this.x * p.x )
 			+
 			( this.y * p.y )
+			+
+			( this.z * p.z )
 		);
 	}
 
@@ -338,19 +382,21 @@ export default class Point {
 	 * Linearly progress this Point to a Point.
 	 *
 	 * @param   {Point}  p
-	 * @param   {Number} i
+	 * @param   {Number} l
 	 * @returns {Point}  This Point, with new values.
 	 */
 	lerp = (
 		p = {
 			x: 0,
-			y: 0
+			y: 0,
+			z: 0
 		},
-		i = 1
+		l = 1
 	) => {
-		let x = ( ( p.x - this.x ) * i ) + this.x,
-			y = ( ( p.y - this.y ) * i ) + this.y;
+		let x = ( ( p.x - this.x ) * l ) + this.x,
+			y = ( ( p.y - this.y ) * l ) + this.y,
+			z = ( ( p.z - this.z ) * l ) + this.z;
 
-		return this.set( x, y );
+		return this.set( x, y, z );
 	}
 }
