@@ -342,8 +342,8 @@ export default class Player extends Tile {
 
 			let pf = p[ i ];
 
-			// Skip if not solid.
-			if ( ! pf.solid ) {
+			// Skip if no density.
+			if ( ! pf.density ) {
 				continue;
 			}
 

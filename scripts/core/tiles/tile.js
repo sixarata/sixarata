@@ -1,6 +1,12 @@
 import Game from '../game.js';
 
-import { Collision, Mass, Orientation, Position, Size } from '../physics/exports.js';
+import {
+	Collision,
+	Mass,
+	Orientation,
+	Position,
+	Size
+} from '../physics/exports.js';
 
 /**
  * The Tile object.
@@ -11,6 +17,62 @@ import { Collision, Mass, Orientation, Position, Size } from '../physics/exports
 export default class Tile {
 
 	/**
+	 * The Tile group.
+	 *
+	 * @type {Array} group Default empty array.
+	 */
+	group = [];
+
+	/**
+	 * The Tile position.
+	 *
+	 * @type {Position} position Default empty Position object.
+	 */
+	position = new Position();
+
+	/**
+	 * The Tile size.
+	 *
+	 * @type {Size} size Default empty Size object.
+	 */
+	size = new Size();
+
+	/**
+	 * The Tile color.
+	 *
+	 * @type {String} color Default 'Green'.
+	 */
+	color = 'Green';
+
+	/**
+	 * The Tile type.
+	 *
+	 * @type {String} type Default 'default'.
+	 */
+	type = 'default';
+
+	/**
+	 * The Tile density.
+	 *
+	 * @type {Number} density Default 1.
+	 */
+	density = 1;
+
+	/**
+	 * The Tile mass.
+	 *
+	 * @type {Mass} mass Default new Mass().
+	 */
+	mass = new Mass();
+
+	/**
+	 * The Tile opacity.
+	 *
+	 * @type {Number} opacity Default 1.
+	 */
+	opacity = 1;
+
+	/**
 	 * Construct the object.
 	 *
 	 * @param {Array}    group
@@ -18,11 +80,21 @@ export default class Tile {
 	 * @param {Size}     size
 	 * @param {String}   color
 	 * @param {String}   type
-	 * @param {Int}      mass
-	 * @param {Int}      opacity
+	 * @param {Number}   density
+	 * @param {Number}   mass
+	 * @param {Number}   opacity
 	 */
-	constructor( group = [], position = { x: 0, y: 0, scale: 'up' }, size = { w: 1, h: 1, scale: 'up' }, color = 'Green', type = 'default', solid = true, mass = 1, opacity = 1 ) {
-		this.set( group, position, size, color, type, solid, mass, opacity );
+	constructor(
+		group    = [],
+		position = { x: 0, y: 0, scale: 'up' },
+		size     = { w: 1, h: 1, scale: 'up' },
+		color    = 'Green',
+		type     = 'default',
+		density  = 1,
+		mass     = 1,
+		opacity  = 1
+	) {
+		this.set( group, position, size, color, type, density, mass, opacity );
 	}
 
 	/**
@@ -33,11 +105,21 @@ export default class Tile {
 	 * @param {Size}     size
 	 * @param {String}   color
 	 * @param {String}   type
-	 * @param {Int}      mass
-	 * @param {Int}      opacity
+	 * @param {Number}   density
+	 * @param {Number}   mass
+	 * @param {Number}   opacity
 	 */
-	set = ( group = [], position = { x: 0, y: 0, scale: 'up' }, size = { w: 1, h: 1, scale: 'up' }, color = 'Green', type = 'default', solid = true, mass = 1, opacity = 1 ) => {
-		this.reset( group, position, size, color, type, solid, mass, opacity );
+	set = (
+		group    = [],
+		position = { x: 0, y: 0, scale: 'up' },
+		size     = { w: 1, h: 1, scale: 'up' },
+		color    = 'Green',
+		type     = 'default',
+		density  = true,
+		mass     = 1,
+		opacity  = 1
+	) => {
+		this.reset( group, position, size, color, type, density, mass, opacity );
 	}
 
 	/**
@@ -48,11 +130,20 @@ export default class Tile {
 	 * @param {Size}     size
 	 * @param {String}   color
 	 * @param {String}   type
-	 * @param {Boolean}  solid
-	 * @param {Int}      mass
-	 * @param {Int}      opacity
+	 * @param {Number}   density
+	 * @param {Number}   mass
+	 * @param {Number}   opacity
 	 */
-	reset = ( group = [], position = { x: 0, y: 0, scale: 'up' }, size = { w: 1, h: 1, scale: 'up' }, color = null, type = 'default', solid = true, mass = 1, opacity = 1 ) => {
+	reset = (
+		group    = [],
+		position = { x: 0, y: 0, scale: 'up' },
+		size     = { w: 1, h: 1, scale: 'up' },
+		color    = null,
+		type     = 'default',
+		density  = 1,
+		mass     = 1,
+		opacity  = 1
+	) => {
 
 		// Physics.
 		this.position    = new Position( position.x, position.y, position.scale );
@@ -65,7 +156,7 @@ export default class Tile {
 		this.color   = color;
 		this.opacity = opacity;
 		this.type    = type;
-		this.solid   = solid;
+		this.density = density;
 		this.visible = true;
 		this.state   = 'static';
 
@@ -100,7 +191,12 @@ export default class Tile {
 	render = () => {
 
 		// Skip if invisible.
-		if ( ! this.visible || ! Math.round( this.size.w + this.size.h ) ) {
+		if ( ! this.visible ) {
+			return;
+		}
+
+		// Skip if no size.
+		if ( ! Math.round( this.size.w + this.size.h ) ) {
 			return;
 		}
 
@@ -142,7 +238,9 @@ export default class Tile {
 	 * @returns {Array}
 	 */
 	add = ( item = {} ) => {
-		this.group.push( item );
+		const groupAdd = [ ...this.group, item ];
+
+		this.group = groupAdd;
 
 		Game.Hooks.do( 'Tile.added', this );
 
@@ -155,7 +253,7 @@ export default class Tile {
 	 * @returns {Boolean}
 	 */
 	destroy = () => {
-		let index = this.group.indexOf( this );
+		const index = this.group.indexOf( this );
 
 		// Remove item and return true.
 		if ( index > -1 ) {
@@ -163,7 +261,7 @@ export default class Tile {
 
 			Game.Hooks.do( 'Tile.destroy', this );
 
-			delete this;
+			//delete this;
 			return true;
 		}
 
