@@ -242,7 +242,7 @@ export default class Input {
 	 * Return whether a key is triple-tapped.
 	 *
 	 * @param   {String} keycode
-	 * @returns {Mixed}
+	 * @returns {Mixed}  True if triple-tapped.
 	 */
 	tripleTapped = (
 		keycode = ''
@@ -256,7 +256,7 @@ export default class Input {
 	 * Return whether a key is quadruple-tapped.
 	 *
 	 * @param   {String} keycode
-	 * @returns {Mixed}
+	 * @returns {Mixed}  True if quadruple-tapped.
 	 */
 	quadrupleTapped = (
 		keycode = ''
@@ -270,7 +270,7 @@ export default class Input {
 	 * Return whether a key is quintuple-tapped.
 	 *
 	 * @param   {String} keycode
-	 * @returns {Mixed}
+	 * @returns {Mixed}  True if quintuple-tapped.
 	 */
 	quintupleTapped = (
 		keycode = ''
