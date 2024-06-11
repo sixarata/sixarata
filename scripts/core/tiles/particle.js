@@ -1,7 +1,7 @@
 import Game from '../game.js';
 
 import { Tile } from './exports.js';
-import { Velocity } from '../physics/exports.js';
+import { Size, Velocity } from '../physics/exports.js';
 
 /**
  * The Particle object.
@@ -11,15 +11,37 @@ import { Velocity } from '../physics/exports.js';
 export default class Particle extends Tile {
 
 	/**
+	 * Life of the Particle.
+	 *
+	 * @var {Number} Default 1000.
+	 */
+	life = 1000;
+
+	/**
+	 * Fade of the Particle.
+	 *
+	 * @var {Number} Default 1000.
+	 */
+	fade = 1000;
+
+	/**
 	 * Construct the Particle.
 	 *
 	 * @param {array}  group
-	 * @param {Tile}  tile
-	 * @param {Tile}  target
+	 * @param {Tile}   tile
+	 * @param {Tile}   target
 	 * @param {Size}   size
 	 * @param {String} type
 	 */
-	constructor( group = [], tile = {}, color = 'White', size = { w: 0.1, h: 0.1 }, velocity = { x: 0, y: 0 }, life = 1000, fade = 1000 ) {
+	constructor(
+		group    = [],
+		tile     = {},
+		color    = 'White',
+		size     = { w: 0.1, h: 0.1 },
+		velocity = { x: 0, y: 0 },
+		life     = 1000,
+		fade     = 1000
+	) {
 
 		// Reposition & rescale so super() works correctly.
 		let source = Game.View.center(
@@ -40,10 +62,14 @@ export default class Particle extends Tile {
 	 * Set the Particle.
 	 *
 	 * @param {Velocity} velocity
-	 * @param {Int}      life
-	 * @param {Int}      fade
+	 * @param {Number}      life
+	 * @param {Number}      fade
 	 */
-	set = ( velocity = { x: 0, y: 0 }, life = 1000, fade = 1000 ) => {
+	set = (
+		velocity = { x: 0, y: 0 },
+		life     = 1000,
+		fade     = 1000
+	) => {
 
 		// Velocity.
 		this.velocity = new Velocity(
