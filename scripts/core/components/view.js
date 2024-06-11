@@ -31,7 +31,7 @@ export default class View {
 	reset = () => {
 
 		// Create some tiles.
-		this.wrapper = document.createElement( 'center' );
+		this.wrapper = document.createElement( 'div' );
 		this.buffer  = new Buffer();
 		this.canvas  = this.buffer.canvas;
 
@@ -97,10 +97,16 @@ export default class View {
 	 * @param {Scale}    scale
 	 * @returns {Position}
 	 */
-	center = ( position = { x: 0, y: 0 }, size1 = { w: 0, h: 0 }, size2 = { w: 0, h: 0 }, scale = 'up' ) => {
+	center = (
+		position = { x: 0, y: 0, z: 0 },
+		size1    = { w: 0, h: 0, d: 0 },
+		size2    = { w: 0, h: 0, d: 0 },
+		scale    = 'up'
+	) => {
 		return new Position(
 			( position.x + ( ( size1.w - size2.w ) / 2 ) ),
 			( position.y + ( ( size1.h - size2.h ) / 2 ) ),
+			( position.z + ( ( size1.d - size2.d ) / 2 ) ),
 			scale,
 		);
 	}
