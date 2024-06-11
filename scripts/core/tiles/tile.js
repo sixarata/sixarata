@@ -239,9 +239,7 @@ export default class Tile {
 	 * @returns {Array}
 	 */
 	add = ( item = {} ) => {
-		const groupAdd = [ ...this.group, item ];
-
-		this.group = groupAdd;
+		this.group.push( item );
 
 		Game.Hooks.do( 'Tile.added', this );
 
