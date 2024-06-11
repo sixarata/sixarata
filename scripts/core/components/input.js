@@ -8,6 +8,27 @@ import Game from '../game.js';
 export default class Input {
 
 	/**
+	 * Which keys are currently pressed down.
+	 *
+	 * @var {Array} Default empty.
+	 */
+	keysDown = [];
+
+	/**
+	 * Which keys were previously pressed down.
+	 *
+	 * @var {Array} Default empty.
+	 */
+	keysPrev = [];
+
+	/**
+	 * The maximum number of ticks to store.
+	 *
+	 * @var {Number} Default 10.
+	 */
+	maxTicks = 10;
+
+	/**
 	 * Construct the object.
 	 */
 	constructor() {
@@ -27,7 +48,7 @@ export default class Input {
 	 */
 	reset = () => {
 		this.keysDown = [];
-		this.previous = [];
+		this.keysPrev = [];
 	}
 
 	/**
@@ -46,11 +67,11 @@ export default class Input {
 		let now = Game.Clock.pnow;
 
 		// Stash the previous keys.
-		this.previous[ now ] = this.keysDown;
+		this.keysPrev[ now ] = this.keysDown;
 
-		// Trim off the oldest keys.
-		if ( 10 >= this.previous.length ) {
-			this.previous.shift;
+		// Trim off keys older than the max.
+		if ( this.keysPrev.length >= this.maxTicks ) {
+			this.keysPrev.shift;
 		}
 	}
 
@@ -72,18 +93,20 @@ export default class Input {
 	/**
 	 * Callback for "keydown" event.
 	 *
-	 * @param {keycode} e
+	 * @param {Event} e The event.
 	 */
-	keyDown = ( e = {} ) => {
+	keyDown = (
+		e = {}
+	) => {
 
 		// Skip if no key.
-		if ( ! e.key ) {
+		if ( ! this.valid( e.key ) ) {
 			return;
 		}
 
 		// Keep count.
-		this.keysDown[ e.key ] = this.previous[ e.key ]
-			? this.previous[ e.key ] + 1
+		this.keysDown[ e.key ] = this.keysPrev[ e.key ]
+			? this.keysPrev[ e.key ] + 1
 			: 1;
 
 		// Hook
@@ -93,12 +116,14 @@ export default class Input {
 	/**
 	 * Callback for "keyup" event.
 	 *
-	 * @param {keycode} e
+	 * @param {Event} e
 	 */
-	keyUp = ( e = {} ) => {
+	keyUp = (
+		e = {}
+	) => {
 
-		// Skip if no key.
-		if ( ! e.key ) {
+		// Skip if invalid.
+		if ( ! this.valid( e.key ) ) {
 			return;
 		}
 
@@ -112,15 +137,17 @@ export default class Input {
 	}
 
 	/**
-	 * Return whether a key is pressed.
+	 * Callback for "keypress" event.
 	 *
-	 * @param {keycode} e
+	 * @param   {Event} e
 	 * @returns {Mixed}
 	 */
-	keyPressed = ( e = {} ) => {
+	keyPressed = (
+		e = {}
+	) => {
 
-		// Skip if no key.
-		if ( ! e.key ) {
+		// Skip if invalid.
+		if ( ! this.valid( e.key ) ) {
 			return;
 		}
 
@@ -129,14 +156,126 @@ export default class Input {
 	}
 
 	/**
+	 * Return whether a key is valid.
+	 *
+	 * @param   {Event}   e
+	 * @returns {Boolean} True if valid.
+	 */
+	valid = (
+		e = {}
+	) => {
+		return ! e.key.match( /[^a-zA-Z0-9]/ );
+	}
+
+	/**
 	 * Return whether a key is pressed.
 	 *
-	 * @param {String} keycode
+	 * @param   {String} keycode
 	 * @returns {Mixed}
 	 */
-	pressed = ( keycode = '' ) => {
+	pressed = (
+		keycode = ''
+	) => {
 
 		// Hook.
 		return Game.Hooks.do( 'Input.pressed', this.keysDown[ keycode ] );
+	}
+
+	/**
+	 * Return whether a key is released.
+	 *
+	 * @param   {String} keycode
+	 * @returns {Mixed}
+	 */
+	released = (
+		keycode = ''
+	) => {
+
+		// Hook.
+		return Game.Hooks.do( 'Input.released', this.keysDown[ keycode ] );
+	}
+
+	/**
+	 * Return whether a key is held.
+	 *
+	 * @param   {String} keycode
+	 * @returns {Mixed}
+	 */
+	held = (
+		keycode = ''
+	) => {
+
+		// Hook.
+		return Game.Hooks.do( 'Input.held', this.keysDown[ keycode ] );
+	}
+
+	/**
+	 * Return whether a key is tapped.
+	 *
+	 * @param   {String} keycode
+	 * @returns {Mixed}
+	 */
+	tapped = (
+		keycode = ''
+	) => {
+
+		// Hook.
+		return Game.Hooks.do( 'Input.tapped', this.keysDown[ keycode ] );
+	}
+
+	/**
+	 * Return whether a key is double-tapped.
+	 *
+	 * @param   {String} keycode
+	 * @returns {Mixed}
+	 */
+	doubleTapped = (
+		keycode = ''
+	) => {
+
+		// Hook.
+		return Game.Hooks.do( 'Input.doubleTapped', this.keysDown[ keycode ] );
+	}
+
+	/**
+	 * Return whether a key is triple-tapped.
+	 *
+	 * @param   {String} keycode
+	 * @returns {Mixed}
+	 */
+	tripleTapped = (
+		keycode = ''
+	) => {
+
+		// Hook.
+		return Game.Hooks.do( 'Input.tripleTapped', this.keysDown[ keycode ] );
+	}
+
+	/**
+	 * Return whether a key is quadruple-tapped.
+	 *
+	 * @param   {String} keycode
+	 * @returns {Mixed}
+	 */
+	quadrupleTapped = (
+		keycode = ''
+	) => {
+
+		// Hook.
+		return Game.Hooks.do( 'Input.quadrupleTapped', this.keysDown[ keycode ] );
+	}
+
+	/**
+	 * Return whether a key is quintuple-tapped.
+	 *
+	 * @param   {String} keycode
+	 * @returns {Mixed}
+	 */
+	quintupleTapped = (
+		keycode = ''
+	) => {
+
+		// Hook.
+		return Game.Hooks.do( 'Input.quintupleTapped', this.keysDown[ keycode ] );
 	}
 }
