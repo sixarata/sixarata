@@ -53,12 +53,16 @@ export default class Hooks {
 	/**
 	 * Add a callback hook.
 	 *
-	 * @param {String} name
-	 * @param {String} callback
-	 * @param {Int}    priority
-	 * @returns {Mixed}
+	 * @param   {String} name
+	 * @param   {String} callback
+	 * @param   {Number} priority
+	 * @returns {Mixed}  The index of the callback.
 	 */
-	add = ( name = '', callback = '', priority = 10 ) => {
+	add = (
+		name     = '',
+		callback = '',
+		priority = 10
+	) => {
 
 		// Skip if empty.
 		if ( ! name || ! callback ) {
@@ -90,12 +94,16 @@ export default class Hooks {
 	/**
 	 * Remove a callback from the hook queue.
 	 *
-	 * @param {String} name
-	 * @param {String} callback
-	 * @param {Int}    priority
-	 * @returns {Mixed}
+	 * @param   {String} name
+	 * @param   {String} callback
+	 * @param   {Number} priority
+	 * @returns {Mixed}  The removed callback.
 	 */
-	remove = ( name = '', callback = '', priority = 10 ) => {
+	remove = (
+		name     = '',
+		callback = '',
+		priority = 10
+	) => {
 
 		// Skip if does not exist.
 		if ( ! this.exists( name, callback, priority ) ) {
@@ -112,10 +120,12 @@ export default class Hooks {
 	/**
 	 * Completely clear a hook of all callbacks at all priorities.
 	 *
-	 * @param {String} name 
-	 * @returns {Mixed}
+	 * @param   {String} name
+	 * @returns {Mixed}  The removed hook name.
 	 */
-	clear = ( name = '' ) => {
+	clear = (
+		name = ''
+	) => {
 
 		// Skip if empty.
 		if ( ! name || ! this.#queued[ name ] ) {
@@ -129,7 +139,7 @@ export default class Hooks {
 	/**
 	 * Get the current hook name.
 	 *
-	 * @returns {String}
+	 * @returns {String} The current hook name.
 	 */
 	current = () => {
 		return this.#current;
@@ -138,7 +148,7 @@ export default class Hooks {
 	/**
 	 * Get all of the queued hook names.
 	 *
-	 * @returns {Array}
+	 * @returns {Array} The queued hook names.
 	 */
 	queued = () => {
 		return this.#queued;
@@ -147,7 +157,7 @@ export default class Hooks {
 	/**
 	 * Get all of the completed hook names.
 	 *
-	 * @returns {Array}
+	 * @returns {Array} The completed hook names.
 	 */
 	done = () => {
 		return this.#done;
@@ -156,11 +166,14 @@ export default class Hooks {
 	/**
 	 * Run all of the callbacks of a hook name.
 	 *
-	 * @param {String} name
-	 * @param {...any} args
-	 * @returns {Mixed}
+	 * @param   {String} name
+	 * @param   {...any} args
+	 * @returns {Mixed}  The return value of the last callback.
 	 */
-	do = ( name = '', ...args ) => {
+	do = (
+		name = '',
+		...args
+	) => {
 
 		// Default return value.
 		let retval = args[ 0 ]
@@ -196,22 +209,28 @@ export default class Hooks {
 	/**
 	 * Return whether a hook name is being done.
 	 *
-	 * @param {String} name
-	 * @returns {Boolean}
+	 * @param   {String}  name
+	 * @returns {Boolean} True if hook is currently being done.
 	 */
-	doing = ( name = '' ) => {
+	doing = (
+		name = ''
+	) => {
 		return ( name === this.#current );
 	}
 
 	/**
 	 * Return whether a hook callback has been done.
 	 *
-	 * @param {String} name
-	 * @param {String} callback
-	 * @param {Int}    priority
-	 * @returns {Boolean}
+	 * @param   {String}  name
+	 * @param   {String}  callback
+	 * @param   {Number}  priority
+	 * @returns {Boolean} True if hook callback has been done.
 	 */
-	did = ( name = '', callback = '', priority = 10 ) => {
+	did = (
+		name     = '',
+		callback = '',
+		priority = 10
+	) => {
 
 		if ( name && callback ) {
 			if ( this.#done[ name ] ) {
@@ -229,12 +248,16 @@ export default class Hooks {
 	/**
 	 * Return whether a hook callback has been queued.
 	 *
-	 * @param {String} name
-	 * @param {String} callback
-	 * @param {Int}    priority
-	 * @returns {Boolean}
+	 * @param {String}   name
+	 * @param {String}   callback
+	 * @param {Number}   priority
+	 * @returns {Boolean} True if hook callback has been queued.
 	 */
-	exists = ( name = '', callback = '', priority = 10 ) => {
+	exists = (
+		name     = '',
+		callback = '',
+		priority = 10
+	) => {
 
 		if ( name && callback ) {
 			if ( this.#queued[ name ] ) {
