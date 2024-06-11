@@ -9,12 +9,29 @@ import Point from './point.js';
 export default class Orientation extends Point {
 
 	/**
+	 * The X direction.
+	 *
+	 * @var {Number} Default 0.
+	 */
+	x = 0;
+
+	/**
+	 * The Y direction.
+	 *
+	 * @var {Number} Default 0.
+	 */
+	y = 0;
+
+	/**
 	 * Construct the object.
 	 *
-	 * @param {Int} x
-	 * @param {Int} y
+	 * @param {Number} x
+	 * @param {Number} y
 	 */
-	constructor( x = 0, y = 0 ) {
+	constructor(
+		x = 0,
+		y = 0
+	) {
 		super( x, y );
 	}
 }
