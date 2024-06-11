@@ -9,14 +9,14 @@ import Point from './point.js';
 export default class Orientation extends Point {
 
 	/**
-	 * The X direction.
+	 * The X orientation.
 	 *
 	 * @var {Number} Default 0.
 	 */
 	x = 0;
 
 	/**
-	 * The Y direction.
+	 * The Y orientation.
 	 *
 	 * @var {Number} Default 0.
 	 */
