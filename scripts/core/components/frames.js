@@ -12,6 +12,48 @@ import Game     from '../game.js';
 export default class Frames {
 
 	/**
+	 * The performance object.
+	 *
+	 * @var {Object} Default performance.
+	 */
+	perf = {};
+
+	/**
+	 * The current time.
+	 *
+	 * @var {Number} Default performance.now().
+	 */
+	now = 0;
+
+	/**
+	 * The frames array.
+	 *
+	 * @var {Array} Default [].
+	 */
+	frames = [];
+
+	/**
+	 * The rate.
+	 *
+	 * @var {Number} Default Settings.gameSpeed.
+	 */
+	rate = Settings.gameSpeed;
+
+	/**
+	 * The step.
+	 *
+	 * @var {Number} Default ( 1000 / rate ).
+	 */
+	step = ( 1000 / this.rate );
+
+	/**
+	 * The request.
+	 *
+	 * @var {Number} Default 0.
+	 */
+	request = 0;
+
+	/**
 	 * Construct the object.
 	 */
 	constructor() {
@@ -46,16 +88,18 @@ export default class Frames {
 	 *
 	 * @param {DOMHighResTimeStamp} now
 	 */
-	animate = ( now = 0 ) => {
+	animate = (
+		now = 0
+	) => {
 
 		// Set now.
 		this.now = now;
 
 		// Add new frame.
-		this.frames.push( now );
+		this.frames.push( this.now );
 
 		// Remove expired frames.
-		while ( ( this.frames.length >= 0 ) && ( this.frames[ 0 ] <= ( now - 1000 ) ) ) {
+		while ( ( this.frames.length >= 0 ) && ( this.frames[ 0 ] <= ( this.now - 1000 ) ) ) {
 			this.frames.shift();
 		}
 
@@ -71,7 +115,7 @@ export default class Frames {
 	/**
 	 * Return the frames-per-second measurement.
 	 *
-	 * @returns {Int}
+	 * @returns {Number}
 	 */
 	fps = () => {
 		return this.frames.length;
@@ -82,17 +126,21 @@ export default class Frames {
 	 *
 	 * Used for offsetting movement calculations, relative to fps.
 	 *
-	 * @param {Int} value
-	 * @returns {Int}
+	 * @param   {Number} value Default 0.
+	 * @returns {Number} The compensated value.
 	 */
-	compensate = ( value = 0 ) => {
+	compensate = (
+		value = 0
+	) => {
+
+		// Return the value multiplied by either: half, or the difference.
 		return ( value * Math.max( 0.5, this.diff() ) );
 	}
 
 	/**
 	 * Get the difference to compensate for.
 	 *
-	 * @returns {Int}
+	 * @returns {Number}
 	 */
 	diff = () => {
 		const
