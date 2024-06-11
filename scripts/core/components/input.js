@@ -164,8 +164,18 @@ export default class Input {
 		e = {}
 	) => {
 
+		// Skip if no key.
+		if ( ! e.key ) {
+			return false;
+		}
+
 		// Letters and numbers only, for now.
-		return ! e.key.match( /[^a-zA-Z0-9]/ );
+		if ( e.key.match( /[^a-zA-Z0-9]/ ) ) {
+			return true;
+		}
+
+		// Skip if not a letter or number.
+		return false;
 	}
 
 	/**
