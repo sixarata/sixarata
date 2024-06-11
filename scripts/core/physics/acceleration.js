@@ -12,10 +12,15 @@ import Point from './point.js';
 	/**
 	 * Construct the Acceleration.
 	 *
-	 * @param {int} x
-	 * @param {int} y
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} z
 	 */
-	constructor( x = 0, y = 0 ) {
-		super( x, y );
+	constructor(
+		x = 0,
+		y = 0,
+		z = 0
+	) {
+		super( x, y, z );
 	}
 }
