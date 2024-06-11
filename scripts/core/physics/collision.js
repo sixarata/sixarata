@@ -1,8 +1,9 @@
 /**
  * The Collision object.
  *
- * This object is responsible for determining if some Tile has intersected
- * with any other Tile.
+ * This object is responsible for determining if a Tile object is
+ * occupying the space of another Tile object along the
+ * horizontal or vertical plains.
  */
 export default class Collision {
 
@@ -12,7 +13,10 @@ export default class Collision {
 	 * @param {Tile} tile1
 	 * @param {Tile} tile2
 	 */
-	constructor( tile1 = {}, tile2 = {} ) {
+	constructor(
+		tile1 = {},
+		tile2 = {}
+	) {
 		this.set( tile1, tile2 );
 	}
 
@@ -22,7 +26,10 @@ export default class Collision {
 	 * @param {Tile} tile1
 	 * @param {Tile} tile2
 	 */
-	set = ( tile1 = {}, tile2 = {} ) => {
+	set = (
+		tile1 = {},
+		tile2 = {}
+	) => {
 		this.tile1 = tile1;
 		this.tile2 = tile2;
 	}
@@ -47,6 +54,6 @@ export default class Collision {
 			&&
 
 			( this.tile2.position.y < ( this.tile1.position.y + this.tile1.size.h ) )
-		);	
+		);
 	}
 }
