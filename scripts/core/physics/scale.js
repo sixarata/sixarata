@@ -10,13 +10,39 @@ import Point    from './point.js';
 export default class Scale extends Point {
 
 	/**
+	 * The Scale x.
+	 *
+	 * @type {Number} Default 1.
+	 */
+	x = 1;
+
+	/**
+	 * The Scale y.
+	 *
+	 * @type {Number} Default 1.
+	 */
+	y = 1;
+
+	/**
+	 * The Scale z.
+	 *
+	 * @type {Number} Default 1.
+	 */
+	z = 1;
+
+	/**
 	 * Construct the Scale.
 	 *
-	 * @param {Int} x
-	 * @param {Int} y
+	 * @param {Number} x Default 1.
+	 * @param {Number} y Default 1.
+	 * @param {Number} z Default 1.
 	 */
-	constructor( x = 1, y = 1 ) {
-		super( x, y );
+	constructor(
+		x = 1,
+		y = 1,
+		z = 1
+	) {
+		super( x, y, z );
 
 		// Set the size.
 		this.size = Settings.tileSize;
@@ -29,22 +55,26 @@ export default class Scale extends Point {
 	}
 
 	/**
-	 * Scale up an Integer.
+	 * Scale ratio up by a number.
 	 *
-	 * @param {Int} int 
-	 * @returns {Int}
+	 * @param   {Number} number Default 1.
+	 * @returns {Number} The scaled number.
 	 */
-	up = ( int = 1 ) => {
-		return Math.floor( int * this.ratio );
+	up = (
+		number = 1
+	) => {
+		return Math.floor( number * this.ratio );
 	}
 
 	/**
-	 * Scale down an Integer.
+	 * Scale ratio down by a number.
 	 *
-	 * @param {Int} int 
-	 * @returns {Int}
+	 * @param   {Number} number
+	 * @returns {Number} The scaled number.
 	 */
-	down = ( int = 1 ) => {
-		return Math.floor( int / this.ratio );
+	down = (
+		number = 1
+	) => {
+		return Math.floor( number / this.ratio );
 	}
 }
