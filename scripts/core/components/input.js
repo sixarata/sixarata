@@ -139,8 +139,7 @@ export default class Input {
 	/**
 	 * Callback for "keypress" event.
 	 *
-	 * @param   {Event} e
-	 * @returns {Mixed}
+	 * @param {Event} e
 	 */
 	keyPressed = (
 		e = {}
@@ -164,6 +163,8 @@ export default class Input {
 	valid = (
 		e = {}
 	) => {
+
+		// Letters and numbers only, for now.
 		return ! e.key.match( /[^a-zA-Z0-9]/ );
 	}
 
@@ -171,7 +172,7 @@ export default class Input {
 	 * Return whether a key is pressed.
 	 *
 	 * @param   {String} keycode
-	 * @returns {Mixed}
+	 * @returns {Mixed}  True if pressed.
 	 */
 	pressed = (
 		keycode = ''
@@ -185,7 +186,7 @@ export default class Input {
 	 * Return whether a key is released.
 	 *
 	 * @param   {String} keycode
-	 * @returns {Mixed}
+	 * @returns {Mixed}  True if released.
 	 */
 	released = (
 		keycode = ''
@@ -199,7 +200,7 @@ export default class Input {
 	 * Return whether a key is held.
 	 *
 	 * @param   {String} keycode
-	 * @returns {Mixed}
+	 * @returns {Mixed}  True if held.
 	 */
 	held = (
 		keycode = ''
@@ -213,7 +214,7 @@ export default class Input {
 	 * Return whether a key is tapped.
 	 *
 	 * @param   {String} keycode
-	 * @returns {Mixed}
+	 * @returns {Mixed}  True if tapped.
 	 */
 	tapped = (
 		keycode = ''
@@ -227,7 +228,7 @@ export default class Input {
 	 * Return whether a key is double-tapped.
 	 *
 	 * @param   {String} keycode
-	 * @returns {Mixed}
+	 * @returns {Mixed}  True if double-tapped.
 	 */
 	doubleTapped = (
 		keycode = ''
