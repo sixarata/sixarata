@@ -136,8 +136,8 @@ export default class Tile {
 	 */
 	reset = (
 		group    = [],
-		position = { x: 0, y: 0, scale: 'up' },
-		size     = { w: 1, h: 1, scale: 'up' },
+		position = { x: 0, y: 0, z: 0, scale: 'up' },
+		size     = { w: 1, h: 1, d: 0, scale: 'up' },
 		color    = null,
 		type     = 'default',
 		density  = 1,
@@ -146,7 +146,7 @@ export default class Tile {
 	) => {
 
 		// Physics.
-		this.position    = new Position( position.x, position.y, position.scale );
+		this.position    = new Position( position.x, position.y, position.z, position.scale );
 		this.orientation = new Orientation();
 		this.size        = new Size( size.w, size.h, size.scale );
 		this.mass        = new Mass( mass );
@@ -206,6 +206,7 @@ export default class Tile {
 			offset = new Position(
 				( this.position.x - camera.x ),
 				( this.position.y - camera.y ),
+				( this.position.z - camera.z ),
 				false
 			),
 			collide = new Collision(
