@@ -12,62 +12,6 @@ import { Collision, Contact, Orientation, Position, Velocity } from '../physics/
 export default class Player extends Tile {
 
 	/**
-	 * The Player's retries.
-	 *
-	 * @var {Object} Default from Settings.
-	 */
-	retries = Settings.player.retries;
-
-	/**
-	 * The Player's health.
-	 *
-	 * @var {Object} Default from Settings.
-	 */
-	health = Settings.player.health;
-
-	/**
-	 * The Player's jumps.
-	 *
-	 * @var {Object} Default from Settings.
-	 */
-	jumps = Settings.player.jumps;
-
-	/**
-	 * The Player's contact.
-	 *
-	 * @var {Contact} Default new Contact().
-	 */
-	contact = new Contact();
-
-	/**
-	 * The Player's orientation.
-	 *
-	 * @var {Orientation} Default new Orientation().
-	 */
-	orientation = new Orientation();
-
-	/**
-	 * The Player's velocity.
-	 *
-	 * @var {Velocity} Default new Velocity().
-	 */
-	velocity = new Velocity();
-
-	/**
-	 * The Player's input.
-	 *
-	 * @var {Object} Default from Game.
-	 */
-	input = Game.Input;
-
-	/**
-	 * The Player's velocity.
-	 *
-	 * @var {Object} Default from Game.
-	 */
-	pressed = this.input.pressed;
-
-	/**
 	 * Construct the Player.
 	 *
 	 * @param {Array}    group

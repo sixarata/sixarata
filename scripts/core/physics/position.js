@@ -1,5 +1,4 @@
-import Scale from './scale.js';
-import Point from './point.js';
+import { Point, Scale } from './exports.js';
 
 /**
  * The Position object.

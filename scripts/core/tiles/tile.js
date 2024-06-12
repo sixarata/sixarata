@@ -17,62 +17,6 @@ import {
 export default class Tile {
 
 	/**
-	 * The Tile group.
-	 *
-	 * @type {Array} group Default empty array.
-	 */
-	group = [];
-
-	/**
-	 * The Tile position.
-	 *
-	 * @type {Position} position Default empty Position object.
-	 */
-	position = new Position();
-
-	/**
-	 * The Tile size.
-	 *
-	 * @type {Size} size Default empty Size object.
-	 */
-	size = new Size();
-
-	/**
-	 * The Tile color.
-	 *
-	 * @type {String} color Default 'Green'.
-	 */
-	color = 'Green';
-
-	/**
-	 * The Tile type.
-	 *
-	 * @type {String} type Default 'default'.
-	 */
-	type = 'default';
-
-	/**
-	 * The Tile density.
-	 *
-	 * @type {Number} density Default 1.
-	 */
-	density = 1;
-
-	/**
-	 * The Tile mass.
-	 *
-	 * @type {Mass} mass Default new Mass().
-	 */
-	mass = new Mass();
-
-	/**
-	 * The Tile opacity.
-	 *
-	 * @type {Number} opacity Default 1.
-	 */
-	opacity = 1;
-
-	/**
 	 * Construct the object.
 	 *
 	 * @param {Array}    group
@@ -86,8 +30,8 @@ export default class Tile {
 	 */
 	constructor(
 		group    = [],
-		position = { x: 0, y: 0, scale: 'up' },
-		size     = { w: 1, h: 1, scale: 'up' },
+		position = { x: 0, y: 0, z: 0, scale: 'up' },
+		size     = { w: 1, h: 1, d: 1, scale: 'up' },
 		color    = 'Green',
 		type     = 'default',
 		density  = 1,
@@ -111,8 +55,8 @@ export default class Tile {
 	 */
 	set = (
 		group    = [],
-		position = { x: 0, y: 0, scale: 'up' },
-		size     = { w: 1, h: 1, scale: 'up' },
+		position = { x: 0, y: 0, z: 0, scale: 'up' },
+		size     = { w: 1, h: 1, d: 1, scale: 'up' },
 		color    = 'Green',
 		type     = 'default',
 		density  = true,
@@ -137,7 +81,7 @@ export default class Tile {
 	reset = (
 		group    = [],
 		position = { x: 0, y: 0, z: 0, scale: 'up' },
-		size     = { w: 1, h: 1, d: 0, scale: 'up' },
+		size     = { w: 1, h: 1, d: 1, scale: 'up' },
 		color    = null,
 		type     = 'default',
 		density  = 1,
@@ -147,9 +91,9 @@ export default class Tile {
 
 		// Physics.
 		this.position    = new Position( position.x, position.y, position.z, position.scale );
-		this.orientation = new Orientation();
 		this.size        = new Size( size.w, size.h, size.scale );
 		this.mass        = new Mass( mass );
+		this.orientation = new Orientation();
 
 		// Attributes.
 		this.group   = group;

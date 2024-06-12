@@ -1,6 +1,4 @@
-import Settings from '../settings.js';
-import Game     from '../game.js';
-
+import { Game, Settings } from '../exports.js';
 import { Tile, Projectile } from './exports.js';
 
 /**
@@ -10,7 +8,11 @@ import { Tile, Projectile } from './exports.js';
  */
 export default class Enemy extends Tile {
 
-	constructor( group = [], position = { x: 0, y: 0 }, size = { w: 1, h: 1 } ) {
+	constructor(
+		group    = [],
+		position = { x: 0, y: 0 },
+		size     = { w: 1, h: 1 }
+	) {
 		super( group, position, size, 'Red' );
 
 		this.reset();

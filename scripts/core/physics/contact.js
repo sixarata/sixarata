@@ -10,34 +10,6 @@ import Tile from '../tiles/tile.js';
 export default class Contact {
 
 	/**
-	 * The top contact.
-	 *
-	 * @var {Boolean} Default false.
-	 */
-	top = false;
-
-	/**
-	 * The right contact.
-	 *
-	 * @var {Boolean} Default false.
-	 */
-	right = false;
-
-	/**
-	 * The bottom contact.
-	 *
-	 * @var {Boolean} Default false.
-	 */
-	bottom = false;
-
-	/**
-	 * The left contact.
-	 *
-	 * @var {Boolean} Default false.
-	 */
-	left = false;
-
-	/**
 	 * Construct the object.
 	 *
 	 * @param {Boolean} top

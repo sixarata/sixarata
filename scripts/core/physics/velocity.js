@@ -10,29 +10,17 @@ import Point from './point.js';
 export default class Velocity extends Point {
 
 	/**
-	 * The X value.
-	 *
-	 * @var {Number} x Default 0.
-	 */
-	x = 0;
-
-	/**
-	 * The Y value.
-	 *
-	 * @var {Number} y Default 0.
-	 */
-	y = 0;
-
-	/**
 	 * Construct the Velocity.
 	 *
 	 * @param {Number} x
 	 * @param {Number} y
+	 * @param {Number} z
 	 */
 	constructor(
 		x = 0,
-		y = 0
+		y = 0,
+		z = 0
 	) {
-		super( x, y );
+		super( x, y, z );
 	}
 }

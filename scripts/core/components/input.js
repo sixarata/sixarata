@@ -8,27 +8,6 @@ import Game from '../game.js';
 export default class Input {
 
 	/**
-	 * Which keys are currently pressed down.
-	 *
-	 * @var {Array} Default empty.
-	 */
-	keysDown = [];
-
-	/**
-	 * Which keys were previously pressed down.
-	 *
-	 * @var {Array} Default empty.
-	 */
-	keysPrev = [];
-
-	/**
-	 * The maximum number of ticks to store.
-	 *
-	 * @var {Number} Default 10.
-	 */
-	maxTicks = 10;
-
-	/**
 	 * Construct the object.
 	 */
 	constructor() {
@@ -70,7 +49,7 @@ export default class Input {
 		this.keysPrev[ now ] = this.keysDown;
 
 		// Trim off keys older than the max.
-		if ( this.keysPrev.length >= this.maxTicks ) {
+		if ( this.keysPrev.length >= 10 ) {
 			this.keysPrev.shift;
 		}
 	}

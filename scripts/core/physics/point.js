@@ -12,27 +12,6 @@
 export default class Point {
 
 	/**
-	 * A numeric value along a horizontal plain.
-	 *
-	 * @var {number} x Default 0.
-	 */
-	x = 0;
-
-	/**
-	 * A numeric value along a vertical plain.
-	 *
-	 * @var {number} y Default 0.
-	 */
-	y = 0;
-
-	/**
-	 * A numeric value along a depth plain.
-	 *
-	 * @var {number} z Default 0.
-	 */
-	z = 0;
-
-	/**
 	 * Construct the Point.
 	 *
 	 * @param {Number} x Default 0.

@@ -15,7 +15,14 @@ export default class Attributes {
 	 */
 	modified = new Map();
 
-	constructor( entries = {} ) {
+	/**
+	 * Construct the Attributes object.
+	 *
+	 * @param {Iterable} entries
+	 */
+	constructor(
+		entries = {}
+	) {
 		this.defaults = new Map( entries );
 		this.reset( entries );
 	}
@@ -28,7 +35,10 @@ export default class Attributes {
 		return this.modified.clear();
 	}
 
-	set = ( key = '', value = {} ) => {
+	set = (
+		key   = '',
+		value = {}
+	) => {
 		return this.modified.set( key, value );
 	}
 

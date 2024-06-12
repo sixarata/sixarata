@@ -12,41 +12,6 @@ import { Buffer } from './exports.js';
 export default class Hud {
 
 	/**
-	 * The Buffer object.
-	 *
-	 * @var {Buffer} Default new Buffer().
-	 */
-	buffer = new Buffer();
-
-	/**
-	 * The current Room.
-	 *
-	 * @var {Number} Default 0.
-	 */
-	room = 0;
-
-	/**
-	 * The current retries.
-	 *
-	 * @var {Number} Default 0.
-	 */
-	retries = 0;
-
-	/**
-	 * The current frames per second.
-	 *
-	 * @var {Number} Default 0.
-	 */
-	fps = 0;
-
-	/**
-	 * The current time elapsed.
-	 *
-	 * @var {Number} Default 0.
-	 */
-	time = 0;
-
-	/**
 	 * Construct the object.
 	 */
 	constructor() {

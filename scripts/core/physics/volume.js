@@ -9,27 +9,6 @@ import Scale from './scale.js';
 export default class Volume {
 
 	/**
-	 * The Volume width.
-	 *
-	 * @type {Number} w Default 0.
-	 */
-	w = 0;
-
-	/**
-	 * The Volume height.
-	 *
-	 * @type {Number} h Default 0.
-	 */
-	h = 0;
-
-	/**
-	 * The Volume depth.
-	 *
-	 * @type {Number} d Default 0.
-	 */
-	d = 0;
-
-	/**
 	 * Construct the object.
 	 *
 	 * @param {Number} w

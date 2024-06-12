@@ -260,7 +260,7 @@ export default class Room {
 	 */
 	parseTile = (
 		token    = '',
-		position = { x: 0, y: 0 }
+		position = { x: 0, y: 0, z: 0 }
 	) => {
 
 		// Skip char if empty.
@@ -268,12 +268,14 @@ export default class Room {
 			return;
 		}
 
+		const size = { w: 1, h: 1, d: 1 };
+
 		// What kind of tile to draw.
 		switch ( token ) {
 
 			// Backgrounds.
 			case Settings.tiles.ambient.cloud :
-				new Tile( this.tiles.backgrounds, position, { w: 1, h: 1 }, Game.Colors.cloud(), 'cloud', false );
+				new Tile( this.tiles.backgrounds, position, size, Game.Colors.cloud(), 'cloud', 0 );
 				break;
 
 			// Platforms.
@@ -294,14 +296,14 @@ export default class Room {
 
 			// Doors.
 			case Settings.tiles.doors.forward :
-				new Door( this.tiles.doors, position, { w: 1, h: 1 }, this.id + 1 );
+				new Door( this.tiles.doors, position, size, this.id + 1 );
 
 				// Reposition to the left of the door.
 				position.x     -= 1.5;
 				this.playerPrev = position;
 				break;
 			case Settings.tiles.doors.backward :
-				new Door( this.tiles.doors, position, { w: 1, h: 1 }, this.id - 1 );
+				new Door( this.tiles.doors, position, size, this.id - 1 );
 
 				// Reposition to the right of the door.
 				position.x     += 1.5;

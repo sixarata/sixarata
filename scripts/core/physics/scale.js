@@ -10,37 +10,16 @@ import Point    from './point.js';
 export default class Scale extends Point {
 
 	/**
-	 * The Scale x.
-	 *
-	 * @type {Number} Default 1.
-	 */
-	x = 1;
-
-	/**
-	 * The Scale y.
-	 *
-	 * @type {Number} Default 1.
-	 */
-	y = 1;
-
-	/**
-	 * The Scale z.
-	 *
-	 * @type {Number} Default 1.
-	 */
-	z = 1;
-
-	/**
 	 * Construct the Scale.
 	 *
-	 * @param {Number} x Default 1.
-	 * @param {Number} y Default 1.
-	 * @param {Number} z Default 1.
+	 * @param {Number} x Default 0.
+	 * @param {Number} y Default 0.
+	 * @param {Number} z Default 0.
 	 */
 	constructor(
-		x = 1,
-		y = 1,
-		z = 1
+		x = 0,
+		y = 0,
+		z = 0
 	) {
 		super( x, y, z );
 
