@@ -49,7 +49,7 @@ export default class Input {
 		this.keysPrev[ now ] = this.keysDown;
 
 		// Trim off keys older than the max.
-		if ( this.keysPrev.length >= 10 ) {
+		if ( 10 >= this.keysPrev.length ) {
 			this.keysPrev.shift;
 		}
 	}
@@ -79,7 +79,7 @@ export default class Input {
 	) => {
 
 		// Skip if no key.
-		if ( ! this.valid( e.key ) ) {
+		if ( ! this.valid( e ) ) {
 			return;
 		}
 
@@ -102,7 +102,7 @@ export default class Input {
 	) => {
 
 		// Skip if invalid.
-		if ( ! this.valid( e.key ) ) {
+		if ( ! this.valid( e ) ) {
 			return;
 		}
 
@@ -125,7 +125,7 @@ export default class Input {
 	) => {
 
 		// Skip if invalid.
-		if ( ! this.valid( e.key ) ) {
+		if ( ! this.valid( e ) ) {
 			return;
 		}
 
@@ -148,13 +148,8 @@ export default class Input {
 			return false;
 		}
 
-		// Letters and numbers only, for now.
-		if ( e.key.match( /[^a-zA-Z0-9]/ ) ) {
-			return true;
-		}
-
-		// Skip if not a letter or number.
-		return false;
+		// Assume valid, for now.
+		return true;
 	}
 
 	/**

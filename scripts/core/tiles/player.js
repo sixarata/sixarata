@@ -145,7 +145,7 @@ export default class Player extends Tile {
 		}
 
 		// Jump.
-		if ( this.input.pressed(Settings.input.jump ) && this.canJump() ) {
+		if ( this.input.pressed( Settings.input.jump ) && this.canJump() ) {
 
 			// Bump jumps if not wall jumping.
 			if ( ! this.canWallJump() ) {
@@ -170,7 +170,11 @@ export default class Player extends Tile {
 		const diff = Game.Frames.diff();
 
 		// Left + Right.
-		if ( this.pressed( Settings.input.right ) && this.pressed( Settings.input.left ) ) {
+		if (
+			this.pressed( Settings.input.right )
+			&&
+			this.pressed( Settings.input.left )
+		) {
 			this.velocity.x = 0;
 
 		// Move left.
@@ -183,8 +187,12 @@ export default class Player extends Tile {
 		}
 
 		// Slow down.
-		if ( ! this.pressed( Settings.input.right ) && ! this.pressed( Settings.input.left ) ) {
-			this.velocity.x *= ( Game.Friction.force / diff );
+		if (
+			! this.pressed( Settings.input.right )
+			&&
+			! this.pressed( Settings.input.left )
+		) {
+			this.velocity.x *= ( Game.Friction.force );
 		}
 
 		// Prevent infinitely small X.
