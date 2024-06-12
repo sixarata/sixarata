@@ -28,14 +28,14 @@ export default class Camera {
 	 * Reset the Camera.
 	 */
 	reset = () => {
-		
+
 	}
 
 	/**
 	 * Early events.
 	 */
 	hooks = () => {
-		this.position = new Position( 0, 0, false );
+		this.position = new Position( 0, 0, 0, false );
 
 		// View.
 		Game.Hooks.add( 'View.tick',     this.tick,   11 );

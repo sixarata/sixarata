@@ -1,4 +1,5 @@
 export { default as Tile }       from './tile.js';
+export { default as Trigger }    from './trigger.js';
 export { default as Door }       from './door.js';
 export { default as Enemy }      from './enemy.js';
 export { default as Particle }   from './particle.js';

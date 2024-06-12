@@ -1,5 +1,5 @@
-import Settings from '../settings.js';
-import Game     from '../game.js';
+import Game from '../game.js';
+import Settings from '../../custom/settings.js';
 
 import { Buffer } from './exports.js';
 
@@ -84,7 +84,7 @@ export default class Hud {
 
 		// Update attributes.
 		this.room    = room.id;
-		this.retries = player.retries.current;
+		this.retries = 0; //player.retries.current;
 		this.fps     = frames.fps();
 		this.time    = clock.elapsed();
 	}

@@ -1,8 +1,8 @@
-import Settings from '../settings.js';
-import Game     from '../game.js';
+import Game from '../game.js';
+import Settings from '../../custom/settings.js';
 
 import { Tile } from './exports.js';
-import { Collision, Contact, Position, Velocity } from '../physics/exports.js';
+import { Collision, Contact, Orientation, Position, Velocity } from '../physics/exports.js';
 
 /**
  * The Player object.
@@ -18,7 +18,11 @@ export default class Player extends Tile {
 	 * @param {Position} position
 	 * @param {Size}     size
 	 */
-	constructor( group = [], position = { x: 0, y: 0 }, size = { w: 1, h: 1 } ) {
+	constructor(
+		group    = [],
+		position = { x: 0, y: 0 },
+		size     = { w: 1, h: 1 }
+	) {
 		super( group, position, size, 'Yellow' );
 
 		this.set();
@@ -47,6 +51,9 @@ export default class Player extends Tile {
 
 		// Contact.
 		this.contact = new Contact();
+
+		// Orientation.
+		this.orientation = new Orientation( 90, 0 );
 
 		// Velocity.
 		this.velocity = new Velocity( 0, 0 );
@@ -163,7 +170,11 @@ export default class Player extends Tile {
 		const diff = Game.Frames.diff();
 
 		// Left + Right.
-		if ( this.pressed( Settings.input.right ) && this.pressed( Settings.input.left ) ) {
+		if (
+			this.pressed( Settings.input.right )
+			&&
+			this.pressed( Settings.input.left )
+		) {
 			this.velocity.x = 0;
 
 		// Move left.
@@ -176,8 +187,12 @@ export default class Player extends Tile {
 		}
 
 		// Slow down.
-		if ( ! this.pressed( Settings.input.right ) && ! this.pressed( Settings.input.left ) ) {
-			this.velocity.x *= ( Game.Friction.force / diff );
+		if (
+			! this.pressed( Settings.input.right )
+			&&
+			! this.pressed( Settings.input.left )
+		) {
+			this.velocity.x *= ( Game.Friction.force );
 		}
 
 		// Prevent infinitely small X.
@@ -203,6 +218,8 @@ export default class Player extends Tile {
 		if ( this.pressed( Settings.input.left ) ) {
 			this.orientation.x = 270;
 		}
+
+		this.orientation.y = 0;
 	}
 
 	/**
@@ -251,10 +268,15 @@ export default class Player extends Tile {
 	/**
 	 * Collide with solid Tiles (Platforms, Walls, etc...)
 	 *
-	 * @param {Velocity} velocity
+	 * @param   {Velocity} velocity
 	 * @returns {Void}
 	 */
-	collide = ( velocity = { x: 0, y: 0 } ) => {
+	collide = (
+		velocity = {
+			x: 0,
+			y: 0
+		}
+	) => {
 
 		// Default.
 		let p = Game.Room.tiles.platforms.concat(
@@ -272,8 +294,8 @@ export default class Player extends Tile {
 
 			let pf = p[ i ];
 
-			// Skip if not solid.
-			if ( ! pf.solid ) {
+			// Skip if no density.
+			if ( ! pf.density ) {
 				continue;
 			}
 

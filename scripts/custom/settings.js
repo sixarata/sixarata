@@ -27,6 +27,10 @@ export default {
 			max:     10,
 			current: 0,
 		},
+		health: {
+			max:     3,
+			current: 3,
+		},
 		colors: {
 			default:  '#ffbb00',
 			falling:  '#ff9900',

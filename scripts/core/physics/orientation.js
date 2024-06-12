@@ -11,10 +11,13 @@ export default class Orientation extends Point {
 	/**
 	 * Construct the object.
 	 *
-	 * @param {Int} x
-	 * @param {Int} y
+	 * @param {Number} x
+	 * @param {Number} y
 	 */
-	constructor( x = 0, y = 0 ) {
+	constructor(
+		x = 0,
+		y = 0
+	) {
 		super( x, y );
 	}
 }

@@ -1,5 +1,5 @@
-import Settings from '../settings.js';
-import Scale    from './scale.js';
+import Settings from '../../custom/settings.js';
+import Scale from './scale.js';
 
 /**
  * The Gravity object.

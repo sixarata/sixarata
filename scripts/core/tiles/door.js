@@ -1,12 +1,13 @@
-import { Tile } from './exports.js';
+import { Trigger } from './exports.js';
 
 /**
  * The Door object.
  *
- * This object is responsible for progressing through the game. By default,
- * colliding with a door will increase the Room by one.
+ * This object is responsible for progressing through the game.
+ *
+ * By default, colliding with a door will increase the Room by one.
  */
- export default class Door extends Tile {
+ export default class Door extends Trigger {
 
 	/**
 	 * Construct the Door.
@@ -14,10 +15,15 @@ import { Tile } from './exports.js';
 	 * @param {Array}    group
 	 * @param {Position} position
 	 * @param {Size}     size
-	 * @param {Int}      room
+	 * @param {Number}   room
 	 */
-	constructor( group = [], position = { x: 0, y: 0 }, size = { w: 1, h: 1 }, room = 1 ) {
-		super( group, position, size, 'Black', 'default', false );
+	constructor(
+		group    = [],
+		position = { x: 0, y: 0 },
+		size     = { w: 1, h: 1 },
+		room     = 1
+	) {
+		super( group, position, size, 'Black', 'default', 0, 0, 1 );
 
 		this.set( room );
 	}
@@ -25,9 +31,11 @@ import { Tile } from './exports.js';
 	/**
 	 * Set the Door.
 	 *
-	 * @param {Int} room
+	 * @param {Number} room
 	 */
-	set = ( room = 1 ) => {
+	set = (
+		room = 1
+	) => {
 		this.room = room;
 	}
 }

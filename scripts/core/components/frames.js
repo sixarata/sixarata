@@ -1,5 +1,5 @@
-import Settings from '../settings.js';
-import Game     from '../game.js';
+import Game from '../game.js';
+import Settings from '../../custom/settings.js';
 
 /**
  * The Frames object.
@@ -46,16 +46,18 @@ export default class Frames {
 	 *
 	 * @param {DOMHighResTimeStamp} now
 	 */
-	animate = ( now = 0 ) => {
+	animate = (
+		now = 0
+	) => {
 
 		// Set now.
 		this.now = now;
 
 		// Add new frame.
-		this.frames.push( now );
+		this.frames.push( this.now );
 
 		// Remove expired frames.
-		while ( ( this.frames.length >= 0 ) && ( this.frames[ 0 ] <= ( now - 1000 ) ) ) {
+		while ( ( this.frames.length >= 0 ) && ( this.frames[ 0 ] <= ( this.now - 1000 ) ) ) {
 			this.frames.shift();
 		}
 
@@ -71,7 +73,7 @@ export default class Frames {
 	/**
 	 * Return the frames-per-second measurement.
 	 *
-	 * @returns {Int}
+	 * @returns {Number}
 	 */
 	fps = () => {
 		return this.frames.length;
@@ -82,17 +84,21 @@ export default class Frames {
 	 *
 	 * Used for offsetting movement calculations, relative to fps.
 	 *
-	 * @param {Int} value
-	 * @returns {Int}
+	 * @param   {Number} value Default 0.
+	 * @returns {Number} The compensated value.
 	 */
-	compensate = ( value = 0 ) => {
+	compensate = (
+		value = 0
+	) => {
+
+		// Return the value multiplied by either: half, or the difference.
 		return ( value * Math.max( 0.5, this.diff() ) );
 	}
 
 	/**
 	 * Get the difference to compensate for.
 	 *
-	 * @returns {Int}
+	 * @returns {Number}
 	 */
 	diff = () => {
 		const

@@ -5,15 +5,14 @@ import * as Core from './exports.js';
  */
 const Game = {
 
-	// Engine.
-	Camera:   new Core.Engine.Camera(),
-	Clock:    new Core.Engine.Clock(),
-	Frames:   new Core.Engine.Frames(),
-	Hooks:    new Core.Engine.Hooks(),
-	Hud:      new Core.Engine.Hud(),
-	Input:    new Core.Engine.Input(),
-	Room:     new Core.Engine.Room(),
-	View:     new Core.Engine.View(),
+	// Components.
+	Camera:   new Core.Components.Camera(),
+	Clock:    new Core.Components.Clock(),
+	Frames:   new Core.Components.Frames(),
+	Hud:      new Core.Components.Hud(),
+	Input:    new Core.Components.Input(),
+	Room:     new Core.Components.Room(),
+	View:     new Core.Components.View(),
 
 	// Physics.
 	Friction: new Core.Physics.Friction(),
@@ -21,6 +20,7 @@ const Game = {
 
 	// Utilities.
 	Colors:   new Core.Utilities.Colors(),
+	Hooks:    new Core.Utilities.Hooks(),
 };
 
 // Export the Game.

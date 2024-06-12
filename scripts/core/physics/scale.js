@@ -1,4 +1,4 @@
-import Settings from '../settings.js';
+import Settings from '../../custom/settings.js';
 import Point    from './point.js';
 
 /**
@@ -12,11 +12,16 @@ export default class Scale extends Point {
 	/**
 	 * Construct the Scale.
 	 *
-	 * @param {Int} x
-	 * @param {Int} y
+	 * @param {Number} x Default 0.
+	 * @param {Number} y Default 0.
+	 * @param {Number} z Default 0.
 	 */
-	constructor( x = 1, y = 1 ) {
-		super( x, y );
+	constructor(
+		x = 0,
+		y = 0,
+		z = 0
+	) {
+		super( x, y, z );
 
 		// Set the size.
 		this.size = Settings.tileSize;
@@ -29,22 +34,26 @@ export default class Scale extends Point {
 	}
 
 	/**
-	 * Scale up an Integer.
+	 * Scale ratio up by a number.
 	 *
-	 * @param {Int} int 
-	 * @returns {Int}
+	 * @param   {Number} number Default 1.
+	 * @returns {Number} The scaled number.
 	 */
-	up = ( int = 1 ) => {
-		return Math.floor( int * this.ratio );
+	up = (
+		number = 1
+	) => {
+		return Math.floor( number * this.ratio );
 	}
 
 	/**
-	 * Scale down an Integer.
+	 * Scale ratio down by a number.
 	 *
-	 * @param {Int} int 
-	 * @returns {Int}
+	 * @param   {Number} number
+	 * @returns {Number} The scaled number.
 	 */
-	down = ( int = 1 ) => {
-		return Math.floor( int / this.ratio );
+	down = (
+		number = 1
+	) => {
+		return Math.floor( number / this.ratio );
 	}
 }

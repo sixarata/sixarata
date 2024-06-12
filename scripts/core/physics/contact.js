@@ -1,4 +1,5 @@
 import Velocity from './velocity.js';
+import Tile from '../tiles/tile.js';
 
 /**
  * The Contact object.
@@ -16,7 +17,12 @@ export default class Contact {
 	 * @param {Boolean} bottom
 	 * @param {Boolean} left
 	 */
-	constructor( top = false, right = false, bottom = false, left = false ) {
+	constructor(
+		top    = false,
+		right  = false,
+		bottom = false,
+		left   = false
+	) {
 		this.set( top, right, bottom, left );
 	}
 
@@ -28,7 +34,12 @@ export default class Contact {
 	 * @param {Boolean} bottom
 	 * @param {Boolean} left
 	 */
-	set = ( top = false, right = false, bottom = false, left = false ) => {
+	set = (
+		top    = false,
+		right  = false,
+		bottom = false,
+		left   = false
+	) => {
 
 		// Attributes.
 		this.top    = top;
@@ -51,10 +62,14 @@ export default class Contact {
 	 * Check if a Tile has made contact with another Tile.
 	 *
 	 * @param {Velocity} velocity
-	 * @param {Tile} tile1
-	 * @param {Tile} tile2
+	 * @param {Tile}     tile1
+	 * @param {Tile}     tile2
 	 */
-	check = ( velocity = {}, tile1 = {}, tile2 = {}, ) => {
+	check = (
+		velocity = {},
+		tile1    = {},
+		tile2    = {}
+	) => {
 
 		// Is right touching?
 		if ( velocity.x > 0 ) {

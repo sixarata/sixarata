@@ -1,8 +1,8 @@
 /**
  * The Mass object.
  *
- * This object is responsible for everything related to the density of
- * a thing.
+ * This object represents the fundamental measure of the amount of
+ * matter in the object.
  */
 export default class Mass {
 
@@ -24,6 +24,6 @@ export default class Mass {
 	 * Reset the Mass.
 	 */
 	reset = ( ...args ) => {
-		this.start = 1;
+
 	}
 }

@@ -1,5 +1,5 @@
-import Settings from '../settings.js';
-import Game     from '../game.js';
+import Game from '../game.js';
+import Settings from '../../custom/settings.js';
 
 import { Tile } from './exports.js';
 import { Size, Position } from '../physics/exports.js';
@@ -15,21 +15,35 @@ export default class Projectile extends Tile {
 	/**
 	 * Construct the object.
 	 *
-	 * @param {array}  group 
-	 * @param {Tile}   tile 
-	 * @param {Tile}   target 
-	 * @param {Size}   size 
-	 * @param {String} type 
+	 * @param {array}  group
+	 * @param {Tile}   tile
+	 * @param {Tile}   target
+	 * @param {Size}   size
+	 * @param {String} type
 	 */
-	constructor( group = [], tile = {}, target = {}, size = { w: 0.3, h: 0.3 }, type = 'direct' ) {
+	constructor(
+		group  = [],
+		tile   = {},
+		target = {},
+		size   = { w: 0.3, h: 0.3, d: 0 },
+		type   = 'direct'
+	) {
 
 		// Reposition & rescale so super() works correctly.
-		let source = Game.View.center(
+		let sizeo  = new Size( size.w, size.h, 'up' ),
+			source = Game.View.center(
 				tile.position,
 				tile.size,
-				new Size( size.w, size.h, 'up' )
+				sizeo
 			),
-			start = new Position( source.x, source.y, 'down' ),
+
+			// Start position.
+			start = new Position(
+				source.x,
+				source.y,
+				source.z,
+				'down'
+			),
 
 			// Recolor based on type.
 			color = ( 'follow' === type )
@@ -46,8 +60,8 @@ export default class Projectile extends Tile {
 	/**
 	 * Set the object.
 	 *
-	 * @param {Tile} tile 
-	 * @param {Tile} target 
+	 * @param {Tile} tile
+	 * @param {Tile} target
 	 */
 	set = ( tile, target ) => {
 		this.tile   = tile;
@@ -82,7 +96,12 @@ export default class Projectile extends Tile {
 
 		// Target.
 		this.bullseye = Game.View.center( this.target.position, this.target.size, this.size );
-		this.end      = new Position( this.bullseye.x, this.bullseye.y, 'down' );
+		this.end      = new Position(
+			this.bullseye.x,
+			this.bullseye.y,
+			this.bullseye.z,
+			'down'
+		);
 
 		// Angle.
 		this.angle = Math.atan2(

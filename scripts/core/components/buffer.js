@@ -1,4 +1,4 @@
-import Settings from '../settings.js';
+import Settings from '../../custom/settings.js';
 
 import { Position, Scale, Size } from '../physics/exports.js';
 
@@ -18,7 +18,12 @@ export default class Buffer {
 	 * @param {String} context
 	 * @param {Object} attr
 	 */
-	constructor( size = { w: 0, h: 0 }, scale = { x: 1, y: 1 }, context = '2d', attr = { alpha: true, desynchronized: true } ) {
+	constructor(
+		size    = { w: 0, h: 0, d: 0 },
+		scale   = { x: 1, y: 1, z: 1 },
+		context = '2d',
+		attr    = { alpha: true, desynchronized: true }
+	) {
 		this.set( size, scale, context, attr );
 	}
 
@@ -30,7 +35,12 @@ export default class Buffer {
 	 * @param {String} context
 	 * @param {Object} attr
 	 */
-	set = ( size = { w: 0, h: 0 }, scale = { x: 1, y: 1 }, context = '2d', attr = { alpha: true, desynchronized: true } ) => {
+	set = (
+		size    = { w: 0, h: 0, d: 0 },
+		scale   = { x: 1, y: 1, z: 1 },
+		context = '2d',
+		attr    = { alpha: true, desynchronized: true }
+	) => {
 		this.reset( size, scale, context, attr );
 	}
 
@@ -42,13 +52,18 @@ export default class Buffer {
 	 * @param {String} context
 	 * @param {Object} attr
 	 */
-	reset = ( size = { w: 0, h: 0 }, scale = { x: 1, y: 1 }, context = '2d', attr = { alpha: true, desynchronized: true } ) => {
+	reset = (
+		size    = { w: 0, h: 0, d: 0 },
+		scale   = { x: 1, y: 1, z: 1 },
+		context = '2d',
+		attr    = { alpha: true, desynchronized: true }
+	) => {
 
 		// Create the canvas.
 		this.canvas  = document.createElement( 'canvas' );
 		this.context = this.canvas.getContext( context, attr );
 
-		// Settings.
+		// Accessibility.
 		this.canvas.innerText = 'Sorry, but your web browser does not support this.';
 		this.context.imageSmoothingEnabled = false;
 
@@ -65,10 +80,14 @@ export default class Buffer {
 	 * Resize the Buffer.
 	 *
 	 * @param {Size}    size
-	 * @param {Int}     ppi
+	 * @param {Number}  ppi
 	 * @param {Boolean} smooth
 	 */
-	resize = ( size = { w: 0, h: 0 }, ppi = 300, smooth = false ) => {
+	resize = (
+		size   = { w: 0, h: 0 },
+		ppi    = 300,
+		smooth = false
+	) => {
 
 		// Default size.
 		if ( ! ( size.w + size.h ) ) {
@@ -138,7 +157,9 @@ export default class Buffer {
 	 *
 	 * @param {Scale} scale
 	 */
-	rescale = ( scale = { x: 300, y: 300 } ) => {
+	rescale = (
+		scale = { x: 300, y: 300 }
+	) => {
 		this.context.scale(
 			( ( scale.x / 96 ) * this.dpr ),
 			( ( scale.y / 96 ) * this.dpr ),
@@ -165,7 +186,10 @@ export default class Buffer {
 	 * @param {Buffer}   contents
 	 * @param {Position} position
 	 */
-	put = ( buffer = {}, position = { x: 0, y: 0 } ) => {
+	put = (
+		buffer   = {},
+		position = { x: 0, y: 0, z: 0 }
+	) => {
 		buffer.context.drawImage(
 			this.canvas,
 			position.x,
@@ -182,7 +206,7 @@ export default class Buffer {
 	destroy = () => {
 		this.erase();
 		this.canvas.remove();
-		delete this;
+		//delete this;
 	}
 
 	/**
@@ -191,9 +215,14 @@ export default class Buffer {
 	 * @param {String}   color
 	 * @param {Position} position
 	 * @param {Size}     size
-	 * @param {Int}      opacity
+	 * @param {Number}   opacity
 	 */
-	rect = ( color = '#fff', position = { x: 0, y: 0 }, size = { w: 0, h: 0 }, opacity = 1 ) => {
+	rect = (
+		color    = '#fff',
+		position = { x: 0, y: 0, z: 0 },
+		size     = { w: 0, h: 0, d: 0 },
+		opacity  = 1
+	) => {
 
 		// Properties.
 		this.context.fillStyle   = color;
@@ -229,9 +258,15 @@ export default class Buffer {
 	 * @param {Position} position
 	 * @param {String}   color
 	 * @param {String}   font
-	 * @param {int}      opacity
+	 * @param {Number}   opacity
 	 */
-	text = ( text = '', position = { x: 0, y: 0 }, color = '#fff', font = '20px Courier New', opacity = 1 ) => {
+	text = (
+		text     = '',
+		position = { x: 0, y: 0 },
+		color    = '#fff',
+		font     = '20px Courier New',
+		opacity  = 1
+	) => {
 
 		// Adjust the font size based on the pixel ratio.
 		let fontSize = font.substring( 0, font.indexOf( 'px' ) ),

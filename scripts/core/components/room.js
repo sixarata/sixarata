@@ -1,5 +1,5 @@
-import Settings from '../settings.js';
-import Game     from '../game.js';
+import Game from '../game.js';
+import Settings from '../../custom/settings.js';
 
 import { Size } from '../physics/exports.js';
 import { Buffer } from './exports.js';
@@ -68,10 +68,13 @@ export default class Room {
 	/**
 	 * Load the Room.
 	 *
-	 * @param {Int} id
-	 * @param {Int} previous
+	 * @param {Number} id       The Room ID.
+	 * @param {Number} previous The previous Room ID.
 	 */
-	load = ( id = 0, previous = 0 ) => {
+	load = (
+		id       = 0,
+		previous = 0
+	) => {
 
 		// Juggle previous, so retries are correctly located.
 		if ( this.rooms[ id ] ) {
@@ -220,10 +223,12 @@ export default class Room {
 	/**
 	 * Parse a row in the Room.
 	 *
-	 * @param {Int} row 
+	 * @param   {Number} row Default 0. The row to parse.
 	 * @returns {Void}
 	 */
-	parseRow = ( row = 0 ) => {
+	parseRow = (
+		row = 0
+	) => {
 
 		// Split into chars.
 		let split = this.grid[ row ].split( '' ),
@@ -236,33 +241,41 @@ export default class Room {
 
 		// Loop through chars.
 		for ( let i = 0; i < sl; i++ ) {
-			this.parseTile( split[ i ], {
-				x: i,
-				y: row,
-			} );
+			this.parseTile(
+				split[ i ],
+				{
+					x: i,
+					y: row,
+				}
+			);
 		}
 	}
 
 	/**
 	 * Parse a Tile in a Row.
 	 *
-	 * @param {String}   token
-	 * @param {Position} position
+	 * @param   {String}   token
+	 * @param   {Position} position
 	 * @returns {Void}
 	 */
-	parseTile = ( token = '', position = { x: 0, y: 0 } ) => {
+	parseTile = (
+		token    = '',
+		position = { x: 0, y: 0, z: 0 }
+	) => {
 
 		// Skip char if empty.
 		if ( ! token || ( ' ' === token ) ) {
 			return;
 		}
 
+		const size = { w: 1, h: 1, d: 1 };
+
 		// What kind of tile to draw.
 		switch ( token ) {
 
 			// Backgrounds.
 			case Settings.tiles.ambient.cloud :
-				new Tile( this.tiles.backgrounds, position, { w: 1, h: 1 }, Game.Colors.cloud(), 'cloud', false );
+				new Tile( this.tiles.backgrounds, position, size, Game.Colors.cloud(), 'cloud', 0 );
 				break;
 
 			// Platforms.
@@ -283,14 +296,14 @@ export default class Room {
 
 			// Doors.
 			case Settings.tiles.doors.forward :
-				new Door( this.tiles.doors, position, { w: 1, h: 1 }, this.id + 1 );
+				new Door( this.tiles.doors, position, size, this.id + 1 );
 
 				// Reposition to the left of the door.
 				position.x     -= 1.5;
 				this.playerPrev = position;
 				break;
 			case Settings.tiles.doors.backward :
-				new Door( this.tiles.doors, position, { w: 1, h: 1 }, this.id - 1 );
+				new Door( this.tiles.doors, position, size, this.id - 1 );
 
 				// Reposition to the right of the door.
 				position.x     += 1.5;
@@ -312,7 +325,9 @@ export default class Room {
 	 *
 	 * @param {Function} callback
 	 */
-	loopTiles = ( callback = '' ) => {
+	loopTiles = (
+		callback = ''
+	) => {
 
 		// Skip if no callback or tiles.
 		if ( ! callback || ! this.tiles ) {
@@ -320,28 +335,30 @@ export default class Room {
 		}
 
 		// Tiles.
-		Object.values( this.tiles ).forEach( items => {
+		Object.values( this.tiles ).forEach(
+			items => {
 
-			// Defaults.
-			let l = items.length;
+				// Defaults.
+				let l = items.length;
 
-			// Bail if empty.
-			if ( ! l ) {
-				return;
-			}
-
-			// Callback.
-			for ( let i = 0; i < l; i++ ) {
-
-				// Skip if missing.
-				if ( ! items[ i ] ) {
-					continue;
+				// Bail if empty.
+				if ( ! l ) {
+					return;
 				}
 
-				// Do the callback.
-				items[ i ][ callback ]();
+				// Callback.
+				for ( let i = 0; i < l; i++ ) {
+
+					// Skip if missing.
+					if ( ! items[ i ] ) {
+						continue;
+					}
+
+					// Do the callback.
+					items[ i ][ callback ]();
+				}
 			}
-		} );
+		);
 	}
 
 	/**
@@ -360,6 +377,6 @@ export default class Room {
 		// Guess the location.
 		( this.previous > this.id )
 			? new Player( this.tiles.players, this.playerPrev )
-			: new Player( this.tiles.players, this.playerNext );			
+			: new Player( this.tiles.players, this.playerNext );
 	}
 }
