@@ -1,4 +1,4 @@
-import Settings from '../settings.js';
+import Settings from '../../custom/settings.js';
 import Point    from './point.js';
 
 /**

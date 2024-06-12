@@ -1,4 +1,4 @@
-import Settings from '../settings.js';
+import Settings from '../../custom/settings.js';
 
 import { Position, Scale, Size } from '../physics/exports.js';
 
@@ -63,7 +63,7 @@ export default class Buffer {
 		this.canvas  = document.createElement( 'canvas' );
 		this.context = this.canvas.getContext( context, attr );
 
-		// Settings.
+		// Accessibility.
 		this.canvas.innerText = 'Sorry, but your web browser does not support this.';
 		this.context.imageSmoothingEnabled = false;
 

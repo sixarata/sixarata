@@ -1,5 +1,5 @@
-import Settings from '../settings.js';
-import Game     from '../game.js';
+import Game from '../game.js';
+import Settings from '../../custom/settings.js';
 
 import { Size } from '../physics/exports.js';
 import { Buffer } from './exports.js';

@@ -1,4 +1,6 @@
-import { Game, Settings } from '../exports.js';
+import Game from '../game.js';
+import Settings from '../../custom/settings.js';
+
 import { Tile, Projectile } from './exports.js';
 
 /**

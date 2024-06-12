@@ -1,5 +1,5 @@
-import Settings from '../settings.js';
-import Game     from '../game.js';
+import Game from '../game.js';
+import Settings from '../../custom/settings.js';
 
 /**
  * The Frames object.
@@ -10,48 +10,6 @@ import Game     from '../game.js';
  * adjusted.
  */
 export default class Frames {
-
-	/**
-	 * The performance object.
-	 *
-	 * @var {Object} Default performance.
-	 */
-	perf = {};
-
-	/**
-	 * The current time.
-	 *
-	 * @var {Number} Default performance.now().
-	 */
-	now = 0;
-
-	/**
-	 * The frames array.
-	 *
-	 * @var {Array} Default [].
-	 */
-	frames = [];
-
-	/**
-	 * The rate.
-	 *
-	 * @var {Number} Default Settings.gameSpeed.
-	 */
-	rate = Settings.gameSpeed;
-
-	/**
-	 * The step.
-	 *
-	 * @var {Number} Default ( 1000 / rate ).
-	 */
-	step = ( 1000 / this.rate );
-
-	/**
-	 * The request.
-	 *
-	 * @var {Number} Default 0.
-	 */
-	request = 0;
 
 	/**
 	 * Construct the object.

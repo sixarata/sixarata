@@ -1,5 +1,5 @@
-import Settings from '../settings.js';
-import Game     from '../game.js';
+import Game from '../game.js';
+import Settings from '../../custom/settings.js';
 
 import { Tile } from './exports.js';
 import { Collision, Contact, Orientation, Position, Velocity } from '../physics/exports.js';
@@ -145,7 +145,7 @@ export default class Player extends Tile {
 		}
 
 		// Jump.
-		if ( this.input.pressed( Settings.input.jump ) && this.canJump() ) {
+		if ( this.input.pressed(Settings.input.jump ) && this.canJump() ) {
 
 			// Bump jumps if not wall jumping.
 			if ( ! this.canWallJump() ) {
