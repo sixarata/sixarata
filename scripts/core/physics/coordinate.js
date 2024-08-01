@@ -49,7 +49,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Add a Coordinate to this one.
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @returns {Coordinate} This Coordinate, with a new value.
 	 */
 	add = (
@@ -79,7 +79,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Subtract a Coordinate from this one.
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @returns {Coordinate} This Coordinate, with a new value.
 	 */
 	sub = (
@@ -109,7 +109,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Multiply this Coordinate by another one.
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @returns {Coordinate} This Coordinate, with a new value.
 	 */
 	multiply = (
@@ -139,7 +139,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Divide this Coordinate by another one.
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @returns {Coordinate} This Coordinate, with a new value.
 	 */
 	divide = (
@@ -173,7 +173,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Import a Coordinate into this one.
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @returns {Coordinate} This Coordinate, with a new value.
 	 */
 	import = (
@@ -196,7 +196,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Calculate a two-dimensional square using a Coordinate and this one.
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @returns {Number}     The square.
 	 */
 	square = (
@@ -214,7 +214,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Get the length between a Coordinate and this one.
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @returns {Number}     The length.
 	 */
 	length = (
@@ -228,7 +228,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Get the square distance between a Coordinate and this one.
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @returns {Number}     The square distance.
 	 */
 	squareDistance = (
@@ -244,7 +244,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Get the normal distance between a Coordinate and this one.
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @returns {Number}     The distance.
 	 */
 	distance = (
@@ -258,7 +258,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Does a Coordinate equal this Coordinate?
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @returns {Boolean}    True if equal.
 	 */
 	equals = (
@@ -281,7 +281,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Get the dot product of a Coordinate and this one.
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @returns {Number}     The dot product.
 	 */
 	dot = (
@@ -295,7 +295,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Linearly progress this Coordinate to another one.
 	 *
-	 * @param   {Coordinate} c Coordinate. Default: { value: 0 }.
+	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
 	 * @param   {Number}     l Lineal. Default 1.
 	 * @returns {Coordinate} This Coordinate, with a new value.
 	 */
