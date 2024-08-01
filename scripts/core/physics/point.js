@@ -15,9 +15,9 @@ export default class Point {
 	/**
 	 * Construct the Point.
 	 *
-	 * @param {Number} x Default 0.
-	 * @param {Number} y Default 0.
-	 * @param {Number} z Default 0.
+	 * @param {Number} x Coordinate. Default 0.
+	 * @param {Number} y Coordinate. Default 0.
+	 * @param {Number} z Coordinate. Default 0.
 	 */
 	constructor(
 		x = 0,
@@ -30,9 +30,9 @@ export default class Point {
 	/**
 	 * Set the coordinates of this Point.
 	 *
-	 * @param   {Number} x Default 0.
-	 * @param   {Number} y Default 0.
-	 * @param   {Number} z Default 0.
+	 * @param   {Number} x Coordinate. Default 0.
+	 * @param   {Number} y Coordinate. Default 0.
+	 * @param   {Number} z Coordinate. Default 0.
 	 * @returns {Point}  This Point, with new values.
 	 */
 	set = (
