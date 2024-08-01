@@ -11,9 +11,9 @@ export default class Position extends Point {
 	/**
 	 * Construct the object.
 	 *
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @param {Number} z
+	 * @param {Number} x Coordinate. Default 0.
+	 * @param {Number} y Coordinate. Default 0.
+	 * @param {Number} z Coordinate. Default 0.
 	 * @param {String} scale
 	 */
 	constructor(
