@@ -36,7 +36,7 @@ export default class Hud {
 		// Attributes.
 		this.room    = 0;
 		this.retries = 0;
-		this.fps     = 0;
+		this.frames  = 0;
 		this.time    = 0;
 
 		// Resize.
@@ -85,7 +85,7 @@ export default class Hud {
 		// Update attributes.
 		this.room    = room.id;
 		this.retries = 0; //player.retries.current;
-		this.fps     = frames.fps();
+		this.frames  = frames.count();
 		this.time    = clock.elapsed();
 	}
 
@@ -101,7 +101,7 @@ export default class Hud {
 		this.buffer.text( '🚀 ' + this.room,    { x: 15,  y: 21 } );
 		this.buffer.text( '🔁 ' + this.retries, { x: 90,  y: 21 } );
 		this.buffer.text( '⏳ ' + this.time,    { x: 165, y: 21 } );
-		this.buffer.text( '🎥 ' + this.fps,     { x: w - 70, y: 21 } );
+		this.buffer.text( '🎥 ' + this.frames,  { x: w - 70, y: 21 } );
 		this.buffer.close();
 	}
 
