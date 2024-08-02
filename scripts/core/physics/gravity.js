@@ -26,7 +26,12 @@ export default class Gravity {
 	 * Reset Gravity.
 	 */
 	reset = () => {
-		this.base  = ( Settings.physics.gravity / 100 );
+
+		// Get from Settings, or default.
+		const g = Settings.physics.gravity
+			?? 80;
+
+		this.base  = ( g / 100 );
 		this.scale = new Scale();
 		this.force = this.base;
 	}
