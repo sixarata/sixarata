@@ -26,7 +26,12 @@ export default class Friction {
 	 * Reset Friction.
 	 */
 	reset = () => {
-		this.base  = ( Settings.physics.friction / 100 );
+
+		// Get from Settings, or default.
+		const f = Settings.physics.friction
+			?? 65;
+
+		this.base  = ( f / 100 );
 		this.scale = new Scale();
 		this.force = this.base;
 	}
