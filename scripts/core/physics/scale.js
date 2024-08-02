@@ -22,12 +22,31 @@ export default class Scale extends Point {
 		z = 0
 	) {
 		super( x, y, z );
+		this.set();
+	}
 
-		// Set the size.
-		this.size = Settings.tileSize;
+	/**
+	 * Set the object.
+	 */
+	set = () => {
+		this.reset();
+	}
+
+	/**
+	 * Reset Scale.
+	 */
+	reset = () => {
+
+		// Set the tile size in pixels.
+		this.size = Settings.tileSize
+			?? 32;
 
 		// Set the pixel ratio.
-		this.dpr = devicePixelRatio;
+		this.dpr = devicePixelRatio
+			?? 2;
+
+		// Set the default value.
+		this.value = 1;
 
 		// Set the pixel-to-size ratio.
 		this.ratio = ( this.size * this.dpr );
@@ -36,24 +55,28 @@ export default class Scale extends Point {
 	/**
 	 * Scale ratio up by a number.
 	 *
-	 * @param   {Number} number Default 1.
+	 * @param   {Number} n Default 1.
 	 * @returns {Number} The scaled number.
 	 */
 	up = (
-		number = 1
+		n = 1
 	) => {
-		return Math.floor( number * this.ratio );
+		this.value = n;
+
+		return Math.floor( n * this.ratio );
 	}
 
 	/**
 	 * Scale ratio down by a number.
 	 *
-	 * @param   {Number} number
+	 * @param   {Number} n Default 1.
 	 * @returns {Number} The scaled number.
 	 */
 	down = (
-		number = 1
+		n = 1
 	) => {
-		return Math.floor( number / this.ratio );
+		this.value = n;
+
+		return Math.floor( n / this.ratio );
 	}
 }
