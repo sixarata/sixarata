@@ -36,8 +36,10 @@ export default class Hud {
 		// Attributes.
 		this.room    = 0;
 		this.retries = 0;
-		this.frames  = 0;
 		this.time    = 0;
+		this.frames  = 0;
+		this.fnow    = Date.now();
+		this.flast   = this.fnow;
 
 		// Resize.
 		this.resize();
@@ -85,8 +87,14 @@ export default class Hud {
 		// Update attributes.
 		this.room    = room.id;
 		this.retries = 0; //player.retries.current;
-		this.frames  = frames.count();
 		this.time    = clock.elapsed();
+
+		// FPS.
+		this.fnow = Date.now();
+        if ( ( this.fnow - this.flast ) >= 500 ) {
+            this.flast  = this.fnow;
+            this.frames = frames.fps();
+        }
 	}
 
 	/**
