@@ -55,22 +55,26 @@ export default class Clock {
 	/**
 	 * Return the elapsed time.
 	 *
-	 * @param   {String} format Default '000.000'.
+	 * @param   {String} format     Default '000.000'.
+	 * @param   {String} delineator Default '.'.
 	 * @returns {String}
 	 */
 	elapsed = (
-		format = '000.000'
+		format     = '000.000',
+		delineator = '.'
 	) => {
 
-		// Timer.
-		let elapsed = this.times.elapsed.toString(),
-			divider = format.indexOf( '.' ) ?? 3,
-			trim    = Math.max( elapsed.length - divider, 0 ),
-			ms      = elapsed.slice( -divider ),
+		// Parse the format by the delineator.
+		const
+			elapsed = this.times.elapsed.toString(),
+			pos     = format.indexOf( delineator ),
+			trim    = Math.max( elapsed.length - pos, 0 ),
+			ms      = elapsed.slice( -pos ),
 			s       = elapsed.slice( 0, trim ),
-			f       = s + '.' + ms;
+			f       = s + delineator + ms,
+			ret     = f.padStart( format.length, format );
 
 		// Return formatted time.
-		return f.padStart( format.length, format );
+		return ret;
 	}
 }
