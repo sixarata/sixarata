@@ -27,7 +27,7 @@ export default class Clock {
 	reset = () => {
 
 		// Get the current time.
-		const now = new Date();
+		const now = Date.now();
 
 		// Set the times.
 		this.times = {
@@ -48,7 +48,7 @@ export default class Clock {
 	 * Tick through time.
 	 */
 	tick = () => {
-		this.times.current = new Date();
+		this.times.current = Date.now();
 		this.times.elapsed = ( this.times.current - this.times.start );
 	}
 
