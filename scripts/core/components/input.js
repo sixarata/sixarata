@@ -43,7 +43,7 @@ export default class Input {
 	tick = () => {
 
 		// Get the Clock time.
-		let now = Game.Clock.pnow;
+		const now = Game.Clock.times.elapsed;
 
 		// Stash the previous keys.
 		this.keysPrev[ now ] = this.keysDown;
