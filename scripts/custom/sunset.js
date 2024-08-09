@@ -1,4 +1,6 @@
+import Sixarata from '../core/game.js';
 import { Particle } from '../core/tiles/exports.js';
+import { Scale, Sound } from '../core/sound/exports.js';
 
 /**
  * This is a very primitive example of using the Hooks API
@@ -13,7 +15,7 @@ Sixarata.Hooks.add( 'Player.jump', () => {
 			new Particle(
 				Sixarata.Room.tiles.particles,
 				Sixarata.Room.tiles.players[ 0 ],
-				Sixarata.Colors.cloud(),
+				Sixarata.Colors.random(),
 				{
 					w: 0.15,
 					h: 0.15,
@@ -25,4 +27,13 @@ Sixarata.Hooks.add( 'Player.jump', () => {
 			)
 		);
 	}
+} );
+
+/**
+ * This is a very primitive example of using the Hooks API
+ * to play a sound when the player jumps.
+ */
+Sixarata.Hooks.add( 'Player.jump', () => {
+	Sixarata.Audio.sound = new Sound( 110, 0.2, '', '', '', 100 );
+	Sixarata.Audio.play();
 } );

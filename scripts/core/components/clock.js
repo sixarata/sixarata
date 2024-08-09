@@ -25,10 +25,15 @@ export default class Clock {
 	 * Reset the Clock.
 	 */
 	reset = () => {
-		this.times  = {
-			start:   new Date(),
-			current: new Date(),
-			elapsed: 0,
+
+		// Get the current time.
+		const now = Date.now();
+
+		// Set the times.
+		this.times = {
+			start:   now,
+			current: now,
+			elapsed: 0
 		};
 	}
 
@@ -43,26 +48,33 @@ export default class Clock {
 	 * Tick through time.
 	 */
 	tick = () => {
-		this.times.current = new Date();
+		this.times.current = Date.now();
 		this.times.elapsed = ( this.times.current - this.times.start );
 	}
 
 	/**
-	 * Return the elapsed time, formatted to 000.000.
+	 * Return the elapsed time.
 	 *
-	 * @returns String
+	 * @param   {String} format     Default '000.000'.
+	 * @param   {String} delineator Default '.'.
+	 * @returns {String}
 	 */
-	elapsed = () => {
+	elapsed = (
+		format     = '000.000',
+		delineator = '.'
+	) => {
 
-		// Timer.
-		let elapsed = this.times.elapsed.toString(),
-			format  = '000.000',
-			trim    = Math.max( elapsed.length - 3, 0 ),
-			ms      = elapsed.slice( -3 ),
+		// Parse the format by the delineator.
+		const
+			elapsed = this.times.elapsed.toString(),
+			pos     = format.indexOf( delineator ),
+			trim    = Math.max( elapsed.length - pos, 0 ),
+			ms      = elapsed.slice( -pos ),
 			s       = elapsed.slice( 0, trim ),
-			f       = s + '.' + ms;
+			f       = s + delineator + ms,
+			ret     = f.padStart( format.length, format );
 
 		// Return formatted time.
-		return f.padStart( 7, format );
+		return ret;
 	}
 }
