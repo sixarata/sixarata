@@ -6,6 +6,7 @@ import * as Core from './exports.js';
 const Game = {
 
 	// Components.
+	Audio:    new Core.Components.Audio(),
 	Camera:   new Core.Components.Camera(),
 	Clock:    new Core.Components.Clock(),
 	Frames:   new Core.Components.Frames(),
