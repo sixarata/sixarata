@@ -1,3 +1,4 @@
+export { default as Audio }  from './audio.js';
 export { default as Buffer } from './buffer.js';
 export { default as Camera } from './camera.js';
 export { default as Clock }  from './clock.js';
