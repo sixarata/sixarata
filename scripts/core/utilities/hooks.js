@@ -202,7 +202,7 @@ export default class Hooks {
 		this.#done.push( name );
 		this.#current = '';
 
-		// Limit the done array to the last 1 second.
+		// Limit the done array to the last 1000.
 		if ( this.#done.length > 1000 ) {
 			this.#done.shift();
 		}
