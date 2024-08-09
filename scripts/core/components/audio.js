@@ -64,7 +64,7 @@ export default class Audio {
 	) => {
 		this.sound = sound;
 
-		return this;
+		return this.sound;
 	}
 
 	/**
@@ -78,7 +78,7 @@ export default class Audio {
 	) => {
 		this.scale = scale;
 
-		return this;
+		return this.scale;
 	}
 
 	/**
