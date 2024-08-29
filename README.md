@@ -1,8 +1,8 @@
 # sixarata
 
-Sixarata is an open-source, 2D adventure game.
+sixarata is an open-source 2D adventure game engine.
 
-It is MIT licensed, coded entirely in vanilla JavaScript.
+It is MIT licensed and coded entirely in vanilla JavaScript.
 
 Use it as a head start for your own ideas, to educate others, or just to zip around.
 
@@ -16,24 +16,45 @@ http-server -c-1
 ```
 Visit: http://127.0.0.1:8080
 
-## favorites
+## contribute
 
-Our favorite platforming games are your favorite platforming games. Roguelikes. Metroidvanias. There are thousands of good ones, hundreds of great ones, and dozens that really stand out as being excellent.
+Fork. Jam. Discuss. Merge. Repeat.
 
-Double jumps. Wall jumps. Git gud. Speed boosters. Frying pans. Portals. Time control. Grappling hooks. Whips. Turkey dinners. Boss fights. Doors. Keys. Health. Lives. Dungeons. Biomes.
+All are welcome. Intolerance is not tolerated.
 
-Killer soundtracks. Unique sound effects. Challenging puzzles. Speed running. 100% item collection. Saving the animals.
+## inspiration
+
+Roguelikes. Metroidvanias. Megas. Contras. Guacs. Plumbers. Dragons. Fighters. Fantasies.
+
+Double jumps. Wall jumps. Speed boosters. Frying pans. Portals. Time control. Grappling hooks. Whips. Turkey dinners. Boss fights. Doors. Keys. Health. Lives. Dungeons. Biomes.
+
+Ups. Downs. Lefts. Rights.
+
+Killer tracks. Bloopy effects. Challenging puzzles. Saving frames. Saving animals.
+
+Your favorite platforming games are our favorites, too.
+
+## principles
+
+Simplicity. Fun. Learning. Experimentation. Growth.
+
+Consideration. Compassion. Collaboration.
 
 ## goals
 
-* Make it easy for everyone to see their name in the credits of a great video game.
-* Provide open source versions of every cool platforming gaming mechanic that has made you think differently about the world.
-* A million project forks, recommending changes back into it, forging into a monolithic platforming masterpiece.
-* Share the success of achieving all of these ambitious goals with the entire world.
+* Enable everyone to see their name in the credits of an iconic video game.
+* Provide open source versions of every cool platform game mechanic that has made you think differently about the world.
+* A million project forks, recommending changes back into it, forging a monolithic platforming masterpiece & encyclopedia.
+* Share the success of these achievements with the entire world.
 
 ## why
 
 We love games.
-Games that appear simple, but are exquisitely robust and easily enjoyed by all audiences, without barriers.
-Sharing, learning, teaching, experimenting, and the freedom to do them freely forever.
+Games that start simple but are exquisitely robust and easily enjoyed by all audiences without barriers.
+Sharing, learning, teaching, experimenting, and the freedom to do these things freely forever.
 JavaScript (and the Web) are currently the simplest & most accessible to the widest audience.
+
+## what
+
+"sixarata" backwards is "ataraxis": the absence of mental stress or anxiety.
+The best games balance thrills with chills, and that is a design priority in this project.
