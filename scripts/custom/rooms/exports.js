@@ -7,3 +7,6 @@ export { default as Room5 } from './5.js';
 export { default as Room6 } from './6.js';
 export { default as Room7 } from './7.js';
 export { default as Room8 } from './8.js';
+export { default as Room9 } from './9.js';
+export { default as Room10 } from './10.js';
+export { default as Room11 } from './11.js';
