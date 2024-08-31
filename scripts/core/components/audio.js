@@ -27,6 +27,11 @@ export default class Audio {
 		this.pipeline = new pipeline
 			?? new AudioContext;
 
+		// Maybe resume.
+		if ( this.canPlay() ) {
+			this.pipeline.resume();
+		}
+
 		// Scale.
 		this.scale = new Scale();
 
@@ -79,6 +84,15 @@ export default class Audio {
 		this.scale = scale;
 
 		return this.scale;
+	}
+
+	/**
+	 * Check if sound can be played.
+	 *
+	 * @returns {Boolean}
+	 */
+	canPlay = () => {
+		return ( this.pipeline.state === 'running' );
 	}
 
 	/**
