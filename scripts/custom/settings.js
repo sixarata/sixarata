@@ -40,8 +40,10 @@ export default {
 
 	// Player movement.
 	input: {
-		left:  'a',
-		right: 'd',
+		up:    'ArrowUp',
+		right: 'ArrowRight',
+		down:  'ArrowDown',
+		left:  'ArrowLeft',
 		jump:  ' ',
 		pause: 'Escape',
 		enter: 'Enter',
