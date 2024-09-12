@@ -1,4 +1,9 @@
-# sixarata
+```
+  ■  □  ■   ■    ■    ■ ■      ■    ■ ■ ■    ■  
+■    ■    ■    ■   ■  ■   ■  ■   ■    ■    ■   ■
+  ■  ■    ■    ■ ■ ■  ■ ■    ■ ■ ■    ■    ■ ■ ■
+■    ■  ■   ■  ■   ■  ■   ■  ■   ■    ■    ■   ■
+```
 
 sixarata is an open-source 2D adventure game engine.
 
