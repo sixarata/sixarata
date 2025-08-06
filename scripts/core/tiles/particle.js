@@ -37,8 +37,8 @@ export default class Particle extends Tile {
 		group    = [],
 		tile     = {},
 		color    = 'White',
-		size     = { w: 0.1, h: 0.1 },
-		velocity = { x: 0, y: 0 },
+		size     = { w: 0.1, h: 0.1, d: 0.1 },
+		velocity = { x: 0, y: 0, z: 0 },
 		life     = 1000,
 		fade     = 1000
 	) {
@@ -47,7 +47,7 @@ export default class Particle extends Tile {
 		let source = Game.View.center(
 				tile.position,
 				tile.size,
-				new Size( size.w, size.h, 'up' ),
+				new Size( size.w, size.h, size.d, 'up' ),
 				false,
 			);
 
@@ -62,11 +62,11 @@ export default class Particle extends Tile {
 	 * Set the Particle.
 	 *
 	 * @param {Velocity} velocity
-	 * @param {Number}      life
-	 * @param {Number}      fade
+	 * @param {Number}   life
+	 * @param {Number}   fade
 	 */
 	set = (
-		velocity = { x: 0, y: 0 },
+		velocity = { x: 0, y: 0, z: 0 },
 		life     = 1000,
 		fade     = 1000
 	) => {
@@ -74,7 +74,8 @@ export default class Particle extends Tile {
 		// Velocity.
 		this.velocity = new Velocity(
 			velocity.x,
-			velocity.y
+			velocity.y,
+			velocity.z
 		);
 
 		// Attributes.
@@ -93,7 +94,13 @@ export default class Particle extends Tile {
 		}
 
 		// Die if too small to be visible.
-		if ( ( this.size.w < 0.01 ) && ( this.size.h < 0.01 ) ) {
+		if (
+			( this.size.w < 0.01 )
+			&&
+			( this.size.h < 0.01 )
+			&&
+			( this.size.d < 0.01 )
+		) {
 			return this.destroy();
 		}
 
@@ -102,5 +109,6 @@ export default class Particle extends Tile {
 		// Update position.
 		this.position.x = ( this.position.x + comp( this.velocity.x ) );
 		this.position.y = ( this.position.y + comp( this.velocity.y ) );
+		this.position.z = ( this.position.z + comp( this.velocity.z ) );
 	}
 }

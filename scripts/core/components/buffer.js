@@ -1,5 +1,3 @@
-import Settings from '../../custom/settings.js';
-
 import { Position, Scale, Size } from '../physics/exports.js';
 
 /**
@@ -69,7 +67,6 @@ export default class Buffer {
 
 		// Scale.
 		this.scale = new Scale();
-		this.dpr   = this.scale.dpr;
 
 		// Resize & Rescale.
 		this.resize( size );
@@ -84,31 +81,18 @@ export default class Buffer {
 	 * @param {Boolean} smooth
 	 */
 	resize = (
-		size   = { w: 0, h: 0 },
+		size   = { w: 0, h: 0, d: 0 },
 		ppi    = 300,
 		smooth = false
 	) => {
 
-		// Default size.
-		if ( ! ( size.w + size.h ) ) {
-
-			// Fallback.
-			if ( ! ppi ) {
-				ppi = Settings.ppi;
-			}
-
-			// Get a Size.
-			size = new Size(
-				( ( ppi / 96 ) * this.dpr ),
-				( ( ppi / 96 ) * this.dpr ),
-				false
-			);
-		} else {
-			size = {
-				w: ( size.w * this.dpr ),
-				h: ( size.h * this.dpr ),
-			};
-		}
+		// Adjust the size based on the pixel ratio.
+		size = new Size(
+			size.w * this.scale.dpr,
+			size.h * this.scale.dpr,
+			size.d * this.scale.dpr,
+			false
+		);
 
 		// Smoothing.
 		if ( this.context.imageSmoothingEnabled !== smooth ) {
@@ -158,11 +142,11 @@ export default class Buffer {
 	 * @param {Scale} scale
 	 */
 	rescale = (
-		scale = { x: 300, y: 300 }
+		scale = { x: 300, y: 300, z: 0 }
 	) => {
 		this.context.scale(
-			( ( scale.x / 96 ) * this.dpr ),
-			( ( scale.y / 96 ) * this.dpr ),
+			( scale.x * this.scale.dpr ),
+			( scale.y * this.scale.dpr )
 		);
 	}
 
@@ -270,7 +254,7 @@ export default class Buffer {
 
 		// Adjust the font size based on the pixel ratio.
 		let fontSize = font.substring( 0, font.indexOf( 'px' ) ),
-			adjusted = fontSize * this.dpr;
+			adjusted = fontSize * this.scale.dpr;
 
 		// Override the font parameter, with adjusted size.
 		font = adjusted + 'px' + font.substring( font.indexOf( 'px' ) + 2 );
@@ -283,8 +267,8 @@ export default class Buffer {
 		// Draw.
 		this.context.fillText(
 			text,
-			( position.x * this.dpr ),
-			( position.y * this.dpr ),
+			( position.x * this.scale.dpr ),
+			( position.y * this.scale.dpr ),
 		);
 	}
 

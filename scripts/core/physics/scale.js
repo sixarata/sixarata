@@ -39,11 +39,11 @@ export default class Scale extends Point {
 
 		// Set the tile size in pixels.
 		this.size = Settings.tileSize
-			?? 32;
+			?? 32; // Fallback
 
 		// Set the pixel ratio.
 		this.dpr = devicePixelRatio
-			?? 2;
+			?? 2; // Fallback
 
 		// Set the default value.
 		this.value = 1;

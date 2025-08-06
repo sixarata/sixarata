@@ -62,6 +62,7 @@ export default class Room {
 		this.buffer.resize( {
 			w: innerWidth,
 			h: innerHeight,
+			d: 1
 		} );
 	}
 
@@ -95,6 +96,7 @@ export default class Room {
 		this.size = new Size(
 			this.grid[ 0 ].split( '' ).length,
 			this.grid.length,
+			1
 		);
 
 		// Tiles.

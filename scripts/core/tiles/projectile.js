@@ -30,7 +30,7 @@ export default class Projectile extends Tile {
 	) {
 
 		// Reposition & rescale so super() works correctly.
-		let sizeo  = new Size( size.w, size.h, 'up' ),
+		let sizeo  = new Size( size.w, size.h, size.d, 'up' ),
 			source = Game.View.center(
 				tile.position,
 				tile.size,
@@ -87,6 +87,7 @@ export default class Projectile extends Tile {
 		// Bump position.
 		this.position.x = ( this.position.x + comp( this.sin ) );
 		this.position.y = ( this.position.y + comp( this.cos ) );
+		this.position.z = ( this.position.z + comp( this.cos ) );
 	}
 
 	/**
@@ -107,6 +108,7 @@ export default class Projectile extends Tile {
 		this.angle = Math.atan2(
 			( this.end.x - this.position.x ),
 			( this.end.y - this.position.y ),
+			//( this.end.z - this.position.z ),
 		);
 
 		// Trajectory.

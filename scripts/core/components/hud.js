@@ -52,6 +52,7 @@ export default class Hud {
 		this.buffer.resize( {
 			w: innerWidth,
 			h: 30,
+			d: 1
 		} );
 	}
 

@@ -91,7 +91,7 @@ export default class Tile {
 
 		// Physics.
 		this.position    = new Position( position.x, position.y, position.z, position.scale );
-		this.size        = new Size( size.w, size.h, size.scale );
+		this.size        = new Size( size.w, size.h, size.d, size.scale );
 		this.mass        = new Mass( mass );
 		this.orientation = new Orientation();
 
@@ -140,7 +140,7 @@ export default class Tile {
 		}
 
 		// Skip if no size.
-		if ( ! Math.round( this.size.w + this.size.h ) ) {
+		if ( ! Math.round( this.size.w + this.size.h + this.size.d ) ) {
 			return;
 		}
 
