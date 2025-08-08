@@ -57,10 +57,6 @@ export default class Player extends Tile {
 
 		// Velocity.
 		this.velocity = new Velocity( 0, 0 );
-
-		// Input.
-		this.input   = Game.Input;
-		this.pressed = this.input.pressed;
 	}
 
 	/**
@@ -94,7 +90,7 @@ export default class Player extends Tile {
 	 */
 	moved = () => {
 		return (
-			Object.getOwnPropertyNames( this.input.keysDown ).length > 0
+			Object.getOwnPropertyNames( Game.Inputs.keysDown ).length > 0
 		);
 	}
 
@@ -145,7 +141,7 @@ export default class Player extends Tile {
 		}
 
 		// Jump.
-		if ( this.input.pressed( Settings.input.jump ) && this.canJump() ) {
+		if ( this.canJump() && Game.Inputs.pressed( 'jump' ) ) {
 
 			// Bump jumps if not wall jumping.
 			if ( ! this.canWallJump() ) {
@@ -171,26 +167,26 @@ export default class Player extends Tile {
 
 		// Left + Right.
 		if (
-			this.pressed( Settings.input.right )
+			Game.Inputs.pressed( 'right' )
 			&&
-			this.pressed( Settings.input.left )
+			Game.Inputs.pressed( 'left' )
 		) {
 			this.velocity.x = 0;
 
 		// Move left.
-		} else if ( this.pressed( Settings.input.left ) ) {
+		} else if ( Game.Inputs.pressed( 'left' ) ) {
 			this.velocity.x = -Settings.player.speed;
 
 		// Move right.
-		} else if ( this.pressed( Settings.input.right ) ) {
+		} else if ( Game.Inputs.pressed( 'right' ) ) {
 			this.velocity.x = Settings.player.speed;
 		}
 
 		// Slow down.
 		if (
-			! this.pressed( Settings.input.right )
+			! Game.Inputs.pressed( 'right' )
 			&&
-			! this.pressed( Settings.input.left )
+			! Game.Inputs.pressed( 'left' )
 		) {
 			this.velocity.x *= ( Game.Friction.force );
 		}
@@ -210,12 +206,12 @@ export default class Player extends Tile {
 	reorient = () => {
 
 		// Right.
-		if ( this.pressed( Settings.input.right ) ) {
+		if ( Game.Inputs.pressed( 'right' ) ) {
 			this.orientation.x = 90;
 		}
 
 		// Left.
-		if ( this.pressed( Settings.input.left ) ) {
+		if ( Game.Inputs.pressed( 'left' ) ) {
 			this.orientation.x = 270;
 		}
 

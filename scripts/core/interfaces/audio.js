@@ -1,4 +1,5 @@
 import { Scale, Sound } from '../sound/exports.js';
+
 /**
  * The Audio class.
  *

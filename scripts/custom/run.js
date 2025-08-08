@@ -3,7 +3,7 @@ import Sixarata from '../core/game.js';
 import * as Rooms from '../custom/rooms/exports.js';
 
 // Sunrise.
-Sixarata.Hooks.add( 'Run.init', Sixarata.Input.hooks,  4  );
+Sixarata.Hooks.add( 'Run.init', Sixarata.Inputs.hooks, 4  );
 Sixarata.Hooks.add( 'Run.init', Sixarata.Clock.hooks,  6  );
 Sixarata.Hooks.add( 'Run.init', Sixarata.Camera.hooks, 8  );
 Sixarata.Hooks.add( 'Run.init', Sixarata.Frames.hooks, 10 );

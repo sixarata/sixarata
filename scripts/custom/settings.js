@@ -6,7 +6,7 @@ export default {
 	tileSize:  32,
 	ppi:       300,
 	gameSpeed: 60,
-	hud:       true,
+	hud:       false,
 
 	// Player.
 	player: {
@@ -39,14 +39,9 @@ export default {
 	},
 
 	// Player movement.
-	input: {
-		up:    'ArrowUp',
-		right: 'ArrowRight',
-		down:  'ArrowDown',
-		left:  'ArrowLeft',
-		jump:  ' ',
-		pause: 'Escape',
-		enter: 'Enter',
+	inputs: {
+		keyboard: {},
+		gamepad: {},
 	},
 
 	// Physics.
