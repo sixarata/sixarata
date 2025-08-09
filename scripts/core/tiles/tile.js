@@ -5,7 +5,9 @@ import {
 	Mass,
 	Orientation,
 	Position,
-	Size
+	Size,
+	Velocity,
+	Contact
 } from '../physics/exports.js';
 
 /**
@@ -90,10 +92,14 @@ export default class Tile {
 	) => {
 
 		// Physics.
-		this.position    = new Position( position.x, position.y, position.z, position.scale );
-		this.size        = new Size( size.w, size.h, size.d, size.scale );
-		this.mass        = new Mass( mass );
-		this.orientation = new Orientation();
+		this.physics = {
+			position:    new Position( position.x, position.y, position.z, position.scale ),
+			size:        new Size( size.w, size.h, size.d, size.scale ),
+			mass:        new Mass( mass ),
+			orientation: new Orientation(),
+			velocity:    new Velocity( 0, 0, 0 ),
+			contact:     new Contact(),
+		};
 
 		// Attributes.
 		this.group   = group;
@@ -140,27 +146,37 @@ export default class Tile {
 		}
 
 		// Skip if no size.
-		if ( ! Math.round( this.size.w + this.size.h + this.size.d ) ) {
+		if ( ! Math.round( this.physics.size.w + this.physics.size.h + this.physics.size.d ) ) {
 			return;
 		}
 
-		// Get vars.
+		// Determine if tile is in view.
 		let camera = Game.Camera.position,
 			view   = Game.View.buffer,
+			pos    = this.physics.position,
+			size   = this.physics.size,
 			offset = new Position(
-				( this.position.x - camera.x ),
-				( this.position.y - camera.y ),
-				( this.position.z - camera.z ),
+				( pos.x - camera.x ),
+				( pos.y - camera.y ),
+				( pos.z - camera.z ),
 				false
 			),
 			collide = new Collision(
+
+				// New position.
 				{
-					position: offset,
-					size:     this.size,
+					physics: {
+						position: offset,
+						size:     size
+					}
 				},
+
+				// Viewport.
 				{
-					position: new Position(),
-					size:     view.size,
+					physics: {
+						position: new Position(),
+						size:     view.size
+					}
 				}
 			);
 
@@ -170,7 +186,7 @@ export default class Tile {
 		}
 
 		// Draw the rectangle.
-		view.rect( this.color, offset, this.size, this.opacity );
+		view.rect( this.color, offset, size, this.opacity );
 
 		Game.Hooks.do( 'Tile.render', this );
 	}

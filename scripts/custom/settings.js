@@ -48,6 +48,7 @@ export default {
 	physics: {
 		gravity:  80,
 		friction: 65,
+		terminal: 16,
 	},
 
 	// Enemies.

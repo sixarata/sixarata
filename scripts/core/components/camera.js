@@ -82,14 +82,14 @@ export default class Camera {
 		}
 
 		// Skip if not a number.
-		if ( isNaN( this.target.position.y ) ) {
+		if ( isNaN( this.target.physics.position.y ) ) {
 			return;
 		}
 
 		// Reposition to center.
 		this.position = Game.View.center(
-			this.target.position,
-			this.target.size,
+			this.target.physics.position,
+			this.target.physics.size,
 			this.view.size,
 			false
 		);

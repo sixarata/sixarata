@@ -12,8 +12,8 @@ export default class Enemy extends Tile {
 
 	constructor(
 		group    = [],
-		position = { x: 0, y: 0 },
-		size     = { w: 1, h: 1 }
+		position = { x: 0, y: 0, z: 0 },
+		size     = { w: 1, h: 1, d: 1 }
 	) {
 		super( group, position, size, 'Red' );
 
@@ -44,7 +44,7 @@ export default class Enemy extends Tile {
 	canShoot = () => {
 		let camera = Game.Camera,
 			view   = Game.View,
-			pos    = ( this.position.x - camera.position.x );
+			pos    = ( this.physics.position.x - camera.position.x );
 
 		return (
 			this.shootOffScreen

@@ -3,6 +3,7 @@ import Settings from '../../custom/settings.js';
 
 import { Tile } from './exports.js';
 import { Collision, Contact, Orientation, Position, Velocity } from '../physics/exports.js';
+import { Walk, Orient, Jump, Fall, Collide } from '../mechanics/exports.js';
 
 /**
  * The Player object.
@@ -20,8 +21,8 @@ export default class Player extends Tile {
 	 */
 	constructor(
 		group    = [],
-		position = { x: 0, y: 0 },
-		size     = { w: 1, h: 1 }
+		position = { x: 0, y: 0, z: 0 },
+		size     = { w: 1, h: 1, d: 1 }
 	) {
 		super( group, position, size, 'Yellow' );
 
@@ -40,23 +41,24 @@ export default class Player extends Tile {
 	 */
 	reset = () => {
 
-		// Retries.
+		// Settings.
 		this.retries = Settings.player.retries
+		this.health  = Settings.player.health;
+		this.jumps   = Settings.player.jumps;
 
-		// Health.
-		this.health = Settings.player.health;
+		// Physics
+		this.physics.contact     = new Contact();
+		this.physics.orientation = new Orientation( 90, 0 );
+		this.physics.velocity    = new Velocity( 0, 0 );
 
-		// Jumps.
-		this.jumps = Settings.player.jumps;
-
-		// Contact.
-		this.contact = new Contact();
-
-		// Orientation.
-		this.orientation = new Orientation( 90, 0 );
-
-		// Velocity.
-		this.velocity = new Velocity( 0, 0 );
+		// Mechanics.
+		this.mechanics = {
+			collide: new Collide( this ),
+			fall:    new Fall( this ),
+			jump:    new Jump( this ),
+			orient:  new Orient( this ),
+			walk:    new Walk( this ),
+		};
 	}
 
 	/**
@@ -78,9 +80,6 @@ export default class Player extends Tile {
 
 		// User input.
 		this.respond();
-
-		// Reorient.
-		this.reorient();
 	}
 
 	/**
@@ -100,7 +99,7 @@ export default class Player extends Tile {
 	 * @returns {Boolean}
 	 */
 	fell = () => {
-		return ( this.position.y > Game.Room.size.h );
+		return ( this.physics.position.y > Game.Room.size.h );
 	}
 
 	/**
@@ -108,114 +107,15 @@ export default class Player extends Tile {
 	 */
 	respond = () => {
 
-		// Jump & Fall.
-		this.respondY();
+		// Fall then Jump.
+		this.mechanics.fall.listen();
+		this.mechanics.jump.listen();
 
 		// Left & Right.
-		this.respondX();
-	}
+		this.mechanics.walk.listen();
 
-	/**
-	 * Respond to Jumping.
-	 */
-	respondY = () => {
-
-		const comp = Game.Frames.compensate;
-
-		// On ground.
-		if ( this.contact.bottom ) {
-			this.velocity.y = comp( Game.Gravity.force );
-
-		// Not on ground.
-		} else {
-
-			// Jump maxed out, or falling.
-			if ( this.velocity.y <= this.jumps.power ) {
-				this.velocity.y = this.velocity.y + comp( Game.Gravity.force );
-			}
-
-			// Never fall faster than jump power.
-			if ( this.velocity.y > this.jumps.power ) {
-				this.velocity.y = this.jumps.power;
-			}
-		}
-
-		// Jump.
-		if ( this.canJump() && Game.Inputs.pressed( 'jump' ) ) {
-
-			// Bump jumps if not wall jumping.
-			if ( ! this.canWallJump() ) {
-				this.jumps.current++;
-			}
-
-			// Adjust the Y velocity.
-			this.velocity.y = -this.jumps.power;
-
-			Game.Hooks.do( 'Player.jump' );
-		}
-
-		// Filter.
-		this.velocity.y = Game.Hooks.do( 'Player.respondY', this.velocity.y );
-	}
-
-	/**
-	 * Respond to Left and Right.
-	 */
-	respondX = () => {
-
-		const diff = Game.Frames.diff();
-
-		// Left + Right.
-		if (
-			Game.Inputs.pressed( 'right' )
-			&&
-			Game.Inputs.pressed( 'left' )
-		) {
-			this.velocity.x = 0;
-
-		// Move left.
-		} else if ( Game.Inputs.pressed( 'left' ) ) {
-			this.velocity.x = -Settings.player.speed;
-
-		// Move right.
-		} else if ( Game.Inputs.pressed( 'right' ) ) {
-			this.velocity.x = Settings.player.speed;
-		}
-
-		// Slow down.
-		if (
-			! Game.Inputs.pressed( 'right' )
-			&&
-			! Game.Inputs.pressed( 'left' )
-		) {
-			this.velocity.x *= ( Game.Friction.force );
-		}
-
-		// Prevent infinitely small X.
-		if ( Math.abs( this.velocity.x ) < Game.Friction.force ) {
-			this.velocity.x = 0;
-		}
-
-		// Filter.
-		this.velocity.x = Game.Hooks.do( 'Player.respondX', this.velocity.x );
-	}
-
-	/**
-	 * Reorient the Player.
-	 */
-	reorient = () => {
-
-		// Right.
-		if ( Game.Inputs.pressed( 'right' ) ) {
-			this.orientation.x = 90;
-		}
-
-		// Left.
-		if ( Game.Inputs.pressed( 'left' ) ) {
-			this.orientation.x = 270;
-		}
-
-		this.orientation.y = 0;
+		// Orient.
+		this.mechanics.orient.listen();
 	}
 
 	/**
@@ -227,12 +127,12 @@ export default class Player extends Tile {
 		this.color = Settings.player.colors.falling;
 
 		// Default.
-		if ( this.contact.bottom ) {
+		if ( this.physics.contact.bottom ) {
 			this.color = Settings.player.colors.default;
 		}
 
 		// Wall jump.
-		if ( this.canWallJump() ) {
+		if ( this.mechanics.jump.canWallJump() ) {
 			this.color = Settings.player.colors.walljump;
 		}
 	}
@@ -243,68 +143,22 @@ export default class Player extends Tile {
 	reposition = () => {
 
 		// Contact.
-		this.contact.reset();
+		this.physics.contact.reset();
 
 		// Get the delta.
 		const comp = Game.Frames.compensate;
 
 		// Update X.
-		this.position.x = ( this.position.x + comp( this.velocity.x ) );
-		this.collide( {
-			x: this.velocity.x,
-		} );
+		this.physics.position.x = ( this.physics.position.x + comp( this.physics.velocity.x ) );
+		this.mechanics.collide.listen( { x: this.physics.velocity.x } );
 
 		// Update Y.
-		this.position.y = ( this.position.y + comp( this.velocity.y ) );
-		this.collide( {
-			y: this.velocity.y,
-		} );
-	}
+		this.physics.position.y = ( this.physics.position.y + comp( this.physics.velocity.y ) );
+		this.mechanics.collide.listen( { y: this.physics.velocity.y } );
 
-	/**
-	 * Collide with solid Tiles (Platforms, Walls, etc...)
-	 *
-	 * @param   {Velocity} velocity
-	 * @returns {Void}
-	 */
-	collide = (
-		velocity = {
-			x: 0,
-			y: 0
-		}
-	) => {
-
-		// Default.
-		let p = Game.Room.tiles.platforms.concat(
-				Game.Room.tiles.walls
-			),
-			l = p.length;
-
-		// Skip if no tiles.
-		if ( ! l ) {
-			return;
-		}
-
-		// Loop through Platforms.
-		for ( let i = 0; i < l; i++ ) {
-
-			let pf = p[ i ];
-
-			// Skip if no density.
-			if ( ! pf.density ) {
-				continue;
-			}
-
-			let check = new Collision( this, pf );
-
-			// Skip if not collided.
-			if ( ! check.detect() ) {
-				continue;
-			}
-
-			// Check contact.
-			this.contact.check( velocity, this, pf );
-		}
+		// Update Z.
+		this.physics.position.z = ( this.physics.position.z + comp( this.physics.velocity.z ) );
+		this.mechanics.collide.listen( { z: this.physics.velocity.z } );
 	}
 
 	/**
@@ -349,9 +203,9 @@ export default class Player extends Tile {
 		}
 
 		// I'm flying!
-		this.position.y    = Game.Room.size.h;
-		this.velocity.y    = 0;
-		this.jumps.current = 0;
+		this.physics.position.y = Game.Room.size.h;
+		this.physics.velocity.y = 0;
+		this.jumps.current      = 0;
 
 		// Assume false.
 		return false;
@@ -425,82 +279,5 @@ export default class Player extends Tile {
 
 		// Assume false.
 		return false;
-	}
-
-	/**
-	 * Is the Player falling.
-	 *
-	 * @returns {Boolean}
-	 */
-	falling = () => {
-		return (
-			// No jumps done.
-			! this.jumps.current
-			&&
-			// Making contact with ground.
-			! this.contact.bottom
-		);
-	}
-
-	/**
-	 * Can the Player jump?
-	 *
-	 * @returns {Boolean}
-	 */
-	canJump = () => {
-		return (
-			! this.falling()
-			&&
-			// Has jumps.
-			this.jumps.max
-			&&
-			(
-				// Making contact with ground.
-				this.contact.bottom
-				||
-				// Still has jumps to do.
-				( this.jumps.current < this.jumps.max )
-				||
-				// Making contact with wall.
-				(
-					Settings.player.jumps.wall
-					&&
-					this.touchingWall()
-				)
-			)
-		);
-	}
-
-	/**
-	 * Can the Player wall-jump?
-	 *
-	 * @returns {Boolean}
-	 */
-	canWallJump = () => {
-		return (
-			Settings.player.jumps.wall
-			&&
-			// Has jumps.
-			this.jumps.max
-			&&
-			// Not on ground.
-			! this.contact.bottom
-			&&
-			// Making contact with wall.
-			this.touchingWall()
-		);
-	}
-
-	/**
-	 * Is the Player touching a wall?
-	 *
-	 * @returns {Boolean}
-	 */
-	touchingWall = () => {
-		return (
-			this.contact.left
-			||
-			this.contact.right
-		);
 	}
 }

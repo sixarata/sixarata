@@ -45,8 +45,8 @@ export default class Particle extends Tile {
 
 		// Reposition & rescale so super() works correctly.
 		let source = Game.View.center(
-				tile.position,
-				tile.size,
+				tile.physics.position,
+				tile.physics.size,
 				new Size( size.w, size.h, size.d, 'up' ),
 				false,
 			);
@@ -72,7 +72,7 @@ export default class Particle extends Tile {
 	) => {
 
 		// Velocity.
-		this.velocity = new Velocity(
+		this.physics.velocity = new Velocity(
 			velocity.x,
 			velocity.y,
 			velocity.z
@@ -95,11 +95,11 @@ export default class Particle extends Tile {
 
 		// Die if too small to be visible.
 		if (
-			( this.size.w < 0.01 )
+			( this.physics.size.w < 0.01 )
 			&&
-			( this.size.h < 0.01 )
+			( this.physics.size.h < 0.01 )
 			&&
-			( this.size.d < 0.01 )
+			( this.physics.size.d < 0.01 )
 		) {
 			return this.destroy();
 		}
@@ -107,8 +107,8 @@ export default class Particle extends Tile {
 		const comp = Game.Frames.compensate;
 
 		// Update position.
-		this.position.x = ( this.position.x + comp( this.velocity.x ) );
-		this.position.y = ( this.position.y + comp( this.velocity.y ) );
-		this.position.z = ( this.position.z + comp( this.velocity.z ) );
+		this.physics.position.x = ( this.physics.position.x + comp( this.physics.velocity.x ) );
+		this.physics.position.y = ( this.physics.position.y + comp( this.physics.velocity.y ) );
+		this.physics.position.z = ( this.physics.position.z + comp( this.physics.velocity.z ) );
 	}
 }

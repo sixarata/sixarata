@@ -73,30 +73,30 @@ export default class Contact {
 
 		// Is right touching?
 		if ( velocity.x > 0 ) {
-			tile1.position.x     = ( tile2.position.x - tile1.size.w );
-			tile1.contact.right  = true;
-			tile1.velocity.x     = 0;
+			tile1.physics.position.x     = ( tile2.physics.position.x - tile1.physics.size.w );
+			tile1.physics.contact.right  = true;
+			tile1.physics.velocity.x     = 0;
 		}
 
 		// Is left touching?
 		if ( velocity.x < 0 ) {
-			tile1.position.x     = ( tile2.position.x + tile1.size.w );
-			tile1.contact.left   = true;
-			tile1.velocity.x     = 0;
+			tile1.physics.position.x     = ( tile2.physics.position.x + tile1.physics.size.w );
+			tile1.physics.contact.left   = true;
+			tile1.physics.velocity.x     = 0;
 		}
 
 		// Is bottom touching?
 		if ( velocity.y > 0 ) {
-			tile1.position.y     = ( tile2.position.y - tile1.size.h );
-			tile1.contact.bottom = true;
-			tile1.jumps.current  = 0;
+			tile1.physics.position.y     = ( tile2.physics.position.y - tile1.physics.size.h );
+			tile1.physics.contact.bottom = true;
+			tile1.jumps.current          = 0;
 		}
 
 		// Is top touching?
 		if ( velocity.y < 0 ) {
-			tile1.position.y     = ( tile2.position.y + tile1.size.h );
-			tile1.contact.top    = true;
-			tile1.velocity.y++;
+			tile1.physics.position.y     = ( tile2.physics.position.y + tile1.physics.size.h );
+			tile1.physics.contact.top    = true;
+			tile1.physics.velocity.y++;
 		}
 	}
 }

@@ -23,8 +23,8 @@ import { Tile } from './exports.js';
 	 */
 	constructor(
 		group    = [],
-		position = { x: 0, y: 0 },
-		size     = { w: 1, h: 1 },
+		position = { x: 0, y: 0, z: 0 },
+		size     = { w: 1, h: 1, d: 1 },
 		color    = '',
 		type     = 'default',
 		density  = 0,

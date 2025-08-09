@@ -40,20 +40,17 @@ export default class Collision {
 	 * @returns {Boolean}
 	 */
 	detect = () => {
+		const a = this.tile1.physics;
+		const b = this.tile2.physics;
+
 		return (
-			( this.tile1.position.x < ( this.tile2.position.x + this.tile2.size.w ) )
-
+			( a.position.x < ( b.position.x + b.size.w ) )
 			&&
-
-			( this.tile2.position.x < ( this.tile1.position.x + this.tile1.size.w ) )
-
+			( b.position.x < ( a.position.x + a.size.w ) )
 			&&
-
-			( this.tile1.position.y < ( this.tile2.position.y + this.tile2.size.h ) )
-
+			( a.position.y < ( b.position.y + b.size.h ) )
 			&&
-
-			( this.tile2.position.y < ( this.tile1.position.y + this.tile1.size.h ) )
+			( b.position.y < ( a.position.y + a.size.h ) )
 		);
 	}
 }

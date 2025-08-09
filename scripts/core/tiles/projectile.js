@@ -32,8 +32,8 @@ export default class Projectile extends Tile {
 		// Reposition & rescale so super() works correctly.
 		let sizeo  = new Size( size.w, size.h, size.d, 'up' ),
 			source = Game.View.center(
-				tile.position,
-				tile.size,
+				tile.physics.position,
+				tile.physics.size,
 				sizeo
 			),
 
@@ -85,9 +85,9 @@ export default class Projectile extends Tile {
 		const comp = Game.Frames.compensate;
 
 		// Bump position.
-		this.position.x = ( this.position.x + comp( this.sin ) );
-		this.position.y = ( this.position.y + comp( this.cos ) );
-		this.position.z = ( this.position.z + comp( this.cos ) );
+		this.physics.position.x = ( this.physics.position.x + comp( this.sin ) );
+		this.physics.position.y = ( this.physics.position.y + comp( this.cos ) );
+		this.physics.position.z = ( this.physics.position.z + comp( this.cos ) );
 	}
 
 	/**
@@ -96,7 +96,7 @@ export default class Projectile extends Tile {
 	setTrajectory = () => {
 
 		// Target.
-		this.bullseye = Game.View.center( this.target.position, this.target.size, this.size );
+		this.bullseye = Game.View.center( this.target.physics.position, this.target.physics.size, this.physics.size );
 		this.end      = new Position(
 			this.bullseye.x,
 			this.bullseye.y,
@@ -106,9 +106,9 @@ export default class Projectile extends Tile {
 
 		// Angle.
 		this.angle = Math.atan2(
-			( this.end.x - this.position.x ),
-			( this.end.y - this.position.y ),
-			//( this.end.z - this.position.z ),
+			( this.end.x - this.physics.position.x ),
+			( this.end.y - this.physics.position.y ),
+			//( this.end.z - this.physics.position.z ),
 		);
 
 		// Trajectory.

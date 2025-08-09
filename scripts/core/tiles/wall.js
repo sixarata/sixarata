@@ -18,8 +18,8 @@ export default class Wall extends Tile {
 	 */
 	constructor(
 		group    = [],
-		position = { x: 0, y: 0 },
-		size     = { w: 1, h: 1 },
+		position = { x: 0, y: 0, z: 0 },
+		size     = { w: 1, h: 1, d: 1 },
 		type     = 'default',
 		density  = 1
 	) {
