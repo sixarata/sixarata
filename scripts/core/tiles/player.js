@@ -3,7 +3,7 @@ import Settings from '../../custom/settings.js';
 
 import { Tile } from './exports.js';
 import { Collision, Contact, Orientation, Position, Velocity } from '../physics/exports.js';
-import { Walk, Orient, Jump, Fall, Collide } from '../mechanics/exports.js';
+import { Walk, Orient, Jump, Fall, Collide, WallJump } from '../mechanics/exports.js';
 
 /**
  * The Player object.
@@ -58,6 +58,7 @@ export default class Player extends Tile {
 			jump:    new Jump( this ),
 			orient:  new Orient( this ),
 			walk:    new Walk( this ),
+			wall:    new WallJump( this ),
 		};
 	}
 
@@ -110,6 +111,7 @@ export default class Player extends Tile {
 		// Fall then Jump.
 		this.mechanics.fall.listen();
 		this.mechanics.jump.listen();
+		this.mechanics.wall.listen();
 
 		// Left & Right.
 		this.mechanics.walk.listen();
@@ -132,9 +134,9 @@ export default class Player extends Tile {
 		}
 
 		// Wall jump.
-		if ( this.mechanics.jump.canWallJump() ) {
-			this.color = Settings.player.colors.walljump;
-		}
+		if ( this.mechanics.wall.can() ) {
+			this.color = Settings.player.colors.walljump
+		};
 	}
 
 	/**

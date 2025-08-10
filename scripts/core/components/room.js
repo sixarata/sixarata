@@ -88,7 +88,6 @@ export default class Room {
 
 		// Skip if no Room.
 		if ( ! this.grid.length ) {
-			this.load();
 			return;
 		}
 
@@ -265,11 +264,12 @@ export default class Room {
 		position = { x: 0, y: 0, z: 0 }
 	) => {
 
-		// Skip char if empty.
+		// Skip token if empty.
 		if ( ! token || ( ' ' === token ) ) {
 			return;
 		}
 
+		// Default size.
 		const size = { w: 1, h: 1, d: 1 };
 
 		// What kind of tile to draw.

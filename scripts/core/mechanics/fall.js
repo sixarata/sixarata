@@ -46,33 +46,58 @@ export default class Fall {
 			return;
 		}
 
-        // Compensation function.
-		const comp = Game.Frames.compensate;
-
-		// On ground:
-		const contact  = this.tile.physics?.contact;
+		const comp     = Game.Frames.compensate;
 		const velocity = this.tile.physics?.velocity;
-
-		if ( contact.bottom ) {
-
-            // Apply base gravity.
-			velocity.y = comp( Game.Gravity.force );
+		const max      = Settings.physics.terminal ?? this.tile.jumps.power;
 
 		// Airborne:
-		} else {
+		if ( this.doing() ) {
 
-            // Terminal velocity.
-			const term = Settings.physics.terminal ?? this.tile.jumps.power;
-
-			// Accumulate gravity until terminal velocity is reached.
-			if ( velocity.y <= term ) {
+			// Apply gravity.
+			if ( velocity.y <= max ) {
 				velocity.y = velocity.y + comp( Game.Gravity.force );
 			}
 
-			// Cap velocity at terminal velocity.
-			if ( velocity.y > term ) {
-				velocity.y = term;
-			}
+		// On the ground:
+		} else {
+			velocity.y = comp( Game.Gravity.force );
 		}
+
+		// Cap velocity at max.
+		if ( velocity.y > max ) {
+			velocity.y = max;
+		}
+	}
+
+	/**
+	 * Check if the mechanic is being done.
+	 *
+	 * @returns {Boolean}
+	 */
+	doing = () => {
+
+        // Bail if no tile.
+		if ( ! this.can() ) {
+			return false;
+		}
+
+		// Return whether the tile is airborne.
+		return ! this.tile.physics?.contact.bottom;
+	}
+
+	/**
+	 * Check if the mechanic can be done.
+	 *
+	 * @returns {Boolean}
+	 */
+	can = () => {
+
+        // Bail if no tile.
+		if ( ! this.tile ) {
+			return false;
+		}
+
+		// Return whether the tile is airborne.
+		return ! this.tile.physics?.contact.bottom;
 	}
 }
