@@ -37,8 +37,8 @@ export default class Coyote {
      */
     reset = () => {
         this.tile        = null;
-        this.time        = Settings.player.jumps.coyote || 200;
         this.timer       = 0;
+        this.settings    = Settings.player.jumps.coyote;
         this.wasOnGround = false;
     }
 
@@ -54,7 +54,7 @@ export default class Coyote {
 
         const contact  = this.tile.physics?.contact || {};
         const now      = performance.now();
-        const duration = this.time;
+        const duration = this.settings.time;
 
         // If just left ground, start coyote timer
         if ( this.wasOnGround && ! contact.bottom ) {

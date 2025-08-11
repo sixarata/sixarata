@@ -3,7 +3,7 @@ import Settings from '../../custom/settings.js';
 
 import { Tile } from './exports.js';
 import { Collision, Contact, Orientation, Position, Velocity } from '../physics/exports.js';
-import { Walk, Orient, Jump, Fall, Collide, WallJump } from '../mechanics/exports.js';
+import { Collide, Coyote, Fall, Jump, Orient, Walk, WallJump } from '../mechanics/exports.js';
 
 /**
  * The Player object.
@@ -44,7 +44,6 @@ export default class Player extends Tile {
 		// Settings.
 		this.retries = Settings.player.retries
 		this.health  = Settings.player.health;
-		this.jumps   = Settings.player.jumps;
 
 		// Physics
 		this.physics.contact     = new Contact();
@@ -54,6 +53,7 @@ export default class Player extends Tile {
 		// Mechanics.
 		this.mechanics = {
 			collide: new Collide( this ),
+			coyote:  new Coyote( this ),
 			fall:    new Fall( this ),
 			jump:    new Jump( this ),
 			orient:  new Orient( this ),
@@ -111,7 +111,10 @@ export default class Player extends Tile {
 		// Fall then Jump.
 		this.mechanics.fall.listen();
 		this.mechanics.jump.listen();
+
+		// Jump modifiers
 		this.mechanics.wall.listen();
+		this.mechanics.coyote.listen();
 
 		// Left & Right.
 		this.mechanics.walk.listen();
@@ -204,10 +207,10 @@ export default class Player extends Tile {
 			return Game.Room.retry();
 		}
 
-		// I'm flying!
-		this.physics.position.y = Game.Room.size.h;
-		this.physics.velocity.y = 0;
-		this.jumps.current      = 0;
+		// Invincible, so force some resets.
+		this.physics.position.y   = Game.Room.size.h;
+		this.physics.velocity.y   = 0;
+		this.mechanics.jump.count = 0;
 
 		// Assume false.
 		return false;

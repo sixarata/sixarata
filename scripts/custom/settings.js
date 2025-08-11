@@ -22,6 +22,9 @@ export default {
 			current: 1,
 			fall:    true,
 			wall:    true,
+			coyote: {
+				time: 200,
+			},
 		},
 		retries: {
 			max:     10,

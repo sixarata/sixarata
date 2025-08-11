@@ -1,4 +1,5 @@
 import Game from '../game.js';
+import Settings from '../../custom/settings.js';
 
 /**
  * The WallJump mechanic.
@@ -46,7 +47,8 @@ export default class WallJump {
 	 * @returns {void}
 	 */
 	reset = () => {
-		this.tile = null;
+		this.tile     = null;
+		this.settings = Settings.player.jumps;
 	}
 
 	/**
@@ -80,8 +82,8 @@ export default class WallJump {
 	 *
 	 * Conditions:
 	 * - Mechanic bound to a tile.
-	 * - Wall jumping enabled in tile.jumps.wall.
-	 * - A maximum jump count (jumps.max) is defined (prevents unlimited air actions when disabled).
+	 * - Wall jumping enabled in this.settings.wall.
+	 * - A maximum jump count (this.settings.max) is defined (prevents unlimited air actions when disabled).
 	 * - Tile is NOT grounded (forces usage only while airborne beside a wall).
 	 * - Tile is touching a wall side (left or right contact flag).
 	 *
@@ -102,13 +104,10 @@ export default class WallJump {
 			return false;
 		}
 
-        // Get the jumps configuration.
-		const j = this.tile.jumps;
-
 		return (
-			!! j.wall
+			!! this.settings.wall
 			&&
-			!! j.max
+			!! this.settings.max
 			&&
 			! contact.bottom
 			&&
@@ -137,7 +136,7 @@ export default class WallJump {
 
 		const velocity = this.tile.physics.velocity;
 		const contact  = this.tile.physics.contact;
-		const power    = this.tile.jumps.power || 0;
+		const power    = this.settings.power || 0;
 		const impulse  = 0.75;
 		const boost    = 1.1;
 		const lateral  = power * impulse;
@@ -150,6 +149,6 @@ export default class WallJump {
 		}
 
 		// Vertical (slightly boosted for wall jump flair).
-		velocity.y = -( this.tile.jumps.power * boost );
+		velocity.y = -( this.settings.power * boost );
 	}
 }

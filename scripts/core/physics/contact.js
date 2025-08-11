@@ -89,7 +89,6 @@ export default class Contact {
 		if ( velocity.y > 0 ) {
 			tile1.physics.position.y     = ( tile2.physics.position.y - tile1.physics.size.h );
 			tile1.physics.contact.bottom = true;
-			tile1.jumps.current          = 0;
 		}
 
 		// Is top touching?

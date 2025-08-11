@@ -33,7 +33,8 @@ export default class Fall {
 	 * Reset the mechanic.
 	 */
 	reset = () => {
-		this.tile = null;
+		this.tile     = null;
+		this.settings = Settings.player.jumps;
 	}
 
 	/**
@@ -48,7 +49,7 @@ export default class Fall {
 
 		const comp     = Game.Frame.compensate;
 		const velocity = this.tile.physics?.velocity;
-		const max      = Settings.physics.terminal ?? this.tile.jumps.power;
+		const max      = Settings.physics.terminal ?? this.settings.power;
 
 		// Airborne:
 		if ( this.doing() ) {
@@ -72,7 +73,7 @@ export default class Fall {
 	/**
 	 * Check if the mechanic is being done.
 	 *
-	 * @returns {Boolean}
+	 * @returns {Boolean} True if the mechanic is being done, false otherwise.
 	 */
 	doing = () => {
 
@@ -88,7 +89,7 @@ export default class Fall {
 	/**
 	 * Check if the mechanic can be done.
 	 *
-	 * @returns {Boolean}
+	 * @returns {Boolean} True if the mechanic can be done, false otherwise.
 	 */
 	can = () => {
 
