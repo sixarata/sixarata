@@ -1,24 +1,24 @@
 import Settings from '../../custom/settings.js';
 
 /**
- * Abstract Input base class.
+ * Abstract Device base class.
  *
  * Provides the interface for all input devices. Subclasses should implement
  * poll(), pressed(), and axes() to provide device-specific input logic.
  */
-export default class Input {
+export default class Device {
 
     /**
-     * Default key mappings.
+     * Default input mappings.
      *
-     * These are the default keys used for each action.
+     * These are the default inputs used for each action.
      *
      * @type {Object}
      */
     static defaults = {};
 
     /**
-     * Construct the Input.
+     * Construct the Device.
      *
      * Base constructor for input devices.
      */
@@ -85,7 +85,7 @@ export default class Input {
      * @returns {Object} Override mappings.
      */
     overrides = () => {
-        return Settings?.inputs?.[ this.name() ] || {};
+        return Settings?.inputs?.[ this.name().toLowerCase ] || {};
     }
 
     /**

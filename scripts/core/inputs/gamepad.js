@@ -1,5 +1,4 @@
 import Device from './device.js';
-import Game from '../game.js';
 
 /**
  * Gamepad input handler.
@@ -11,9 +10,9 @@ import Game from '../game.js';
 export default class Gamepad extends Device {
 
     /**
-     * Default button mappings.
+     * Default input mappings.
      *
-     * These are the default buttons used for each action.
+     * These are the default inputs used for each action.
      *
      * @type {Object}
      */
@@ -87,7 +86,6 @@ export default class Gamepad extends Device {
     set = () => {
         this.reset();
         this.listen();
-        this.scan();
     }
 
     /**
@@ -96,31 +94,9 @@ export default class Gamepad extends Device {
      * Clears all gamepad state, previous state, and connection status.
      */
     reset = () => {
-        this.gamepads  = [];
-        this.state     = {};
-        this.prev      = {};
-        this.connected = false;
-    }
-
-    /**
-     * Scan for already-connected gamepads.
-     *
-     * Populates state with any gamepads that are already connected.
-     */
-    scan = () => {
-        const pads = this.pads();
-
-        for ( let i = 0; i < pads.length; i++ ) {
-            const pad = pads[ i ];
-
-            if ( pad ) {
-                this.connected = true;
-                this.gamepads[ pad.index ] = pad;
-
-                // Optionally trigger the connect hook for each found pad:
-                Game.Hooks.do( 'Gamepad.connect', pad );
-            }
-        }
+        this.gamepads = [];
+        this.state    = {};
+        this.prev     = {};
     }
 
     /**
@@ -140,8 +116,20 @@ export default class Gamepad extends Device {
      * Attaches event listeners for gamepad connection and disconnection.
      */
     listen = () => {
-        addEventListener( 'gamepadconnected',    this.connect,    false );
-        addEventListener( 'gamepaddisconnected', this.disconnect, false );
+
+        // Listen for gamepad connections.
+        addEventListener(
+            'gamepadconnected',
+            this.connect,
+            false
+        );
+
+        // Listen for gamepad disconnections.
+        addEventListener(
+            'gamepaddisconnected',
+            this.disconnect,
+            false
+        );
     }
 
     /**
@@ -156,8 +144,6 @@ export default class Gamepad extends Device {
     ) => {
         this.connected = true;
         this.gamepads[ e.gamepad.index ] = e.gamepad;
-
-        Game.Hooks.do( 'Gamepad.connect', e.gamepad );
     }
 
     /**
@@ -172,8 +158,6 @@ export default class Gamepad extends Device {
     ) => {
         this.connected = false;
         delete this.gamepads[ e.gamepad.index ];
-
-        Game.Hooks.do( 'Gamepad.disconnect', e.gamepad );
     }
 
     /**
@@ -184,7 +168,8 @@ export default class Gamepad extends Device {
     tick = () => {
         const pads = this.pads();
 
-        this.prev  = { ...this.state };
+        // Copy previous state.
+        this.prev  = this.state;
         this.state = {};
 
         for ( let i = 0; i < pads.length; i++ ) {
@@ -202,8 +187,6 @@ export default class Gamepad extends Device {
                 buttons: pad.buttons.map( b => b.pressed ),
             };
         }
-
-        Game.Hooks.do( 'Gamepad.tick', this.state, this.prev );
     }
 
     /**

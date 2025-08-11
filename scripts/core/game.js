@@ -24,6 +24,7 @@ const Game = {
 	// Utilities.
 	Colors:     new Core.Utilities.Colors(),
 	Hooks:      new Core.Utilities.Hooks(),
+	Jobs:       new Core.Utilities.Jobs(),
 };
 
 // Export the Game.

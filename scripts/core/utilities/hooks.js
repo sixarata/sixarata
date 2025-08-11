@@ -28,6 +28,13 @@ export default class Hooks {
 	#done = [];
 
 	/**
+	 * Private array of suspended hooks.
+	 *
+	 * @private {Array} suspended
+	 */
+	#suspended = [];
+
+	/**
 	 * Construct the object.
 	 */
 	constructor() {
@@ -45,9 +52,10 @@ export default class Hooks {
 	 * Reset the Hooks.
 	 */
 	reset = () => {
-		this.#done    = [];
-		this.#queued  = [];
-		this.#current = '';
+		this.#current   = '';
+		this.#done      = [];
+		this.#suspended = [];
+		this.#queued    = [];
 	}
 
 	/**
@@ -97,7 +105,7 @@ export default class Hooks {
 	 * @param   {String} name
 	 * @param   {String} callback
 	 * @param   {Number} priority
-	 * @returns {Mixed}  The removed callback.
+	 * @returns {Mixed}  True if removed, false if not found.
 	 */
 	remove = (
 		name     = '',
@@ -121,7 +129,7 @@ export default class Hooks {
 	 * Completely clear a hook of all callbacks at all priorities.
 	 *
 	 * @param   {String} name
-	 * @returns {Mixed}  The removed hook name.
+	 * @returns {Mixed}  True if cleared, false if not found.
 	 */
 	clear = (
 		name = ''
@@ -146,21 +154,30 @@ export default class Hooks {
 	}
 
 	/**
-	 * Get all of the queued hook names.
-	 *
-	 * @returns {Array} The queued hook names.
-	 */
-	queued = () => {
-		return this.#queued;
-	}
-
-	/**
-	 * Get all of the completed hook names.
+	 * Get a shallow copy of completed hook names.
 	 *
 	 * @returns {Array} The completed hook names.
 	 */
 	done = () => {
-		return this.#done;
+		return [...this.#done];
+	}
+
+	/**
+	 * Get a shallow copy of suspended entries (for debugging / introspection).
+	 *
+	 * @returns {Array} The suspended entries.
+	 */
+	suspended = () => {
+		return [ ...this.#suspended ];
+	}
+
+	/**
+	 * Get a shallow copy of queued hook names.
+	 *
+	 * @returns {Array} The queued hook names.
+	 */
+	queued = () => {
+		return [ ...this.#queued];
 	}
 
 	/**
@@ -209,6 +226,142 @@ export default class Hooks {
 
 		// Return.
 		return retval;
+	}
+
+	/**
+	 * Suspend a hook, and schedule automatic re‑addition.
+	 *
+	 * Supply:
+	 * - millisecond duration (ms)
+	 * - frame count (frames)
+	 *
+	 * If both are used, the first condition that is met triggers the restore.
+	 *
+	 * @param {String}   name     Hook name.
+	 * @param {Function} callback Callback reference originally added.
+	 * @param {Number}   priority Priority level (defaults to 10 like add/remove).
+	 * @param {Object}   options  { ms: Number, frames: Number }
+	 * @returns {Boolean} True if suspended, false if not found or invalid.
+	 */
+	suspend = (
+		name     = '',
+		callback = '',
+		priority = 10,
+		options  = {}
+	) => {
+
+		// Must exist to suspend.
+		if ( ! this.exists( name, callback, priority ) ) {
+			return false;
+		}
+
+		// Get the suspension options.
+		const ms     = options.ms     ?? 0;
+		const frames = options.frames ?? 0;
+		const now    = Date.now();
+
+		// Bail if no suspension options.
+		if ( ! ms && ! frames ) {
+			return false;
+		}
+
+		// Remove it from active queue.
+		this.remove( name, callback, priority );
+
+		// Record suspension.
+		this.#suspended.push( {
+			name,
+			callback,
+			priority,
+			expires: ( ms > 0 ) ? ( now + ms ) : 0,
+			frames: ( frames > 0 ) ? frames : 0
+		} );
+
+		return true;
+	}
+
+	/**
+	 * Manually resume a suspended hook immediately.
+	 *
+	 * @param {String}  name
+	 * @param {Function} callback
+	 * @param {Number}  priority
+	 * @returns {Boolean} True if resumed, false if not found.
+	 */
+	resume = (
+		name     = '',
+		callback = '',
+		priority = 10
+	) => {
+		let found = false;
+
+		this.#suspended = this.#suspended.filter( entry => {
+			if (
+				! found
+				&&
+				entry.name === name
+				&&
+				entry.callback === callback
+				&&
+				entry.priority === priority
+			) {
+				this.add( name, callback, priority );
+				found = true;
+
+				// Remove from suspended
+				return false;
+			}
+
+			// Keep others
+			return true;
+		} );
+
+		return found;
+	}
+
+	/**
+	 * Internal: process suspended hooks, re‑adding those whose timers / frame
+	 * counts elapsed.
+	 *
+	 * Called automatically at the start of do(). Frame decrements only occur
+	 * when invoked during the 'Frames.tick' cycle to align frame-based
+	 * scheduling with actual game frames.
+	 *
+	 * @param {Boolean} advanceFrames Whether to decrement frame counters this pass.
+	 * @returns {Void}
+	 */
+	process = (
+		advanceFrames = false
+	) => {
+
+		// Bail if no suspended hooks.
+		if ( ! this.#suspended.length ) {
+			return;
+		}
+
+		const now = Date.now();
+		const remaining = [];
+
+		for ( const entry of this.#suspended ) {
+
+			// Decrement frame counter only when appropriate.
+			if ( advanceFrames && entry.framesLeft > 0 ) {
+				entry.framesLeft--;
+			}
+
+			const timeReady  = entry.expires && entry.expires > 0 && now >= entry.expires;
+			const frameReady = entry.frames === 0 && ( entry.expires === 0 || ! entry.expires );
+			const dualReady  = ( entry.frames === 0 && entry.expires > 0 && now >= entry.expires );
+
+			if ( timeReady || frameReady || dualReady ) {
+				this.add( entry.name, entry.callback, entry.priority );
+
+			} else {
+				remaining.push( entry );
+			}
+		}
+
+		this.#suspended = remaining;
 	}
 
 	/**

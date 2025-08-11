@@ -135,19 +135,21 @@ export default class WallJump {
 			return;
 		}
 
-		const v       = this.tile.physics.velocity;
-		const contact = this.tile.physics.contact;
-		const power   = this.tile.jumps.power || 0;
-		const lateral = power * 0.75;
+		const velocity = this.tile.physics.velocity;
+		const contact  = this.tile.physics.contact;
+		const power    = this.tile.jumps.power || 0;
+		const impulse  = 0.75;
+		const boost    = 1.1;
+		const lateral  = power * impulse;
 
 		// Horizontal.
 		if ( contact.left ) {
-			v.x = lateral;
+			velocity.x = lateral;
 		} else if ( contact.right ) {
-			v.x = -lateral;
+			velocity.x = -lateral;
 		}
 
 		// Vertical (slightly boosted for wall jump flair).
-		v.y = -( this.tile.jumps.power * 1.1 );
+		velocity.y = -( this.tile.jumps.power * boost );
 	}
 }
