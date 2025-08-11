@@ -1,4 +1,5 @@
 import Game from '../game.js';
+import Settings from '../../custom/settings.js';
 
 /**
  * The Jump mechanic.
@@ -35,7 +36,9 @@ export default class Jump {
 	 * Reset the mechanic.
 	 */
 	reset = () => {
-		this.tile = null;
+		this.tile     = null;
+		this.count    = 0;
+		this.settings = Settings.player.jumps;
 	}
 
 	/**
@@ -43,15 +46,18 @@ export default class Jump {
 	 */
 	listen = () => {
 
-		// Jumping
+		// Reset jump count if grounded.
+		if ( this.grounded() ) {
+			this.count = 0;
+		}
+
+		// Bail if not jumping.
 		if ( ! this.doing() ) {
 			return;
 		}
 
-		const velocity = this.tile.physics?.velocity || {};
-
-		this.tile.jumps.current++;
-		velocity.y = -this.tile.jumps.power;
+		// Do the jump.
+		this.do();
 	}
 
 	/**
@@ -80,31 +86,61 @@ export default class Jump {
 			return false;
 		}
 
-		const contact = this.tile.physics?.contact || {};
+		const grounded = this.grounded();
+		const freefall = this.freefall();
+		const maxed    = this.maxed();
 
+		// Check if can jump.
 		return (
-			! this.falling()
-			&&
-			this.tile.jumps.max
+			! maxed
 			&&
 			(
-				contact.bottom
-				||
-				( this.tile.jumps.current < this.tile.jumps.max )
+				grounded
 			)
 		);
 	}
 
 	/**
-	 * Determine if tile is falling (no jumps yet & not on ground).
+	 * Do the jump.
 	 */
-	falling = () => {
-		const contact = this.tile.physics?.contact || {}
+	do = () => {
+		const velocity = this.tile?.physics?.velocity || {};
 
+		// Increment jump count.
+		this.count++;
+
+		// Apply jump impulse to velocity.
+		velocity.y = -this.settings.power;
+	}
+
+	/**
+	 * Check if tile is grounded (on the ground).
+	 *
+	 * @returns {Boolean} True if tile is grounded, false otherwise.
+	 */
+	grounded = () => {
+		return ( this.tile?.physics?.contact?.bottom );
+	}
+
+	/**
+	 * Determine if tile is free-falling.
+	 *
+	 * No jumps, but also not on ground.
+	 */
+	freefall = () => {
 		return (
-			! this.tile.jumps.current
+			! this.count
 			&&
-			! contact.bottom
+			! this.grounded()
 		);
+	}
+
+	/**
+	 * Check if tile has reached max jump count.
+	 *
+	 * @returns {Boolean} True if max jump count is reached, false otherwise.
+	 */
+	maxed = () => {
+		return ( this.count > this.settings.max );
 	}
 }
