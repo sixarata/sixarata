@@ -320,12 +320,9 @@ export default class Hooks {
 	}
 
 	/**
-	 * Internal: process suspended hooks, re‑adding those whose timers / frame
-	 * counts elapsed.
+	 * Process suspended hooks.
 	 *
-	 * Called automatically at the start of do(). Frame decrements only occur
-	 * when invoked during the 'Frames.tick' cycle to align frame-based
-	 * scheduling with actual game frames.
+	 * Re‑adds hooks with elapsed timers / frame-counts.
 	 *
 	 * @param {Boolean} advanceFrames Whether to decrement frame counters this pass.
 	 * @returns {Void}

@@ -12,7 +12,7 @@ const Game = {
 	// Components.
 	Camera:     new Core.Components.Camera(),
 	Clock:      new Core.Components.Clock(),
-	Frames:     new Core.Components.Frames(),
+	Frame:      new Core.Components.Frame(),
 	Hud:        new Core.Components.Hud(),
 	Room:       new Core.Components.Room(),
 	View:       new Core.Components.View(),

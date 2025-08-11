@@ -82,7 +82,7 @@ export default class Hud {
 		// Vars.
 		let room   = Game.Room,
 			clock  = Game.Clock,
-			frames = Game.Frames,
+			frames = Game.Frame,
 			player = room.tiles.players[ 0 ];
 
 		// Update attributes.

@@ -39,7 +39,7 @@ export default class Jobs {
 	 * Register hooks with global Hooks system.
 	 */
 	hooks = () => {
-		Game.Hooks.add( 'Frames.tick', this.tick, 9 );
+		Game.Hooks.add( 'Frame.tick', this.tick, 9 );
 	}
 
 	/**
@@ -130,7 +130,7 @@ export default class Jobs {
 	}
 
 	/**
-	 * Process jobs: called each frame via Frames.tick hook.
+	 * Process jobs: called each frame via Frame.tick hook.
 	 */
 	tick = () => {
 		const nowElapsed = Game.Clock.times.elapsed || 0;

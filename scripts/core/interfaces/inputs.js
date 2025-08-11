@@ -42,10 +42,10 @@ export default class Inputs {
     /**
      * Register polling with the game loop.
      *
-     * Adds the tick method to the Frames.tick hook for regular polling.
+     * Adds the tick method to the Frame.tick hook for regular polling.
      */
     hooks = () => {
-        Game.Hooks.add( 'Frames.tick', this.tick );
+        Game.Hooks.add( 'Frame.tick', this.tick );
     }
 
     /**

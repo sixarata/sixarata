@@ -41,7 +41,7 @@ export default class Clock {
 	 * Early events.
 	 */
 	hooks = () => {
-		Game.Hooks.add( 'Frames.tick', this.tick );
+		Game.Hooks.add( 'Frame.tick', this.tick );
 	}
 
 	/**

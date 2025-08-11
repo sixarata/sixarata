@@ -6,7 +6,7 @@ import * as Rooms from '../custom/rooms/exports.js';
 Sixarata.Hooks.add( 'Run.init', Sixarata.Inputs.hooks, 4  );
 Sixarata.Hooks.add( 'Run.init', Sixarata.Clock.hooks,  6  );
 Sixarata.Hooks.add( 'Run.init', Sixarata.Camera.hooks, 8  );
-Sixarata.Hooks.add( 'Run.init', Sixarata.Frames.hooks, 10 );
+Sixarata.Hooks.add( 'Run.init', Sixarata.Frame.hooks, 10 );
 Sixarata.Hooks.add( 'Run.init', Sixarata.Room.hooks,   12 );
 Sixarata.Hooks.add( 'Run.init', Sixarata.View.hooks,   14 );
 Sixarata.Hooks.add( 'Run.init', Sixarata.Hud.hooks,    16 );

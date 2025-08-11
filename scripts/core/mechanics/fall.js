@@ -46,7 +46,7 @@ export default class Fall {
 			return;
 		}
 
-		const comp     = Game.Frames.compensate;
+		const comp     = Game.Frame.compensate;
 		const velocity = this.tile.physics?.velocity;
 		const max      = Settings.physics.terminal ?? this.tile.jumps.power;
 

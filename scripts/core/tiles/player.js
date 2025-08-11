@@ -148,7 +148,7 @@ export default class Player extends Tile {
 		this.physics.contact.reset();
 
 		// Get the delta.
-		const comp = Game.Frames.compensate;
+		const comp = Game.Frame.compensate;
 
 		// Update X.
 		this.physics.position.x = ( this.physics.position.x + comp( this.physics.velocity.x ) );

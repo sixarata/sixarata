@@ -56,11 +56,11 @@ export default class View {
 	 */
 	hooks = () => {
 
-		// Frames.
-		Game.Hooks.add( 'Frames.tick',   this.tick );
-		Game.Hooks.add( 'Frames.tick',   this.resize );
-		Game.Hooks.add( 'Frames.update', this.update );
-		Game.Hooks.add( 'Frames.render', this.render );
+		// Frame.
+		Game.Hooks.add( 'Frame.tick',   this.tick );
+		Game.Hooks.add( 'Frame.tick',   this.resize );
+		Game.Hooks.add( 'Frame.update', this.update );
+		Game.Hooks.add( 'Frame.render', this.render );
 
 		// Buffer.
 		Game.Hooks.add( 'View.tick',   this.buffer.tick );

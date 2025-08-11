@@ -3,7 +3,7 @@ import Game from '../game.js';
 import Settings from '../../custom/settings.js';
 
 /**
- * The Frames object.
+ * The Frame object.
  *
  * This object is responsible for animation frames, gamespeed, throttling,
  * and calculating the framerate for display purposes.
@@ -12,7 +12,7 @@ import Settings from '../../custom/settings.js';
  * will determine the actual frame rate depending on a few factors, such as
  * the device's capabilities, the browser's performance, etc...
  */
-export default class Frames {
+export default class Frame {
 
 	/**
 	 * Construct the object.
@@ -29,7 +29,7 @@ export default class Frames {
 	}
 
 	/**
-	 * Reset the Frames.
+	 * Reset the Frame.
 	 */
 	reset = () => {
 
@@ -54,38 +54,38 @@ export default class Frames {
 	hooks = () => {
 
 		// Loop.
-		Game.Hooks.add( 'Frames.animate', this.tick,   2 );
-		Game.Hooks.add( 'Frames.animate', this.update, 4 );
-		Game.Hooks.add( 'Frames.animate', this.render, 6 );
+		Game.Hooks.add( 'Frame.animate', this.tick,   2 );
+		Game.Hooks.add( 'Frame.animate', this.update, 4 );
+		Game.Hooks.add( 'Frame.animate', this.render, 6 );
 
 		// Self.
-		Game.Hooks.add( 'Frames.tick',   this.counter, 10 );
-		Game.Hooks.add( 'Frames.render', this.request, 10 );
+		Game.Hooks.add( 'Frame.tick',   this.counter, 10 );
+		Game.Hooks.add( 'Frame.render', this.request, 10 );
 	}
 
 	/**
 	 * Tick through time.
 	 */
 	tick = () => {
-		Game.Hooks.do( 'Frames.tick' );
+		Game.Hooks.do( 'Frame.tick' );
 	}
 
 	/**
-	 * Update the Frames.
+	 * Update the Frame.
 	 */
 	update = () => {
-		Game.Hooks.do( 'Frames.update' );
+		Game.Hooks.do( 'Frame.update' );
 	}
 
 	/**
-	 * Render the Frames.
+	 * Render the Frame.
 	 */
 	render = () => {
-		Game.Hooks.do( 'Frames.render' );
+		Game.Hooks.do( 'Frame.render' );
 	}
 
 	/**
-	 * Animate the Frames.
+	 * Animate the Frame.
 	 *
 	 * @param {DOMHighResTimeStamp} now
 	 */
@@ -97,11 +97,11 @@ export default class Frames {
 		this.now = now;
 
 		// Loop.
-		Game.Hooks.do( 'Frames.animate' );
+		Game.Hooks.do( 'Frame.animate' );
 	}
 
 	/**
-	 * Update the Frames history.
+	 * Update the Frame history.
 	 */
 	counter = () => {
 

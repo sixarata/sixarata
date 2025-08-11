@@ -104,7 +104,7 @@ export default class Particle extends Tile {
 			return this.destroy();
 		}
 
-		const comp = Game.Frames.compensate;
+		const comp = Game.Frame.compensate;
 
 		// Update position.
 		this.physics.position.x = ( this.physics.position.x + comp( this.physics.velocity.x ) );

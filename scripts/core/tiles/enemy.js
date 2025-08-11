@@ -26,7 +26,7 @@ export default class Enemy extends Tile {
 	}
 
 	update = () => {
-		this.shootCount = this.shootCount + Game.Frames.compensate( 1 );
+		this.shootCount = this.shootCount + Game.Frame.compensate( 1 );
 
 		if ( Settings.enemies.maxShots < this.shootCount ) {
 

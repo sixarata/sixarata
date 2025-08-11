@@ -82,7 +82,7 @@ export default class Projectile extends Tile {
 			this.setTrajectory();
 		}
 
-		const comp = Game.Frames.compensate;
+		const comp = Game.Frame.compensate;
 
 		// Bump position.
 		this.physics.position.x = ( this.physics.position.x + comp( this.sin ) );
