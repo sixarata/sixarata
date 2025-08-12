@@ -32,7 +32,6 @@ export default class Gravity {
 			?? 80;
 
 		this.base  = ( g / 100 );
-		this.scale = new Scale();
 		this.force = this.base;
 	}
 }

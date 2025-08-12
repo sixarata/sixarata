@@ -32,7 +32,6 @@ export default class Friction {
 			?? 65;
 
 		this.base  = ( f / 100 );
-		this.scale = new Scale();
 		this.force = this.base;
 	}
 }
