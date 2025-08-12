@@ -35,6 +35,7 @@ export default class Keyboard extends Device {
     constructor() {
         super();
         this.set();
+        this.listen();
     }
 
     /**
@@ -44,7 +45,6 @@ export default class Keyboard extends Device {
      */
     set = () => {
         this.reset();
-        this.listen();
     }
 
     /**

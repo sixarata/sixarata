@@ -76,6 +76,7 @@ export default class Gamepad extends Device {
     constructor() {
         super();
         this.set();
+        this.listen();
     }
 
     /**
@@ -85,7 +86,6 @@ export default class Gamepad extends Device {
      */
     set = () => {
         this.reset();
-        this.listen();
     }
 
     /**
