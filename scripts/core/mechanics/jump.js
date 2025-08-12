@@ -42,22 +42,19 @@ export default class Jump {
 	}
 
 	/**
-	 * Process jump input (assumes Fall mechanic has already applied gravity).
+	 * Listen for jump input.
 	 */
 	listen = () => {
 
-		// Reset jump count if grounded.
-		if ( this.grounded() ) {
+		// Reset jump count if just landed.
+		if ( this.landed() ) {
 			this.count = 0;
 		}
 
-		// Bail if not jumping.
-		if ( ! this.doing() ) {
-			return;
-		}
-
 		// Do the jump.
-		this.do();
+		if ( this.doing() ) {
+			this.do();
+		}
 	}
 
 	/**
@@ -78,25 +75,14 @@ export default class Jump {
 
 	/**
      * Determine if tile can jump.
+	 *
+	 * @returns {Boolean} True if tile can jump, false otherwise.
      */
 	can = () => {
-
-        // Bail if no tile.
-		if ( ! this.tile ) {
-			return false;
-		}
-
-		const grounded = this.grounded();
-		const freefall = this.freefall();
-		const maxed    = this.maxed();
-
-		// Check if can jump.
 		return (
-			! maxed
+			! this.maxed()
 			&&
-			(
-				grounded
-			)
+			this.grounded()
 		);
 	}
 
@@ -114,25 +100,12 @@ export default class Jump {
 	}
 
 	/**
-	 * Check if tile is grounded (on the ground).
+	 * Check if tile is on the ground.
 	 *
-	 * @returns {Boolean} True if tile is grounded, false otherwise.
+	 * @returns {Boolean} True if tile is on the ground, false otherwise.
 	 */
 	grounded = () => {
-		return ( this.tile?.physics?.contact?.bottom );
-	}
-
-	/**
-	 * Determine if tile is free-falling.
-	 *
-	 * No jumps, but also not on ground.
-	 */
-	freefall = () => {
-		return (
-			! this.count
-			&&
-			! this.grounded()
-		);
+		return Boolean( this.tile?.physics?.contact?.bottom );
 	}
 
 	/**
@@ -141,6 +114,34 @@ export default class Jump {
 	 * @returns {Boolean} True if max jump count is reached, false otherwise.
 	 */
 	maxed = () => {
-		return ( this.count > this.settings.max );
+		return ( this.count >= this.settings.max );
+	}
+
+	/**
+	 * Check if tile has just landed.
+	 *
+	 * @returns {Boolean} True if tile has just landed, false otherwise.
+	 */
+	landed = () => {
+		return (
+			this.grounded()
+			&&
+			( this.count > 0 )
+		);
+	}
+
+	/**
+	 * Determine if tile is free-falling.
+	 *
+	 * No jumps, but also not on ground.
+	 *
+	 * @returns {Boolean} True if tile is free-falling, false otherwise.
+	 */
+	freefall = () => {
+		return (
+			! this.count
+			&&
+			! this.grounded()
+		);
 	}
 }
