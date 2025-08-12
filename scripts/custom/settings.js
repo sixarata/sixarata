@@ -2,11 +2,18 @@
 export default {
 
 	// Defaults.
-	room:      0,
-	tileSize:  32,
-	ppi:       300,
-	gameSpeed: 60,
-	hud:       false,
+	room:     0,
+	tileSize: 32,
+	ppi:      300,
+	hud:      false,
+
+	// Frames.
+	frames: {
+		throttle: 0.5,
+		second:   1000,
+		goal:     60,
+		clamp:    5
+	},
 
 	// Player.
 	player: {
