@@ -10,6 +10,18 @@ import Point    from './point.js';
 export default class Scale extends Point {
 
 	/**
+	 * Default scale settings.
+	 *
+	 * These settings are used to configure the scale object.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		size: 32,
+		dpr:  2
+	}
+
+	/**
 	 * Construct the Scale.
 	 *
 	 * @param {Number} x Default 0.
@@ -37,13 +49,15 @@ export default class Scale extends Point {
 	 */
 	reset = () => {
 
+		// Get the scale settings.
+		this.settings = Settings.scale ?? Scale.defaults;
+
 		// Set the tile size in pixels.
-		this.size = Settings.tileSize
-			?? 32; // Fallback
+		this.size = this.settings.size;
 
 		// Set the pixel ratio.
 		this.dpr = devicePixelRatio
-			?? 2; // Fallback
+			?? this.settings.dpr;
 
 		// Set the default value.
 		this.value = 1;

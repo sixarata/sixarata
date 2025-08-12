@@ -2,10 +2,15 @@
 export default {
 
 	// Defaults.
-	room:     0,
-	tileSize: 32,
-	ppi:      300,
-	hud:      false,
+	room: 0,
+	ppi:  300,
+	hud:  false,
+
+	// Scale.
+	scale: {
+		size: 32,
+		dpr:  2
+	},
 
 	// Frames.
 	frames: {
