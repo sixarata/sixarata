@@ -64,7 +64,7 @@ export default class Jump {
 	 */
 	doing = () => {
 
-        // Bail if can't.
+		// Bail if can't.
 		if ( ! this.can() ) {
 			return false;
 		}

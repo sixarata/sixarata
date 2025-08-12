@@ -62,7 +62,7 @@ export default class WallJump {
 	 */
 	doing = () => {
 
-        // Bail if can't.
+		// Bail if can't.
 		if ( ! this.can() ) {
 			return false;
 		}
@@ -139,10 +139,10 @@ export default class WallJump {
 	 */
 	walled = () => {
 
-        // Check for contact information.
+		// Check for contact information.
 		const contact = this.tile.physics?.contact;
 
-        // Bail if no contact information.
+		// Bail if no contact information.
 		if ( ! contact ) {
 			return false;
 		}

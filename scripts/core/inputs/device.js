@@ -24,9 +24,9 @@ export default class Device {
      */
     constructor() {}
 
-	/**
-	 * Tick through time.
-	 *
+    /**
+     * Tick through time.
+     *
      * Subclasses should implement device-specific polling logic.
      */
     tick = () => {}

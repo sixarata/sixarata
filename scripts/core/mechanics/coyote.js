@@ -52,7 +52,7 @@ export default class Coyote {
             return;
         }
 
-        const contact  = this.tile.physics?.contact || {};
+        const contact  = this.tile?.physics?.contact || {};
         const now      = performance.now();
         const duration = this.settings.time;
 
