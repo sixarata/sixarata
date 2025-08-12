@@ -26,7 +26,8 @@ export default class Fall {
 		tile = null
 	) => {
 		this.reset();
-		this.tile = tile;
+		this.tile     = tile;
+		this.velocity = this.tile?.physics.velocity;
 	}
 
 	/**
@@ -34,7 +35,9 @@ export default class Fall {
 	 */
 	reset = () => {
 		this.tile     = null;
+		this.comp     = Game.Frame.compensate;
 		this.settings = Settings.player.jumps;
+		this.max      = Settings.physics.terminal ?? this.settings.power;
 	}
 
 	/**
@@ -42,31 +45,18 @@ export default class Fall {
 	 */
 	listen = () => {
 
-        // Bail if no tile.
-		if ( ! this.tile ) {
-			return;
-		}
-
-		const comp     = Game.Frame.compensate;
-		const velocity = this.tile.physics?.velocity;
-		const max      = Settings.physics.terminal ?? this.settings.power;
-
 		// Airborne:
 		if ( this.doing() ) {
-
-			// Apply gravity.
-			if ( velocity.y <= max ) {
-				velocity.y = velocity.y + comp( Game.Gravity.force );
-			}
+			this.do();
 
 		// On the ground:
 		} else {
-			velocity.y = comp( Game.Gravity.force );
+			this.idle();
 		}
 
 		// Cap velocity at max.
-		if ( velocity.y > max ) {
-			velocity.y = max;
+		if ( this.maxed() ) {
+			this.velocity.y = this.max;
 		}
 	}
 
@@ -76,14 +66,7 @@ export default class Fall {
 	 * @returns {Boolean} True if the mechanic is being done, false otherwise.
 	 */
 	doing = () => {
-
-        // Bail if no tile.
-		if ( ! this.can() ) {
-			return false;
-		}
-
-		// Return whether the tile is airborne.
-		return ! this.tile.physics?.contact.bottom;
+		return this.can();
 	}
 
 	/**
@@ -92,13 +75,48 @@ export default class Fall {
 	 * @returns {Boolean} True if the mechanic can be done, false otherwise.
 	 */
 	can = () => {
+		return ! Boolean( this.tile?.physics?.contact?.bottom );
+	}
 
-        // Bail if no tile.
-		if ( ! this.tile ) {
-			return false;
+	/**
+	 * Do the fall.
+	 */
+	do = () => {
+		if ( this.velocity.y <= this.max ) {
+			this.velocity.y = this.velocity.y + this.comp( Game.Gravity.force );
 		}
+	}
 
-		// Return whether the tile is airborne.
-		return ! this.tile.physics?.contact.bottom;
+	/**
+	 * Check if tile has reached max fall speed.
+	 *
+	 * @returns {Boolean} True if max fall speed is reached, false otherwise.
+	 */
+	maxed = () => {
+		return ( this.velocity.y >= this.max );
+	}
+
+	/**
+	 * Tile is not falling.
+	 *
+	 * Apply base gravity force.
+	 */
+	idle = () => {
+		this.velocity.y = this.comp( Game.Gravity.force );
+	}
+
+	/**
+	 * Check if tile free-falling.
+	 *
+	 * No jumps, but also not on ground.
+	 *
+	 * @returns {Boolean} True if tile is free-falling, false otherwise.
+	 */
+	free = () => {
+		return (
+			! this.tile?.mechanics?.jump?.count
+			&&
+			! this.tile?.physics?.contact?.bottom
+		);
 	}
 }
