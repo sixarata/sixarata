@@ -61,13 +61,7 @@ export default class Device {
      * @returns {String} The class name.
      */
     name = () => {
-
-        // Derive name from class name.
-        const ctor = this?.constructor;
-        const name = ( ctor && ctor.name ) || '';
-
-        // Return the derived name.
-        return name;
+        return this?.constructor?.name || '';
     }
 
     /**
@@ -85,7 +79,7 @@ export default class Device {
      * @returns {Object} Override mappings.
      */
     overrides = () => {
-        return Settings?.inputs?.[ this.name().toLowerCase ] || {};
+        return Settings?.inputs?.[ this.name().toLowerCase() ] || {};
     }
 
     /**
