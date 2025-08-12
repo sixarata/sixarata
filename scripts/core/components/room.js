@@ -41,7 +41,7 @@ export default class Room {
 		this.size = new Size();
 
 		// Rooms.
-		this.id       = Settings.room;
+		this.id       = Settings.room.start;
 		this.previous = 0;
 		this.grid     = [];
 

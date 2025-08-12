@@ -1,10 +1,15 @@
-// Settings
+// Default settings.
 export default {
 
-	// Defaults.
-	room: 0,
-	ppi:  300,
-	hud:  false,
+	// Room.
+	room: {
+		start: 0
+	},
+
+	// View.
+	view: {
+		hud: false,
+	},
 
 	// Scale.
 	scale: {

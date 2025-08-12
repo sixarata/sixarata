@@ -77,12 +77,10 @@ export default class Buffer {
 	 * Resize the Buffer.
 	 *
 	 * @param {Size}    size
-	 * @param {Number}  ppi
 	 * @param {Boolean} smooth
 	 */
 	resize = (
 		size   = { w: 0, h: 0, d: 0 },
-		ppi    = 300,
 		smooth = false
 	) => {
 
