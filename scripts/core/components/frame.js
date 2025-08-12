@@ -15,10 +15,25 @@ import Settings from '../../custom/settings.js';
 export default class Frame {
 
 	/**
+	 * Default Frame settings.
+	 *
+	 * These are overridden by Settings.frames.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		throttle: 0.5,
+		second:   1000,
+		goal:     60,
+		clamp:    5
+	};
+
+	/**
 	 * Construct the object.
 	 */
 	constructor() {
 		this.set();
+		this.listen();
 	}
 
 	/**
@@ -38,14 +53,27 @@ export default class Frame {
 		this.now      = this.perf.now();
 		this.history  = [ this.now ];
 
-		// Rate.
-		this.throttle = 0.5;
-		this.second   = 1000;
-		this.goal     = Settings.gameSpeed ?? 60;
-		this.step     = ( this.second / this.goal );
+		// Settings.
+		this.settings = Settings.frames ?? Frame.defaults;
+
+		// Step.
+		this.step     = ( this.settings.second / this.settings.goal );
 
 		// Start.
 		this.current  = this.request();
+	}
+
+	/**
+	 * Add the Listeners.
+	 */
+	listen = () => {
+
+		// Listen for visibility changes.
+		addEventListener(
+			'visibilitychange',
+			this.visibility,
+			false
+		);
 	}
 
 	/**
@@ -106,7 +134,7 @@ export default class Frame {
 	counter = () => {
 
 		// Set the expired threshold.
-		const expired = ( this.now - this.second );
+		const expired = ( this.now - this.settings.second );
 
 		// Add now frame to history.
 		this.history.push( this.now );
@@ -154,8 +182,11 @@ export default class Frame {
 		value = 0
 	) => {
 
-		// Return the value multiplied by either: half, or the difference.
-		return ( value * Math.max( this.throttle, this.diff() ) );
+		// Compute a stable diff.
+		const d = this.diff();
+
+		// Return value scaled by max(throttle, diff).
+		return ( value * Math.max( this.settings.throttle, d ) );
 	}
 
 	/**
@@ -164,33 +195,62 @@ export default class Frame {
 	 * @returns {Number} The difference between frames in the history.
 	 */
 	diff = () => {
-		const
-			add = (
-				( x = 0, y = 0 ) => x + y
-			),
-			sum = (
-				( xs = [] ) => xs.reduce( add, 0 )
-			),
-			average = (
-				( xs = [] ) => xs[ 0 ] === undefined
-					? NaN
-					: ( sum( xs ) / xs.length )
-			),
-	  		delta = (
-				( [ x = 0, ...xs ] ) => xs.reduce(
-					(
-						[ acc, last ],
-						x
-					) => [
-						[ ...acc, x-last ],
-						x
-					],
-					[ [], x ]
-				) [ 0 ]
-			),
-			diff = average( delta( this.history ) ),
-			ret  = ( diff / this.step );
 
+		// Need at least two frames to establish a delta.
+		if ( this.history.length < 2 ) {
+			return 1;
+		}
+
+		// Helper functions.
+		const add     = ( x = 0, y = 0 ) => x + y;
+		const sum     = ( xs = [] ) => xs.reduce( add, 0 );
+		const average = ( xs = [] ) => xs[ 0 ] === undefined
+			? NaN
+			: ( sum( xs ) / xs.length );
+		const delta   = ( [ x = 0, ...xs ] ) => xs.reduce(
+				(
+					[ acc, last ],
+					x
+				) => [
+					[ ...acc, x - last ],
+					x
+				],
+				[ [], x ]
+			)[ 0 ];
+
+		// Compute the difference.
+		const diff = average( delta( this.history ) );
+		let ret    = ( diff / this.step );
+
+		// Guard against NaN / Infinity / non-positive values.
+		if ( ! Number.isFinite( ret ) || ret <= 0 ) {
+			ret = 1;
+		}
+
+		// Clamp extreme spikes, to avoid teleporting.
+		if ( ret > this.settings.clamp ) {
+			ret = this.settings.clamp;
+		}
+
+		// Return the frame diff value.
 		return ret;
+	}
+
+	/**
+	 * Handle page visibility changes to prevent giant deltas.
+	 *
+	 * @returns {void}
+	 */
+	visibility = () => {
+
+		// Pause the frame updates.
+		if ( document.hidden ) {
+			this.paused = this.perf.now();
+			return;
+		}
+
+		// Reset timing baseline & history with current time.
+		this.now     = this.perf.now();
+		this.history = [ this.now ];
 	}
 }
