@@ -4,14 +4,9 @@ import Settings from '../../custom/settings.js';
 /**
  * The WallJump mechanic.
  *
- * Responsible for determining whether a tile (typically the player) is eligible to
- * perform a wall jump and, when invoked, applying BOTH the vertical and horizontal
- * impulses required for the maneuver (making this mechanic self‑sufficient).
- *
- * Design Notes:
- * - Self contained: handles input -> eligibility -> vertical + horizontal impulses.
- * - Lateral force magnitude derived from jump power to keep tuning centralized.
- * - If future systems (e.g., stamina) need to veto wall jumps, they can wrap or override can().
+ * Responsible for determining whether a tile is eligible to perform a wall jump
+ * and, when invoked, applying BOTH the vertical and horizontal impulses
+ * required for the maneuver (making this mechanic self‑sufficient).
  */
 export default class WallJump {
 
@@ -43,8 +38,6 @@ export default class WallJump {
 	/**
 	 * Reset internal references back to an inert state.
 	 * Useful when recycling objects or clearing between room loads.
-	 *
-	 * @returns {void}
 	 */
 	reset = () => {
 		this.tile     = null;
@@ -52,36 +45,36 @@ export default class WallJump {
 	}
 
 	/**
-	 * Main update hook.
-	 *
-	 * @returns {void}
+	 * Listen for wall jump input.
 	 */
 	listen = () => {
 
-		// Bail if not bound to a tile.
-		if ( ! this.tile ) {
-			return;
+		// Do the wall jump.
+		if ( this.doing() ) {
+			this.do();
 		}
+	}
 
-		// Bail if wall jumping is not allowed.
+	/**
+	 * Check if the mechanic is being done.
+	 *
+	 * @returns {Boolean} True if the mechanic is being done, false otherwise.
+	 */
+	doing = () => {
+
+        // Bail if can't.
 		if ( ! this.can() ) {
-			return;
+			return false;
 		}
 
-		// Bail if jump button is not pressed.
-		if ( ! Game?.Inputs?.pressed?.( 'jump' ) ) {
-			return;
-		}
-
-		// Horizontal impulse.
-		this.impulse();
+		// Return if jump button is pressed.
+		return Game.Inputs.pressed( 'jump' );
 	}
 
 	/**
 	 * Determine if the tile is allowed to execute a wall jump on this frame.
 	 *
 	 * Conditions:
-	 * - Mechanic bound to a tile.
 	 * - Wall jumping enabled in this.settings.wall.
 	 * - A maximum jump count (this.settings.max) is defined (prevents unlimited air actions when disabled).
 	 * - Tile is NOT grounded (forces usage only while airborne beside a wall).
@@ -91,31 +84,22 @@ export default class WallJump {
 	 */
 	can = () => {
 
-        // Bail if not bound to a tile.
-		if ( ! this.tile ) {
-			return false;
-		}
+		// Conditions.
+		const set      = ( this.settings.wall && this.settings.max );
+		const walled   = this.walled();
+		const grounded = this.tile?.mechanics?.jump?.grounded() || false;
 
-        // Check for contact information.
-		const contact = this.tile.physics?.contact;
-
-        // Bail if no contact information.
-		if ( ! contact ) {
-			return false;
-		}
-
+		// Return eligibility.
 		return (
-			!! this.settings.wall
+			! grounded
 			&&
-			!! this.settings.max
-			&&
-			! contact.bottom
-			&&
-			( contact.left || contact.right )
+			( set && walled )
 		);
 	}
 
 	/**
+	 * Do the wall jump.
+	 *
 	 * Apply the horizontal impulse away from the contacted wall.
 	 * Called AFTER the Jump mechanic supplies the vertical impulse.
 	 *
@@ -127,16 +111,12 @@ export default class WallJump {
 	 *
 	 * @returns {void}
 	 */
-	impulse = () => {
+	do = () => {
 
-        // Bail if not eligible.
-		if ( ! this.can() ) {
-			return;
-		}
-
+		// Various values, for maths.
 		const velocity = this.tile.physics.velocity;
 		const contact  = this.tile.physics.contact;
-		const power    = this.settings.power || 0;
+		const power    = this.settings.power || 16;
 		const impulse  = 0.75;
 		const boost    = 1.1;
 		const lateral  = power * impulse;
@@ -150,5 +130,24 @@ export default class WallJump {
 
 		// Vertical (slightly boosted for wall jump flair).
 		velocity.y = -( this.settings.power * boost );
+	}
+
+	/**
+	 * Check if the tile is touching a wall.
+	 *
+	 * @returns {Boolean} True if the tile is walled, false otherwise.
+	 */
+	walled = () => {
+
+        // Check for contact information.
+		const contact = this.tile.physics?.contact;
+
+        // Bail if no contact information.
+		if ( ! contact ) {
+			return false;
+		}
+
+		// Return wall contact status.
+		return ( contact.left || contact.right )
 	}
 }
