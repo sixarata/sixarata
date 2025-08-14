@@ -47,6 +47,7 @@ export default {
 			wall: {
 				power:   18,
 				lateral: 18,
+				max:     1
 			},
 		},
 		retries: {

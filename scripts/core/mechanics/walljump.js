@@ -75,7 +75,7 @@ export default class WallJump {
 	 * Determine if the tile is allowed to execute a wall jump on this frame.
 	 *
 	 * Conditions:
-	 * - Wall jumping enabled in this.settings.wall.
+	 * - Wall jumping enabled in this.settings.power.
 	 * - A maximum jump count (this.settings.max) is defined (prevents unlimited air actions when disabled).
 	 * - Tile is NOT grounded (forces usage only while airborne beside a wall).
 	 * - Tile is touching a wall side (left or right contact flag).
@@ -85,7 +85,7 @@ export default class WallJump {
 	can = () => {
 
 		// Conditions.
-		const set      = ( this.settings.wall && this.settings.max );
+		const set      = ( this.settings.power && this.settings.max );
 		const walled   = this.walled();
 		const grounded = this.tile?.mechanics?.jump?.grounded() || false;
 
