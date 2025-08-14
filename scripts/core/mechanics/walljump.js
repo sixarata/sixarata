@@ -41,7 +41,7 @@ export default class WallJump {
 	 */
 	reset = () => {
 		this.tile     = null;
-		this.settings = Settings.player.jumps;
+		this.settings = Settings.player.jumps.wall;
 	}
 
 	/**
@@ -116,20 +116,18 @@ export default class WallJump {
 		// Various values, for maths.
 		const velocity = this.tile.physics.velocity;
 		const contact  = this.tile.physics.contact;
-		const power    = this.settings.power || 16;
-		const impulse  = 0.75;
-		const boost    = 1.1;
-		const lateral  = power * impulse;
+		const power    = this.settings.power || 18;
+		const lateral  = this.settings.lateral || 18;
 
 		// Horizontal.
 		if ( contact.left ) {
 			velocity.x = lateral;
 		} else if ( contact.right ) {
-			velocity.x = -lateral;
+			velocity.x = -( lateral);
 		}
 
 		// Vertical (slightly boosted for wall jump flair).
-		velocity.y = -( this.settings.power * boost );
+		velocity.y = -( power );
 	}
 
 	/**

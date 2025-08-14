@@ -38,7 +38,7 @@ export default class Jump {
 	reset = () => {
 		this.tile     = null;
 		this.count    = 0;
-		this.settings = Settings.player.jumps;
+		this.settings = Settings.player.jumps.ground;
 	}
 
 	/**

@@ -34,13 +34,19 @@ export default {
 			current: 0,
 		},
 		jumps: {
-			power:   16,
-			max:     1,
-			current: 1,
-			fall:    true,
-			wall:    true,
 			coyote: {
 				time: 200,
+			},
+			fall: {
+				speed: 16
+			},
+			ground: {
+				power: 16,
+				max:   1,
+			},
+			wall: {
+				power:   18,
+				lateral: 18,
 			},
 		},
 		retries: {

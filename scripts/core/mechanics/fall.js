@@ -36,8 +36,8 @@ export default class Fall {
 	reset = () => {
 		this.tile     = null;
 		this.comp     = Game.Frame.compensate;
-		this.settings = Settings.player.jumps;
-		this.max      = Settings.physics.terminal ?? this.settings.power;
+		this.settings = Settings.player.jumps.fall;
+		this.max      = Settings.physics.terminal ?? this.settings.speed;
 	}
 
 	/**
