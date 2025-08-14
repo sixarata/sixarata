@@ -115,7 +115,7 @@ export default class Frame {
 	/**
 	 * Animate the Frame.
 	 *
-	 * @param {DOMHighResTimeStamp} now
+	 * @param {DOMHighResTimeStamp} now From performance.now()
 	 */
 	animate = (
 		now = 0
@@ -146,7 +146,7 @@ export default class Frame {
 	/**
 	 * Request a new frame (from the browser window).
 	 *
-	 * @returns {requestAnimationFrame}
+	 * @returns {requestAnimationFrame} The requested frame.
 	 */
 	request = () => {
 		return requestAnimationFrame( this.animate );
@@ -155,7 +155,7 @@ export default class Frame {
 	/**
 	 * Cancel the current frame (from the browser window).
 	 *
-	 * @returns {cancelAnimationFrame}
+	 * @returns {cancelAnimationFrame} The cancelled frame.
 	 */
 	cancel = () => {
 		return cancelAnimationFrame( this.current );
@@ -164,7 +164,7 @@ export default class Frame {
 	/**
 	 * Return the frames-per-second measurement.
 	 *
-	 * @returns {Number}
+	 * @returns {Number} The current FPS.
 	 */
 	fps = () => {
 		return this.history.length;
