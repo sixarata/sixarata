@@ -1,4 +1,5 @@
 import Game from '../game.js';
+import Time from '../utilities/time.js';
 
 import { Tile } from './exports.js';
 import { Size, Velocity } from '../physics/exports.js';
@@ -79,7 +80,7 @@ export default class Particle extends Tile {
 		);
 
 		// Attributes.
-		this.born = new Date();
+		this.born = Time.now;
 		this.life = life;
 	}
 
@@ -88,27 +89,31 @@ export default class Particle extends Tile {
 	 */
 	tick = () => {
 
-		// Die if life is over anyways.
-		if ( ( new Date() - this.born ) >= this.life ) {
+		// Current monotonic timestamp.
+		const now  = Time.now;
+		const smol = 0.01;
+
+		// Die if life is over.
+		if ( ( now - this.born ) >= this.life ) {
 			return this.destroy();
 		}
 
 		// Die if too small to be visible.
 		if (
-			( this.physics.size.w < 0.01 )
+			( this.physics.size.w < smol )
 			&&
-			( this.physics.size.h < 0.01 )
+			( this.physics.size.h < smol )
 			&&
-			( this.physics.size.d < 0.01 )
+			( this.physics.size.d < smol )
 		) {
 			return this.destroy();
 		}
 
-		const comp = Game.Frame.compensate;
+		const scale = Time.scale;
 
 		// Update position.
-		this.physics.position.x = ( this.physics.position.x + comp( this.physics.velocity.x ) );
-		this.physics.position.y = ( this.physics.position.y + comp( this.physics.velocity.y ) );
-		this.physics.position.z = ( this.physics.position.z + comp( this.physics.velocity.z ) );
+		this.physics.position.x += ( this.physics.velocity.x * scale );
+		this.physics.position.y += ( this.physics.velocity.y * scale );
+		this.physics.position.z += ( this.physics.velocity.z * scale );
 	}
 }

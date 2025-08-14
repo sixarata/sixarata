@@ -42,6 +42,57 @@ export default class Coyote {
         this.wasOnGround = false;
     }
 
+	/**
+	 * Listen for coyote jump input.
+	 */
+	listen = () => {
+
+		// Do the coyote jump.
+		if ( this.doing() ) {
+			this.do();
+		}
+	}
+
+	/**
+	 * Check if the mechanic is being done.
+	 *
+	 * @returns {Boolean} True if the mechanic is being done, false otherwise.
+	 */
+	doing = () => {
+
+		// Bail if can't.
+		if ( ! this.can() ) {
+			return false;
+		}
+
+		// Return if jump button is pressed.
+		return Game.Inputs.pressed( 'jump' );
+	}
+
+	/**
+	 * Determine if the tile is allowed to execute a coyote jump on this frame.
+	 *
+	 * Conditions:
+	 * - Coyote jumping enabled in this.settings.coyote.
+	 * - Tile is NOT grounded (forces usage only while airborne beside a wall).
+	 *
+	 * @returns {Boolean} True when a coyote jump may be initiated.
+	 */
+	can = () => {
+
+		// Conditions.
+		const set      = ( this.settings.coyote && this.settings.max );
+		const walled   = this.walled();
+		const grounded = this.tile?.mechanics?.jump?.grounded() || false;
+
+		// Return eligibility.
+		return (
+			! grounded
+			&&
+			( set && walled )
+		);
+	}
+
     /**
      * Standalone listener for coyote logic. Call once per frame.
      */

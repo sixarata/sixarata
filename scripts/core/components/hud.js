@@ -1,4 +1,5 @@
 import Game from '../game.js';
+import Time from '../utilities/time.js';
 import Settings from '../../custom/settings.js';
 
 import { Buffer } from './exports.js';
@@ -38,8 +39,7 @@ export default class Hud {
 		this.retries = 0;
 		this.time    = 0;
 		this.frames  = 0;
-		this.fnow    = Date.now();
-		this.flast   = this.fnow;
+		this.flast   = Time.now;
 
 		// Resize.
 		this.resize();
@@ -90,12 +90,12 @@ export default class Hud {
 		this.retries = 0; //player.retries.current;
 		this.time    = clock.elapsed();
 
-		// FPS.
-		this.fnow = Date.now();
-        if ( ( this.fnow - this.flast ) >= 500 ) {
-            this.flast  = this.fnow;
-            this.frames = frames.fps();
-        }
+		// FPS (sample every 500ms using shared Time).
+		const now = Time.now;
+		if ( ( now - this.flast ) >= 500 ) {
+			this.flast  = now;
+			this.frames = frames.fps();
+		}
 	}
 
 	/**

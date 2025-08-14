@@ -1,5 +1,6 @@
 import Game from '../game.js';
 import Settings from '../../custom/settings.js';
+import Time from '../utilities/time.js';
 
 import { Tile } from './exports.js';
 import { Size, Position } from '../physics/exports.js';
@@ -82,12 +83,12 @@ export default class Projectile extends Tile {
 			this.setTrajectory();
 		}
 
-		const comp = Game.Frame.compensate;
+		const scale = Time.scale;
 
 		// Bump position.
-		this.physics.position.x = ( this.physics.position.x + comp( this.sin ) );
-		this.physics.position.y = ( this.physics.position.y + comp( this.cos ) );
-		this.physics.position.z = ( this.physics.position.z + comp( this.cos ) );
+		this.physics.position.x += ( this.sin * scale );
+		this.physics.position.y += ( this.cos * scale );
+		this.physics.position.z += ( this.cos * scale );
 	}
 
 	/**

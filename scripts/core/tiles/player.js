@@ -1,5 +1,6 @@
 import Game from '../game.js';
 import Settings from '../../custom/settings.js';
+import Time from '../utilities/time.js';
 
 import { Tile } from './exports.js';
 import { Collision, Contact, Orientation, Position, Velocity } from '../physics/exports.js';
@@ -150,19 +151,19 @@ export default class Player extends Tile {
 		// Contact.
 		this.physics.contact.reset();
 
-		// Get the delta.
-		const comp = Game.Frame.compensate;
+		// Cached per-frame movement scale.
+		const scale = Time.scale;
 
 		// Update X.
-		this.physics.position.x = ( this.physics.position.x + comp( this.physics.velocity.x ) );
+		this.physics.position.x += ( this.physics.velocity.x * scale );
 		this.mechanics.collide.listen( { x: this.physics.velocity.x } );
 
 		// Update Y.
-		this.physics.position.y = ( this.physics.position.y + comp( this.physics.velocity.y ) );
+		this.physics.position.y += ( this.physics.velocity.y * scale );
 		this.mechanics.collide.listen( { y: this.physics.velocity.y } );
 
 		// Update Z.
-		this.physics.position.z = ( this.physics.position.z + comp( this.physics.velocity.z ) );
+		this.physics.position.z += ( this.physics.velocity.z * scale );
 		this.mechanics.collide.listen( { z: this.physics.velocity.z } );
 	}
 

@@ -1,3 +1,5 @@
+import Time from './time.js';
+
 /**
  * The Hooks object.
  *
@@ -258,7 +260,7 @@ export default class Hooks {
 		// Get the suspension options.
 		const ms     = options.ms     ?? 0;
 		const frames = options.frames ?? 0;
-		const now    = Date.now();
+		const now    = Time.now;
 
 		// Bail if no suspension options.
 		if ( ! ms && ! frames ) {
@@ -336,7 +338,7 @@ export default class Hooks {
 			return;
 		}
 
-		const now = Date.now();
+		const now = Time.now;
 		const remaining = [];
 
 		for ( const entry of this.#suspended ) {

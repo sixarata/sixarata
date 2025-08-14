@@ -1,5 +1,6 @@
 import Game from '../game.js';
 import Settings from '../../custom/settings.js';
+import Time from '../utilities/time.js';
 
 import { Tile, Projectile } from './exports.js';
 
@@ -26,7 +27,7 @@ export default class Enemy extends Tile {
 	}
 
 	update = () => {
-		this.shootCount = this.shootCount + Game.Frame.compensate( 1 );
+		this.shootCount += Time.scale;
 
 		if ( Settings.enemies.maxShots < this.shootCount ) {
 

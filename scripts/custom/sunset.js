@@ -8,7 +8,7 @@ import { Scale, Sound } from '../core/sound/exports.js';
  */
 Sixarata.Hooks.add( 'Player.jump', () => {
 	let particles = [],
-		max       = 8;
+		max       = 50;
 
 	for ( let i = 0; i < max; i++ ) {
 		particles.push(

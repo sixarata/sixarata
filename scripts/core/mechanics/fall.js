@@ -1,5 +1,6 @@
 import Game from '../game.js';
 import Settings from '../../custom/settings.js';
+import Time from '../utilities/time.js';
 
 /**
  * The Fall mechanic.
@@ -35,7 +36,6 @@ export default class Fall {
 	 */
 	reset = () => {
 		this.tile     = null;
-		this.comp     = Game.Frame.compensate;
 		this.settings = Settings.player.jumps.fall;
 		this.max      = Settings.physics.terminal ?? this.settings.speed;
 	}
@@ -83,7 +83,7 @@ export default class Fall {
 	 */
 	do = () => {
 		if ( this.velocity.y <= this.max ) {
-			this.velocity.y = this.velocity.y + this.comp( Game.Gravity.force );
+			this.velocity.y += ( Game.Gravity.force * Time.scale );
 		}
 	}
 
@@ -102,7 +102,7 @@ export default class Fall {
 	 * Apply base gravity force.
 	 */
 	idle = () => {
-		this.velocity.y = this.comp( Game.Gravity.force );
+		this.velocity.y = ( Game.Gravity.force * Time.scale );
 	}
 
 	/**

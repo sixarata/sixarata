@@ -1,5 +1,5 @@
-/* global performance */
 import Game from '../game.js';
+import Time from '../utilities/time.js';
 import Settings from '../../custom/settings.js';
 
 /**
@@ -48,10 +48,11 @@ export default class Frame {
 	 */
 	reset = () => {
 
-		// Performance.
-		this.perf     = performance;
-		this.now      = this.perf.now();
-		this.history  = [ this.now ];
+		// Time.
+		Time.update();
+
+		// History.
+		this.history = [ Time.now ];
 
 		// Settings.
 		this.settings = Settings.frames ?? Frame.defaults;
@@ -121,8 +122,12 @@ export default class Frame {
 		now = 0
 	) => {
 
-		// Set now.
-		this.now = now;
+		// Set per-frame time & delta.
+		Time.update( now );
+
+		// Update deltas.
+		Time.diff  = this.diff();
+		Time.scale = Math.max( this.settings.throttle, Time.diff );
 
 		// Loop.
 		Game.Hooks.do( 'Frame.animate' );
@@ -134,10 +139,10 @@ export default class Frame {
 	counter = () => {
 
 		// Set the expired threshold.
-		const expired = ( this.now - this.settings.second );
+		const expired = ( Time.now - this.settings.second );
 
 		// Add now frame to history.
-		this.history.push( this.now );
+		this.history.push( Time.now );
 
 		// Remove expired frames from history.
 		this.history = this.history.filter( frame => ( frame > expired ) );
@@ -171,26 +176,7 @@ export default class Frame {
 	}
 
 	/**
-	 * Return the delta speed.
-	 *
-	 * Used for offsetting movement calculations, relative to frame rate.
-	 *
-	 * @param   {Number} value Default 0.
-	 * @returns {Number} The compensated value.
-	 */
-	compensate = (
-		value = 0
-	) => {
-
-		// Compute a stable diff.
-		const d = this.diff();
-
-		// Return value scaled by max(throttle, diff).
-		return ( value * Math.max( this.settings.throttle, d ) );
-	}
-
-	/**
-	 * Get the difference to compensate for.
+	 * Get the difference.
 	 *
 	 * @returns {Number} The difference between frames in the history.
 	 */
@@ -245,12 +231,14 @@ export default class Frame {
 
 		// Pause the frame updates.
 		if ( document.hidden ) {
-			this.paused = this.perf.now();
+			this.paused = Time.now;
 			return;
 		}
 
-		// Reset timing baseline & history with current time.
-		this.now     = this.perf.now();
-		this.history = [ this.now ];
+		// Time.
+		Time.update();
+
+		// History.
+		this.history = [ Time.now ];
 	}
 }

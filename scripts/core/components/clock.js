@@ -1,4 +1,5 @@
 import Game from '../game.js';
+import Time from '../utilities/time.js';
 
 /**
  * The Clock object.
@@ -26,8 +27,8 @@ export default class Clock {
 	 */
 	reset = () => {
 
-		// Get the current time.
-		const now = Date.now();
+		// Seed from shared Time module.
+		const now = Time.now;
 
 		// Set the times.
 		this.times = {
@@ -48,7 +49,7 @@ export default class Clock {
 	 * Tick through time.
 	 */
 	tick = () => {
-		this.times.current = Date.now();
+		this.times.current = Time.now;
 		this.times.elapsed = ( this.times.current - this.times.start );
 	}
 
