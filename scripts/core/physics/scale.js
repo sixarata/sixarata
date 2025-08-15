@@ -1,5 +1,6 @@
-import Settings from '../../custom/settings.js';
-import Point    from './point.js';
+import Settings   from '../../custom/settings.js';
+import Point      from './point.js';
+import Coordinate from './coordinate.js';
 
 /**
  * The Scale object.
@@ -59,9 +60,6 @@ export default class Scale extends Point {
 		this.dpr = devicePixelRatio
 			?? this.settings.dpr;
 
-		// Set the default value.
-		this.value = 1;
-
 		// Set the pixel-to-size ratio.
 		this.ratio = ( this.size * this.dpr );
 	}
@@ -69,28 +67,24 @@ export default class Scale extends Point {
 	/**
 	 * Scale ratio up by a number.
 	 *
-	 * @param   {Number} n Default 1.
-	 * @returns {Number} The scaled number.
+	 * @param   {Coordinate} n Default 1.
+	 * @returns {Coordinate} A new scaled coordinate.
 	 */
 	up = (
 		n = 1
 	) => {
-		this.value = n;
-
-		return Math.floor( n * this.ratio );
+		return new Coordinate( Math.floor( n.value * this.ratio ) );
 	}
 
 	/**
 	 * Scale ratio down by a number.
 	 *
-	 * @param   {Number} n Default 1.
-	 * @returns {Number} The scaled number.
+	 * @param   {Coordinate} n Default 1.
+	 * @returns {Coordinate} A new scaled coordinate.
 	 */
 	down = (
 		n = 1
 	) => {
-		this.value = n;
-
-		return Math.floor( n / this.ratio );
+		return new Coordinate( Math.floor( n.value / this.ratio ) );
 	}
 }
