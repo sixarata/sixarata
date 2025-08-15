@@ -65,7 +65,7 @@ export default class Scale extends Point {
 	}
 
 	/**
-	 * Scale ratio up by a number.
+	 * Scale coordinate up by the ratio.
 	 *
 	 * @param   {Coordinate} n Default 1.
 	 * @returns {Coordinate} A new scaled coordinate.
@@ -75,7 +75,7 @@ export default class Scale extends Point {
 	}
 
 	/**
-	 * Scale ratio down by a number.
+	 * Scale coordinate down by the ratio.
 	 *
 	 * @param   {Coordinate} n Default 1.
 	 * @returns {Coordinate} A new scaled coordinate.
