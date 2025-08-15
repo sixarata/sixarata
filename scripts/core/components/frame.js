@@ -52,13 +52,16 @@ export default class Frame {
 		Time.update();
 
 		// History.
-		this.history = [ Time.now ];
+		this.history  = [ Time.now ];
 
 		// Settings.
 		this.settings = Settings.frames ?? Frame.defaults;
 
 		// Step.
 		this.step     = ( this.settings.second / this.settings.goal );
+
+		// Exponential moving average.
+		this.ema = 1;
 
 		// Start.
 		this.current  = this.request();
@@ -125,8 +128,8 @@ export default class Frame {
 		// Set per-frame time & delta.
 		Time.update( now );
 
-		// Update deltas.
-		Time.diff  = this.diff();
+		// Set Time diff to raw diff.
+		Time.diff  = this.rawDiff();
 		Time.scale = Math.max( this.settings.throttle, Time.diff );
 
 		// Loop.
@@ -176,7 +179,7 @@ export default class Frame {
 	}
 
 	/**
-	 * Get the difference.
+	 * Frame-based difference based on frame timestamp history.
 	 *
 	 * @returns {Number} The difference between frames in the history.
 	 */
@@ -220,6 +223,57 @@ export default class Frame {
 
 		// Return the frame diff value.
 		return ret;
+	}
+
+	/**
+	 * Instantaneous (raw) time-based diff using last frame delta.
+	 *
+	 * @returns {Number}
+	 */
+	rawDiff = () => {
+
+		// Compute raw time-based diff.
+		let d = ( Time.delta / this.step );
+
+		// Avoid NaN, Infinity, negative values.
+		if (
+			! Number.isFinite( d )
+			||
+			( d <= 0 )
+		) {
+			d = 1;
+		}
+
+		// Clamp extreme spikes, to avoid teleporting.
+		if ( d > this.settings.clamp ) {
+			d = this.settings.clamp;
+		}
+
+		// Clamp minimum value, to avoid stalling.
+		if ( d < this.settings.throttle ) {
+			d = this.settings.throttle;
+		}
+
+		// Return the final value.
+		return d;
+	}
+
+	/**
+	 * Exponential moving average of time-based diff (reduces jitter).
+	 *
+	 * @param {Number} alpha Smoothing factor (0 < a <= 1).
+	 *                       Lower = more smoothing.
+	 * @returns {Number}
+	 */
+	emaDiff = (
+		alpha = 0.15
+	) => {
+
+		// Calculate the EMA.
+		this.ema = ( Time.diff * alpha ) + ( this.ema * ( 1 - alpha ) );
+
+		// Return the smoothed value.
+		return this.ema;
 	}
 
 	/**
