@@ -67,8 +67,8 @@ export default class Scale extends Point {
 	/**
 	 * Scale coordinate up by the ratio.
 	 *
-	 * @param   {Coordinate} n Default 1.
-	 * @returns {Coordinate} A new scaled coordinate.
+	 * @param   {Coordinate} n A coordinate to scale.
+	 * @returns {Coordinate}   A new scaled coordinate.
 	 */
 	up = ( c ) => {
 		return new Coordinate( Math.floor( c.value * this.ratio ) );
@@ -77,8 +77,8 @@ export default class Scale extends Point {
 	/**
 	 * Scale coordinate down by the ratio.
 	 *
-	 * @param   {Coordinate} n Default 1.
-	 * @returns {Coordinate} A new scaled coordinate.
+	 * @param   {Coordinate} n A coordinate to scale.
+	 * @returns {Coordinate}   A new scaled coordinate.
 	 */
 	down = ( c ) => {
 		return new Coordinate( Math.floor( c.value / this.ratio ) );
