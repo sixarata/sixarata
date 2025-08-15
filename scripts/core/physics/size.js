@@ -1,4 +1,5 @@
-import Scale from './scale.js';
+import Scale      from './scale.js';
+import Coordinate from './coordinate.js';
 
 /**
  * The Size object.
@@ -40,13 +41,13 @@ export default class Size {
 		scale = 'up'
 	) => {
 
-		// Attributes.
-		this.w = w;
-		this.h = h;
-		this.d = d;
+		// Coordinates.
+		this.w = new Coordinate( w );
+		this.h = new Coordinate( h );
+		this.d = new Coordinate( d );
 
 		// Setup the Scale.
-		this.scale = new Scale( w, h, d );
+		this.scale = new Scale( this.w, this.h, this.d );
 
 		// Scale.
 		this.rescale( scale );
