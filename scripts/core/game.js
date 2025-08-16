@@ -17,6 +17,10 @@ const Game = {
 	Room:       new Core.Components.Room(),
 	View:       new Core.Components.View(),
 
+	// Controls.
+	Combos:     new Core.Controls.Combo(),
+	History:    new Core.Controls.History(),
+
 	// Physics.
 	Friction:   new Core.Physics.Friction(),
 	Gravity:    new Core.Physics.Gravity(),
