@@ -100,4 +100,19 @@ export default class Size {
 
 		return this;
 	}
+
+	/**
+	 * Check if the Size is viewable.
+	 *
+	 * @returns {Boolean}
+	 */
+	viewable = () => {
+		return (
+			( this.w > 0 )
+			&&
+			( this.h > 0 )
+			&&
+			( this.d > 0 )
+		);
+	}
 }
