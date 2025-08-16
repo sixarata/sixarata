@@ -7,9 +7,9 @@
 
 sixarata is an open-source 2D adventure game engine.
 
-It is MIT licensed and coded entirely in vanilla JavaScript.
+It is MIT licensed, coded entirely in vanilla JavaScript, and uses no external libraries or dependencies.
 
-Use it as a head start for your own ideas, to educate others, or just to zip around.
+Fork it as a head-start for your own ideas, to educate others, or just to boop around for a bit.
 
 ## run it
 
