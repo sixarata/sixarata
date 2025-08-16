@@ -4,7 +4,7 @@ import Time from '../utilities/time.js';
 
 import { Tile } from './exports.js';
 import { Collision, Contact, Orientation, Position, Velocity } from '../physics/exports.js';
-import { Collide, Coyote, Fall, Jump, Orient, Walk, WallJump } from '../mechanics/exports.js';
+import { Collide, Coyote, Dash, Fall, Jump, Orient, Walk, WallJump } from '../mechanics/exports.js';
 
 /**
  * The Player object.
@@ -55,12 +55,16 @@ export default class Player extends Tile {
 		this.mechanics = {
 			collide: new Collide( this ),
 			coyote:  new Coyote( this ),
+			dash:    new Dash( this ),
 			fall:    new Fall( this ),
 			jump:    new Jump( this ),
 			orient:  new Orient( this ),
 			walk:    new Walk( this ),
 			wall:    new WallJump( this ),
 		};
+
+		// Register combo hook listeners for mechanics that need them.
+		this.mechanics.dash.hooks();
 	}
 
 	/**
@@ -112,6 +116,7 @@ export default class Player extends Tile {
 		// Fall then Jump.
 		this.mechanics.fall.listen();
 		this.mechanics.jump.listen();
+		this.mechanics.dash.listen();
 
 		// Jump modifiers
 		this.mechanics.wall.listen();
