@@ -50,6 +50,16 @@ export default {
 				max:     1
 			},
 		},
+		dash: {
+			power:     42,
+			upPower:   36,
+			duration:  120,
+			cooldown:  250,
+			window:    180,
+			air:       true,
+			limit:     1,
+			resetOnGround: true
+		},
 		retries: {
 			max:     10,
 			current: 0,
@@ -69,6 +79,17 @@ export default {
 	inputs: {
 		keyboard: {},
 		gamepad: {},
+		detect: {
+			doubleTapWindow: 180 // fallback if mechanic doesn't supply
+		}
+	},
+
+	// Combos: map combo name -> { sequence:[actions], window:ms }
+	combos: {
+		dashLeft:  { sequence: [ 'left', 'left'  ], window: 200 },
+		dashRight: { sequence: [ 'right','right' ], window: 200 },
+		dashUp:    { sequence: [ 'up',   'up'    ], window: 200 },
+		dashDown:  { sequence: [ 'down', 'down'  ], window: 200 },
 	},
 
 	// Physics.
