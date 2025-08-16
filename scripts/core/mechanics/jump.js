@@ -97,9 +97,6 @@ export default class Jump {
 
 		// Apply jump impulse to velocity.
 		velocity.y = -this.settings.power;
-
-		// Testing
-		//Game.Hooks.do( 'Player.jump' );
 	}
 
 	/**
