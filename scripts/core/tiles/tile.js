@@ -150,45 +150,69 @@ export default class Tile {
 			return;
 		}
 
-		// Determine if tile is in view.
-		let camera = Game.Camera.position,
-			view   = Game.View.buffer,
-			pos    = this.physics.position,
-			size   = this.physics.size,
-			offset = new Position(
-				( pos.x - camera.x ),
-				( pos.y - camera.y ),
-				( pos.z - camera.z ),
-				false
-			),
-			collide = new Collision(
-
-				// New position.
-				{
-					physics: {
-						position: offset,
-						size:     size
-					}
-				},
-
-				// Viewport.
-				{
-					physics: {
-						position: new Position(),
-						size:     view.size
-					}
-				}
-			);
-
-		// Skip if out of bounds.
-		if ( ! collide.detect() ) {
+		// Skip if unviewable.
+		if ( ! this.viewable() ) {
 			return;
 		}
 
 		// Draw the rectangle.
-		view.rect( this.color, offset, size, this.opacity );
+		Game.View.buffer.rect(
+			this.color,
+			this.offset(),
+			this.physics.size,
+			this.opacity
+		);
 
 		Game.Hooks.do( 'Tile.render', this );
+	}
+
+	/**
+	 * Get the offset position of the Tile.
+	 *
+	 * Relative to the Game Camera.
+	 *
+	 * @returns {Position}
+	 */
+	offset = () => {
+		let camera = Game.Camera.position,
+			pos    = this.physics.position;
+
+		return new Position(
+			( pos.x - camera.x ),
+			( pos.y - camera.y ),
+			( pos.z - camera.z ),
+			false
+		);
+	}
+
+	/**
+	 * Check if the Tile is within the Game View.
+	 *
+	 * @returns {Boolean}
+	 */
+	viewable = () => {
+
+		// Determine if tile is in view.
+		let offset = {
+				physics: {
+					position: this.offset(),
+					size:     this.physics.size
+				}
+			},
+
+			// Viewport.
+			viewport = {
+				physics: {
+					position: Game.View.buffer.position,
+					size:     Game.View.buffer.size
+				}
+			},
+
+			// Collision
+			collide = new Collision( offset, viewport );
+
+		// Check for collision.
+		return collide.detect();
 	}
 
 	/**
@@ -212,19 +236,41 @@ export default class Tile {
 	 * @returns {Boolean}
 	 */
 	destroy = () => {
-		const index = this.group.indexOf( this );
 
-		// Remove item and return true.
-		if ( index > -1 ) {
-			this.group.splice( index, 1 );
+		// Get the group array.
+		const arr = this.group;
 
-			Game.Hooks.do( 'Tile.destroy', this );
-
-			//delete this;
-			return true;
+		// Bail if no group or empty.
+		if ( ! arr || ! arr.length ) {
+			return false;
 		}
 
-		// Assume false.
-		return false;
+		// Find the index.
+		const i = arr.indexOf( this );
+
+		// Bail if not found.
+		if ( i < 0 ) {
+			return false;
+		}
+
+		// Swap with last then pop to O(1) remove
+		const last = arr.length - 1;
+
+		// Swap with last if not the same
+		if ( i !== last ) {
+			arr[ i ] = arr[ last ];
+		}
+
+		// Remove last item.
+		arr.pop();
+
+		// Hook.
+		Game.Hooks.do( 'Tile.destroy', this );
+
+		// Delete reference to this tile.
+		delete this;
+
+		// Return.
+		return true;
 	}
 }

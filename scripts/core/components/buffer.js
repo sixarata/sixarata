@@ -65,8 +65,9 @@ export default class Buffer {
 		this.canvas.innerText = 'Sorry, but your web browser does not support this.';
 		this.context.imageSmoothingEnabled = false;
 
-		// Scale.
-		this.scale = new Scale();
+		// Physics.
+		this.scale    = new Scale();
+		this.position = new Position();
 
 		// Resize & Rescale.
 		this.resize( size );
