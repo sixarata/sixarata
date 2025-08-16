@@ -193,7 +193,7 @@ export default class Tile {
 		}
 
 		// Determine if tile is in view.
-		let offset = {
+		const offset = {
 				physics: {
 					position: this.offset(),
 					size:     this.physics.size
