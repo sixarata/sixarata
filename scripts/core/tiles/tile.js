@@ -140,16 +140,6 @@ export default class Tile {
 	 */
 	render = () => {
 
-		// Skip if invisible.
-		if ( ! this.visible ) {
-			return;
-		}
-
-		// Skip if no size.
-		if ( ! Math.round( this.physics.size.w + this.physics.size.h + this.physics.size.d ) ) {
-			return;
-		}
-
 		// Skip if unviewable.
 		if ( ! this.viewable() ) {
 			return;
@@ -191,6 +181,16 @@ export default class Tile {
 	 * @returns {Boolean}
 	 */
 	viewable = () => {
+
+		// Skip if invisible.
+		if ( ! this.visible ) {
+			return;
+		}
+
+		// Skip if size is not viewable.
+		if ( ! this.physics.size.viewable() ) {
+			return;
+		}
 
 		// Determine if tile is in view.
 		let offset = {
