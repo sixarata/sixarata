@@ -40,14 +40,20 @@ export default class WallJump {
 	 * Useful when recycling objects or clearing between room loads.
 	 */
 	reset = () => {
-		this.tile     = null;
-		this.settings = Settings.player.jumps.wall;
+		this.tile      = null;
+		this.settings  = Settings.player.jumps.wall;
+		this.listening = true;
 	}
 
 	/**
 	 * Listen for wall jump input.
 	 */
 	listen = () => {
+
+		// Skip if not listening.
+		if ( ! this.listening ) {
+			return;
+		}
 
 		// Do the wall jump.
 		if ( this.doing() ) {
@@ -62,7 +68,7 @@ export default class WallJump {
 	 */
 	doing = () => {
 
-		// Bail if can't.
+		// Skip if can't.
 		if ( ! this.can() ) {
 			return false;
 		}
@@ -140,7 +146,7 @@ export default class WallJump {
 		// Check for contact information.
 		const contact = this.tile.physics?.contact;
 
-		// Bail if no contact information.
+		// Skip if no contact information.
 		if ( ! contact ) {
 			return false;
 		}

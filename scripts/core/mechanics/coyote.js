@@ -37,21 +37,13 @@ export default class Coyote {
      */
     reset = () => {
         this.tile        = null;
-        this.timer       = 0;
+        this.listening   = true;
         this.settings    = Settings.player.jumps.coyote;
+        this.timer       = 0;
         this.wasOnGround = false;
     }
 
-	/**
-	 * Listen for coyote jump input.
-	 */
-	listen = () => {
 
-		// Do the coyote jump.
-		if ( this.doing() ) {
-			this.do();
-		}
-	}
 
 	/**
 	 * Check if the mechanic is being done.
@@ -60,7 +52,7 @@ export default class Coyote {
 	 */
 	doing = () => {
 
-		// Bail if can't.
+		// Skip if can't.
 		if ( ! this.can() ) {
 			return false;
 		}
@@ -84,12 +76,15 @@ export default class Coyote {
 		const set      = ( this.settings.coyote && this.settings.max );
 		const walled   = this.walled();
 		const grounded = this.tile?.mechanics?.jump?.grounded() || false;
+        const now      = performance.now();
 
 		// Return eligibility.
 		return (
 			! grounded
 			&&
 			( set && walled )
+            &&
+            this.timer && ( now < this.timer )
 		);
 	}
 
@@ -98,7 +93,12 @@ export default class Coyote {
      */
     listen = () => {
 
-        // Bail if no tile is set.
+        // Skip if not listening.
+        if ( ! this.listening ) {
+            return;
+        }
+
+        // Skip if no tile.
         if ( ! this.tile ) {
             return;
         }
@@ -118,21 +118,6 @@ export default class Coyote {
         }
 
         this.wasOnGround = !! contact.bottom;
-    }
-
-    /**
-     * Returns true if coyote jump is currently allowed.
-     */
-    active = () => {
-
-        // Bail if no tile is set.
-        if ( ! this.tile ) {
-            return false
-        };
-
-        const now = performance.now();
-
-        return this.timer && ( now < this.timer );
     }
 
     /**

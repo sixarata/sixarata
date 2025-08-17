@@ -35,15 +35,21 @@ export default class Fall {
 	 * Reset the mechanic.
 	 */
 	reset = () => {
-		this.tile     = null;
-		this.settings = Settings.player.jumps.fall;
-		this.max      = Settings.physics.terminal ?? this.settings.speed;
+		this.tile      = null;
+		this.settings  = Settings.player.jumps.fall;
+		this.max       = Settings.physics.terminal ?? this.settings.speed;
+		this.listening = true;
 	}
 
 	/**
 	 * Apply gravity & clamp downward velocity.
 	 */
 	listen = () => {
+
+		// Skip if not listening.
+		if ( ! this.listening ) {
+			return;
+		}
 
 		// Airborne:
 		if ( this.doing() ) {

@@ -262,7 +262,7 @@ export default class Hooks {
 		const frames = options.frames ?? 0;
 		const now    = Time.now;
 
-		// Bail if no suspension options.
+		// Skip if no suspension options.
 		if ( ! ms && ! frames ) {
 			return false;
 		}
@@ -333,7 +333,7 @@ export default class Hooks {
 		advanceFrames = false
 	) => {
 
-		// Bail if no suspended hooks.
+		// Skip if no suspended hooks.
 		if ( ! this.#suspended.length ) {
 			return;
 		}

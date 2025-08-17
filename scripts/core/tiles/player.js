@@ -202,7 +202,7 @@ export default class Player extends Tile {
 	 */
 	checkFell = () => {
 
-		// Bail if not falling.
+		// Skip if not falling.
 		if ( ! this.fell() ) {
 			return false;
 		}
@@ -262,7 +262,7 @@ export default class Player extends Tile {
 	 */
 	checkProjectiles = () => {
 
-		// Bail if invincible.
+		// Skip if invincible.
 		if ( Settings.player.invincible ) {
 			return false;
 		}

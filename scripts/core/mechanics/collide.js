@@ -29,7 +29,8 @@ export default class Collide {
 
 	/** Reset the mechanic. */
 	reset = () => {
-		this.tile = null;
+		this.tile      = null;
+		this.listening = true;
 	}
 
 	/**
@@ -41,7 +42,12 @@ export default class Collide {
 		velocity = { x: 0, y: 0, z: 0 }
 	) => {
 
-        // Bail if no tile.
+		// Skip if not listening.
+		if ( ! this.listening ) {
+			return;
+		}
+
+        // Skip if no tile.
 		if ( ! this.tile ) {
 			return;
 		}
@@ -50,7 +56,7 @@ export default class Collide {
 		let solids = Game.Room.tiles.platforms.concat( Game.Room.tiles.walls );
 		let len    = solids.length;
 
-        // Bail if no solids.
+        // Skip if no solids.
 		if ( ! len ) {
 			return;
 		}

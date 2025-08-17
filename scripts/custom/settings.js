@@ -51,14 +51,13 @@ export default {
 			},
 		},
 		dash: {
-			power:     42,
-			upPower:   36,
-			duration:  120,
-			cooldown:  250,
-			window:    180,
-			air:       true,
-			limit:     1,
-			resetOnGround: true
+			xpower:   42,
+			ypower:   16,
+			duration: 60,
+			cooldown: 250,
+			window:   180,
+			air:      true,
+			limit:    10,
 		},
 		retries: {
 			max:     10,

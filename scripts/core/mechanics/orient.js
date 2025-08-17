@@ -35,7 +35,8 @@ export default class Orient {
 	 * Reset the mechanic.
 	 */
 	reset = () => {
-		this.tile = null;
+		this.tile      = null;
+		this.listening = true;
 	}
 
 	/**
@@ -43,7 +44,12 @@ export default class Orient {
 	 */
 	listen = () => {
 
-		// Bail if no tile.
+		// Skip if not listening.
+		if ( ! this.listening ) {
+			return;
+		}
+
+		// Skip if no tile.
 		if ( ! this.tile ) {
 			return;
 		}

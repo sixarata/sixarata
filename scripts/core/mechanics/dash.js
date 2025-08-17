@@ -18,15 +18,17 @@ export default class Dash {
 
 	reset = () => {
 		this.tile       = null;
-		this.lastDir    = null;    // 'left'|'right'|'up'|'down'
-		this.lastTime   = 0;       // ms of last tap
-		this.active     = false;   // dash currently in progress
-		this.endAt      = 0;       // timestamp dash ends
-		this.coolUntil  = 0;       // cooldown end timestamp
-		this.uses       = 0;       // dashes used since leaving ground
+		this.lastDir    = null;
+		this.lastTime   = 0;
+        this.listening  = true;
+		this.active     = false;
+		this.endAt      = 0;
+		this.coolUntil  = 0;
+		this.uses       = 0;
 	}
 
 	listen = () => {
+        if ( ! this.listening ) return;
 		if ( ! this.tile ) return;
 
 		const cfg = Settings.player.dash;
@@ -34,7 +36,7 @@ export default class Dash {
 		const grounded = Boolean( this.tile?.physics?.contact?.bottom );
 
 		// Reset dash uses on ground.
-		if ( grounded && cfg.resetOnGround ) {
+		if ( grounded ) {
 			this.uses = 0;
 		}
 
@@ -43,7 +45,7 @@ export default class Dash {
 			if ( now >= this.endAt ) {
 				this.active = false;
 			} else {
-				return; // lock velocity during dash
+				return;
 			}
 		}
 
@@ -63,7 +65,11 @@ export default class Dash {
 	/**
 	 * Handle combo triggers.
 	 */
-	combo = ( name = '', data = {} ) => {
+	combo = (
+        name = '',
+        data = {}
+    ) => {
+		if ( ! this.listening ) return;
 		const cfg = Settings.player.dash;
 		const now = Time.now;
 
@@ -77,33 +83,84 @@ export default class Dash {
 		else return; // not a dash combo
 
 		// Trigger dash.
-		if ( ! this.tile?.physics?.contact?.bottom && ! cfg.air && ( dir === 'up' || dir === 'down' ) ) return;
-		this.trigger( dir, now, cfg );
+		if (
+            ! this.tile?.physics?.contact?.bottom
+            &&
+            ! cfg.air
+            &&
+            ( dir === 'up' || dir === 'down' )
+        ) {
+            return;
+        }
+
+		this.do( dir, now, cfg );
 	}
 
-	trigger = ( dir, now, cfg ) => {
-		const v   = this.tile?.physics?.velocity;
-		if ( ! v ) return;
+	do = ( dir, now, cfg ) => {
+		const v = this.tile?.physics?.velocity;
+
+		if ( ! v ) {
+            return;
+        }
+
 		this.active    = true;
 		this.endAt     = now + cfg.duration;
 		this.coolUntil = now + cfg.cooldown;
 		this.uses++;
 
+        // Stop all movement.
+        v.y = 0;
+        v.x = 0;
+
 		// Base zero friction style impulse: overwrite components.
 		if ( dir === 'left' ) {
-			v.x = -cfg.power;
-			v.y = 0; // optional vertical cancel
+			v.x = -cfg.xpower;
+
 		} else if ( dir === 'right' ) {
-			v.x = cfg.power;
-			v.y = 0;
+			v.x = cfg.xpower;
+
+        // Upward.
 		} else if ( dir === 'up' ) {
-			v.y = -cfg.upPower;
+			v.y = -cfg.ypower;
+
+        // Downward.
 		} else if ( dir === 'down' ) {
-			v.y = cfg.upPower; // downward dash
+			v.y = cfg.ypower;
 		}
 
-		Game.Hooks.do( 'Dash.trigger', this.tile, dir, cfg );
+        // Disable movement mechanics during dash.
+		this.tile.mechanics.fall.listening = false;
+		this.tile.mechanics.jump.listening = false;
+        this.tile.mechanics.walk.listening = false;
 
-        console.log( v );
+		// Schedule re-enable check each frame via hook only once.
+		if ( ! this._resumeHookAdded ) {
+			Game.Hooks.add( 'Frame.tick', this.resume, 13 );
+			this._resumeHookAdded = true;
+		}
+	}
+
+	/**
+	 * Resume walking after dash ends; remove self once done.
+	 */
+	resume = () => {
+
+        // Re-enable movement mechanics.
+		if ( ! this.active ) {
+            this.tile.mechanics.fall.listening = true;
+            this.tile.mechanics.jump.listening = true;
+            this.tile.mechanics.walk.listening = true;
+			this._resumeHookAdded = false;
+			return;
+		}
+
+		// Check if time passed.
+		if (
+            this.active
+            &&
+            ( Time.now >= this.endAt )
+         ) {
+			this.active = false;
+		}
 	}
 }

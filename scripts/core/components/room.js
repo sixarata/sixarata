@@ -343,7 +343,7 @@ export default class Room {
 				// Defaults.
 				let l = items.length;
 
-				// Bail if empty.
+				// Skip if empty.
 				if ( ! l ) {
 					return;
 				}

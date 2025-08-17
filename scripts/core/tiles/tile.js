@@ -240,7 +240,7 @@ export default class Tile {
 		// Get the group array.
 		const arr = this.group;
 
-		// Bail if no group or empty.
+		// Skip if no group or empty.
 		if ( ! arr || ! arr.length ) {
 			return false;
 		}
@@ -248,7 +248,7 @@ export default class Tile {
 		// Find the index.
 		const i = arr.indexOf( this );
 
-		// Bail if not found.
+		// Skip if not found.
 		if ( i < 0 ) {
 			return false;
 		}

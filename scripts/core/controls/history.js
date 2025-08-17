@@ -49,7 +49,7 @@ export default class History {
 	 */
 	tick = () => {
 
-        // Bail if no devices.
+        // Skip if no devices.
 		if ( ! Game?.Inputs?.devices ) {
             return;
         }

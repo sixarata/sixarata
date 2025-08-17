@@ -36,7 +36,8 @@ export default class Walk {
 	 * Reset the mechanic.
 	 */
 	reset = () => {
-		this.tile = null;
+		this.tile      = null;
+		this.listening = true;
 	}
 
 	/**
@@ -44,7 +45,12 @@ export default class Walk {
 	 */
 	listen = () => {
 
-		// Bail if there's no tile.
+		// Skip if not listening.
+		if ( ! this.listening ) {
+			return;
+		}
+
+		// Skip if there's no tile.
 		if ( ! this.tile ) {
 			return;
 		}

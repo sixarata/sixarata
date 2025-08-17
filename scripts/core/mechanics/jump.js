@@ -36,15 +36,20 @@ export default class Jump {
 	 * Reset the mechanic.
 	 */
 	reset = () => {
-		this.tile     = null;
-		this.count    = 0;
-		this.settings = Settings.player.jumps.ground;
+		this.tile      = null;
+		this.count     = 0;
+		this.listening = true;
+		this.settings  = Settings.player.jumps.ground;
 	}
 
 	/**
 	 * Listen for jump input.
 	 */
 	listen = () => {
+
+		if ( ! this.listening ) {
+			return;
+		}
 
 		// Reset jump count if just landed.
 		if ( this.landed() ) {
@@ -64,7 +69,7 @@ export default class Jump {
 	 */
 	doing = () => {
 
-		// Bail if can't.
+		// Skip if can't.
 		if ( ! this.can() ) {
 			return false;
 		}
