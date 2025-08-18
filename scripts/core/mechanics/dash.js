@@ -1,6 +1,7 @@
 import Game from '../game.js';
 import Settings from '../../custom/settings.js';
 import Time from '../utilities/time.js';
+import Timer from '../utilities/timer.js';
 
 /**
  * Dash mechanic
@@ -46,16 +47,17 @@ export default class Dash {
 	 * Reset internal state to defaults.
 	 */
 	reset = () => {
-		this.tile       = null;
-        this.settings   = Settings.player.dash;
-        this.listening  = true;
 
         // Attributes.
-		this.dashing    = false;
-		this.endAt      = 0;
-		this.hoverEndAt = 0;
-		this.coolUntil  = 0;
-		this.uses       = 0;
+		this.tile      = null;
+        this.settings  = Settings.player.dash;
+        this.listening = true;
+        this.uses      = 0;
+
+        // Timers.
+		this.impulse   = new Timer();
+		this.hover     = new Timer();
+		this.cool      = new Timer();
 	}
 
 	/**
@@ -98,36 +100,31 @@ export default class Dash {
 			this.uses = 0;
 		}
 
-		// Actively dashing.
-		if ( this.dashing ) {
+		// While impulse active we exit early (movement locked to dash velocity set in do()).
+		if ( this.impulse.active() ) {
+			return;
+		}
 
-            // Still dashing.
-			if ( Time.now < this.endAt ) {
-				return;
-			}
-
-			// Transition out of dash, into hover.
-			this.dashing = false;
-
+		// Impulse just ended (impulse.done true & hover still active): zero any residual velocity each frame until hover ends.
+		if (
+			this.impulse.done()
+			&&
+			this.hover.active()
+		) {
 			const v = this.tile?.physics?.velocity;
-			if ( v ) {
+			if ( v && ( v.x !== 0 || v.y !== 0 ) ) {
 				v.x = 0;
 				v.y = 0;
 			}
 		}
 
-		// Hovering.
-		if ( this.hoverEndAt > 0 ) {
+		// Hover lockout.
+		if ( this.hover.active() ) {
+			return;
 
-            // Still hovering.
-			if ( Time.now < this.hoverEndAt ) {
-				return;
-			}
-
-			// Hover finished.
-			this.hoverEndAt = 0;
-
-            // Restore mechanics.
+		// Hover existed and ended
+		} else if ( this.hover.done() ) {
+			this.hover.clear();
 			this.ignore( true );
 		}
 	}
@@ -202,13 +199,13 @@ export default class Dash {
 			return false;
 		}
 
-        // Skip if already dashing.
-		if ( this.dashing ) {
+		// Skip if already dashing.
+		if ( this.impulse.active() ) {
 			return false;
 		}
 
         // Skip if not cooled down.
-		if ( ! this.cooled() ) {
+		if ( this.cool.active() ) {
 			return false;
 		}
 
@@ -231,15 +228,6 @@ export default class Dash {
 	}
 
     /**
-     * Check if the dash is cooled down.
-     *
-     * @returns {Boolean} True if dash is cooled down.
-     */
-    cooled = () => {
-        return ( Time.now > this.coolUntil );
-    }
-
-    /**
      * Check if the dash has reached its maximum uses.
      *
      * @returns {Boolean} True if dash has maxed out.
@@ -253,19 +241,21 @@ export default class Dash {
 	 *
 	 * @returns {Boolean}
 	 */
-	doing = (
-        dir = ''
-    ) => {
+		doing = (
+			dir = ''
+		) => {
 
-		// Skip if can't.
-		if ( ! this.can( dir ) ) {
-			return false;
+            // Skip if can't.
+			if ( ! this.can( dir ) ) {
+				return false;
+			}
+
+            // Execute dash.
+			this.do( dir );
+
+            // Return if impulse is active.
+			return this.impulse.active();
 		}
-
-        this.do( dir );
-
-		return this.dashing;
-	}
 
 	/**
 	 * Do the dash.
@@ -275,7 +265,7 @@ export default class Dash {
 	 * @param {String} dir Direction of dash.
 	 */
 	do = (
-	    dir
+	    dir = ''
 	) => {
 
         // Get velocity.
@@ -286,12 +276,13 @@ export default class Dash {
 			return;
 		}
 
-		// Activate state.
-		this.dashing    = true;
-		this.endAt      = Time.now + this.settings.duration;
-		this.hoverEndAt = this.endAt + this.settings.hover;
-		this.coolUntil  = Time.now + this.settings.cooldown;
-		this.uses++;
+        // Activate state.
+        this.uses++;
+
+        // Update timers.
+		this.impulse.set( this.settings.duration );
+		this.hover.set( this.settings.duration + this.settings.hover );
+		this.cool.set( this.settings.cooldown );
 
 		// Reset motion before impulse.
 		v.x = 0;
