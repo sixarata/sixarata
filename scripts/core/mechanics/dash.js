@@ -78,8 +78,9 @@ export default class Dash {
 			return;
 		}
 
-		// Reset use counter when grounded.
 		if (
+
+            // Maybe reset use counter when grounded.
             (
                 this.settings.reset.ground
                 &&
@@ -88,6 +89,7 @@ export default class Dash {
 
             ||
 
+            // Maybe reset use counter when walled.
             (
                 this.settings.reset.wall
                 &&
@@ -133,8 +135,6 @@ export default class Dash {
 
 	/**
 	 * Register the combo trigger listener.
-     *
-	 * Should be called once (Player setup). Safe to call multiple times; duplicate prevented by Hooks internals.
 	 */
 	hooks = () => {
 		Game.Hooks.add( 'Combo.trigger', this.combo );
@@ -294,7 +294,7 @@ export default class Dash {
 		this.coolUntil  = ( Time.now + this.settings.cooldown );
 		this.uses++;
 
-		// Reset motion before impulse (ensures deterministic start speed).
+		// Reset motion before impulse.
 		v.x = 0;
 		v.y = 0;
 
