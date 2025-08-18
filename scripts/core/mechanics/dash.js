@@ -52,7 +52,6 @@ export default class Dash {
 
         // Attributes.
 		this.dashing    = false;
-		this.hovering   = false;
 		this.endAt      = 0;
 		this.hoverEndAt = 0;
 		this.coolUntil  = 0;
@@ -289,9 +288,9 @@ export default class Dash {
 
 		// Activate state.
 		this.dashing    = true;
-		this.endAt      = ( Time.now + this.settings.duration );
-		this.hoverEndAt = ( this.endAt + this.settings.hover  );
-		this.coolUntil  = ( Time.now + this.settings.cooldown );
+		this.endAt      = Time.now + this.settings.duration;
+		this.hoverEndAt = this.endAt + this.settings.hover;
+		this.coolUntil  = Time.now + this.settings.cooldown;
 		this.uses++;
 
 		// Reset motion before impulse.
