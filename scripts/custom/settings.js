@@ -51,9 +51,9 @@ export default {
 			},
 		},
 		dash: {
-			xpower:   60,
+			xpower:   75,
+			ypower:   75,
 			duration: 60,
-			ypower:   60,
 			cooldown: 250,
 			hover:    250,
 			air:      true,
