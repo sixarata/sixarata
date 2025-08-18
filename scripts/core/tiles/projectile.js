@@ -26,7 +26,7 @@ export default class Projectile extends Tile {
 		group  = [],
 		tile   = {},
 		target = {},
-		size   = { w: 0.3, h: 0.3, d: 0 },
+		size   = { w: 0.3, h: 0.3, d: 0.3 },
 		type   = 'direct'
 	) {
 
