@@ -51,13 +51,17 @@ export default {
 			},
 		},
 		dash: {
-			xpower:   42,
-			ypower:   16,
+			xpower:   60,
 			duration: 60,
+			ypower:   60,
 			cooldown: 250,
-			window:   180,
+			hover:    250,
 			air:      true,
-			limit:    10,
+			limit:    3,
+			reset: {
+				ground: true,
+				wall:   true,
+			}
 		},
 		retries: {
 			max:     10,

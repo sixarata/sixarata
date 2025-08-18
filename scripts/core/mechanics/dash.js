@@ -3,164 +3,341 @@ import Settings from '../../custom/settings.js';
 import Time from '../utilities/time.js';
 
 /**
- * Dash mechanic: double-tap directional dash (Celeste-inspired).
+ * Dash mechanic
+ *
+ * Responsibilities:
+ * - Consumes combo trigger events (from Controls / Combo system).
+ * - Validates dash eligibility (cooldown, limit, air permissions).
+ * - Applies directional velocity impulse with temporary movement lockout.
+ * - Restores normal movement mechanics when dash concludes.
+ *
+ * Lifecycle Notes:
+ * - Use `hooks()` once after Player/mechanics setup to register combo listener.
+ * - Call `listen()` each frame so natural expiration (time based) can occur.
+ * - Query `doing()` to know if currently dashing; `can(dir)` to test future dash.
  */
 export default class Dash {
 
-	constructor( tile = null ) {
+	/**
+	 * Construct the Dash mechanic.
+	 *
+	 * @param {Tile|null} tile Optional tile to bind immediately.
+	 */
+	constructor(
+        tile = null
+    ) {
 		this.set( tile );
 	}
 
-	set = ( tile = null ) => {
+	/**
+	 * Bind (or re‑bind) the mechanic to a tile.
+	 * Resets internal state first to avoid stale references.
+	 *
+	 * @param {Tile|null} tile Tile that owns this mechanic.
+	 */
+	set = (
+        tile = null
+    ) => {
 		this.reset();
 		this.tile = tile;
 	}
 
+	/**
+	 * Reset internal state to defaults.
+	 */
 	reset = () => {
 		this.tile       = null;
-		this.lastDir    = null;
-		this.lastTime   = 0;
+        this.settings   = Settings.player.dash;
         this.listening  = true;
-		this.active     = false;
+
+        // Attributes.
+		this.dashing    = false;
+		this.hovering   = false;
 		this.endAt      = 0;
+		this.hoverEndAt = 0;
 		this.coolUntil  = 0;
 		this.uses       = 0;
 	}
 
+	/**
+	 * Per‑frame housekeeping.
+     * - expires active dash
+     * - resets use counter
+     *
+	 * Should be invoked once per frame, before velocity integration.
+	 */
 	listen = () => {
-        if ( ! this.listening ) return;
-		if ( ! this.tile ) return;
 
-		const cfg = Settings.player.dash;
-		const now = Time.now;
-		const grounded = Boolean( this.tile?.physics?.contact?.bottom );
+		// Skip if not listening.
+		if ( ! this.listening ) {
+			return;
+		}
 
-		// Reset dash uses on ground.
-		if ( grounded ) {
+		// Skip if no tile.
+		if ( ! this.tile ) {
+			return;
+		}
+
+		// Reset use counter when grounded.
+		if (
+            (
+                this.settings.reset.ground
+                &&
+                this.tile.mechanics.jump.grounded()
+            )
+
+            ||
+
+            (
+                this.settings.reset.wall
+                &&
+                this.tile.mechanics.wall.walled()
+            )
+        ) {
 			this.uses = 0;
 		}
 
-		// If currently dashing, maintain velocity until end.
-		if ( this.active ) {
-			if ( now >= this.endAt ) {
-				this.active = false;
-			} else {
+		// Actively dashing.
+		if ( this.dashing ) {
+
+            // Still dashing.
+			if ( Time.now < this.endAt ) {
 				return;
+			}
+
+			// Transition out of dash, into hover.
+			this.dashing = false;
+
+			const v = this.tile?.physics?.velocity;
+			if ( v ) {
+				v.x = 0;
+				v.y = 0;
 			}
 		}
 
-		// Abort if on cooldown or out of uses.
-		if ( now < this.coolUntil || this.uses >= cfg.limit ) return;
+		// Hovering.
+		if ( this.hoverEndAt > 0 ) {
 
-		// Dash no longer scans raw inputs; it instead waits for combo hooks.
+            // Still hovering.
+			if ( Time.now < this.hoverEndAt ) {
+				return;
+			}
+
+			// Hover finished.
+			this.hoverEndAt = 0;
+
+            // Restore mechanics.
+			this.ignore( true );
+		}
 	}
 
 	/**
-	 * Register hook to react to combo triggers.
+	 * Register the combo trigger listener.
+     *
+	 * Should be called once (Player setup). Safe to call multiple times; duplicate prevented by Hooks internals.
 	 */
 	hooks = () => {
 		Game.Hooks.add( 'Combo.trigger', this.combo );
 	}
 
 	/**
-	 * Handle combo triggers.
+	 * Combo hook callback.
+     *
+     * Translates combo name -> direction and initiates dash.
+	 *
+	 * @param {String} name  Combo identifier.
+	 * @param {Object} data  Additional combo metadata (unused presently).
 	 */
 	combo = (
         name = '',
         data = {}
     ) => {
-		if ( ! this.listening ) return;
-		const cfg = Settings.player.dash;
-		const now = Time.now;
 
-		if ( now < this.coolUntil || this.uses >= cfg.limit ) return;
-
-		let dir = '';
-		if ( name === 'dashLeft' ) dir = 'left';
-		else if ( name === 'dashRight' ) dir = 'right';
-		else if ( name === 'dashUp' ) dir = 'up';
-		else if ( name === 'dashDown' ) dir = 'down';
-		else return; // not a dash combo
-
-		// Trigger dash.
-		if (
-            ! this.tile?.physics?.contact?.bottom
-            &&
-            ! cfg.air
-            &&
-            ( dir === 'up' || dir === 'down' )
-        ) {
-            return;
-        }
-
-		this.do( dir, now, cfg );
-	}
-
-	do = ( dir, now, cfg ) => {
-		const v = this.tile?.physics?.velocity;
-
-		if ( ! v ) {
-            return;
-        }
-
-		this.active    = true;
-		this.endAt     = now + cfg.duration;
-		this.coolUntil = now + cfg.cooldown;
-		this.uses++;
-
-        // Stop all movement.
-        v.y = 0;
-        v.x = 0;
-
-		// Base zero friction style impulse: overwrite components.
-		if ( dir === 'left' ) {
-			v.x = -cfg.xpower;
-
-		} else if ( dir === 'right' ) {
-			v.x = cfg.xpower;
-
-        // Upward.
-		} else if ( dir === 'up' ) {
-			v.y = -cfg.ypower;
-
-        // Downward.
-		} else if ( dir === 'down' ) {
-			v.y = cfg.ypower;
-		}
-
-        // Disable movement mechanics during dash.
-		this.tile.mechanics.fall.listening = false;
-		this.tile.mechanics.jump.listening = false;
-        this.tile.mechanics.walk.listening = false;
-
-		// Schedule re-enable check each frame via hook only once.
-		if ( ! this._resumeHookAdded ) {
-			Game.Hooks.add( 'Frame.tick', this.resume, 13 );
-			this._resumeHookAdded = true;
-		}
-	}
-
-	/**
-	 * Resume walking after dash ends; remove self once done.
-	 */
-	resume = () => {
-
-        // Re-enable movement mechanics.
-		if ( ! this.active ) {
-            this.tile.mechanics.fall.listening = true;
-            this.tile.mechanics.jump.listening = true;
-            this.tile.mechanics.walk.listening = true;
-			this._resumeHookAdded = false;
+		// Skip if not listening.
+		if ( ! this.listening ) {
 			return;
 		}
 
-		// Check if time passed.
-		if (
-            this.active
-            &&
-            ( Time.now >= this.endAt )
-         ) {
-			this.active = false;
+		// Map combo name to direction.
+		let dir = '';
+		if ( name === 'dashLeft' ) {
+			dir = 'left';
+		} else if ( name === 'dashRight' ) {
+			dir = 'right';
+		} else if ( name === 'dashUp' ) {
+			dir = 'up';
+		} else if ( name === 'dashDown' ) {
+			dir = 'down';
+		} else {
+			return; // Not a dash combo.
 		}
+
+		// Eligibility gate.
+		if ( ! this.can( dir ) ) {
+			return;
+		}
+
+		// Execute.
+		this.do( dir );
+	}
+
+	/**
+	 * Determine if a dash can begin.
+     *
+     * In the specified direction at a given timestamp.
+	 *
+	 * @param   {String}  dir Direction: 'left'|'right'|'up'|'down'.
+	 * @returns {Boolean} True if dash is permitted.
+	 */
+	can = (
+		dir = ''
+	) => {
+
+        // Skip if not listening.
+		if ( ! this.listening ) {
+			return false;
+		}
+
+        // Skip if no tile.
+		if ( ! this.tile ) {
+			return false;
+		}
+
+        // Skip if already dashing.
+		if ( this.dashing ) {
+			return false;
+		}
+
+        // Skip if not cooled down.
+		if ( ! this.cooled() ) {
+			return false;
+		}
+
+        // Skip if maxed uses.
+		if ( this.maxed() ) {
+			return false;
+		}
+
+		// Skip if no mid-air.
+		if (
+			! this.settings.air
+			&&
+            ! this.tile.mechanics.jump.grounded()
+		) {
+			return false;
+		}
+
+        // Return default of true.
+		return true;
+	}
+
+    /**
+     * Check if the dash is cooled down.
+     *
+     * @returns {Boolean} True if dash is cooled down.
+     */
+    cooled = () => {
+        return ( Time.now > this.coolUntil );
+    }
+
+    /**
+     * Check if the dash has reached its maximum uses.
+     *
+     * @returns {Boolean} True if dash has maxed out.
+     */
+    maxed = () => {
+        return ( this.uses >= this.settings.limit );
+    }
+
+	/**
+	 * Whether the dash is currently active (in progress).
+	 *
+	 * @returns {Boolean}
+	 */
+	doing = (
+        dir = ''
+    ) => {
+
+		// Skip if can't.
+		if ( ! this.can( dir ) ) {
+			return false;
+		}
+
+        this.do( dir );
+
+		return this.dashing;
+	}
+
+	/**
+	 * Do the dash.
+     *
+     * Apply velocity impulse, start timers, and suspend some other mechanics.
+	 *
+	 * @param {String} dir Direction of dash.
+	 */
+	do = (
+	    dir
+	) => {
+
+        // Get velocity.
+		const v = this.tile?.physics?.velocity;
+
+        // Skip if no velocity.
+		if ( ! v ) {
+			return;
+		}
+
+		// Activate state.
+		this.dashing    = true;
+		this.endAt      = ( Time.now + this.settings.duration );
+		this.hoverEndAt = ( this.endAt + this.settings.hover  );
+		this.coolUntil  = ( Time.now + this.settings.cooldown );
+		this.uses++;
+
+		// Reset motion before impulse (ensures deterministic start speed).
+		v.x = 0;
+		v.y = 0;
+
+		// Horizontal.
+		if ( dir === 'left' ) {
+			v.x = -( this.settings.xpower );
+		} else if ( dir === 'right' ) {
+			v.x = this.settings.xpower;
+
+        // Vertical.
+		} else if ( dir === 'up' ) {
+			v.y = -( this.settings.ypower );
+		} else if ( dir === 'down' ) {
+			v.y = this.settings.ypower;
+		}
+
+		// Avoid locomotion interference.
+        this.ignore( false );
+	}
+
+	/**
+	 * Enable / disable overlapping locomotion mechanics while dashing.
+     *
+	 * @param {Boolean} enable True to restore, false to suspend.
+	 */
+	ignore = (
+        enable = true
+    ) => {
+
+        // Get mechanics.
+		const m = this.tile?.mechanics;
+
+        // Skip if no mechanics.
+		if ( ! m ) {
+			return;
+		}
+
+		// Temporarily suppress.
+		if ( m.jump )     m.jump.listening     = enable;
+		if ( m.walk )     m.walk.listening     = enable;
+		if ( m.fall )     m.fall.listening     = enable;
+		if ( m.walljump ) m.walljump.listening = enable;
+		if ( m.coyote )   m.coyote.listening   = enable;
+		if ( m.orient )   m.orient.listening   = enable;
 	}
 }

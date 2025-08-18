@@ -23,6 +23,7 @@ export default class WallJump {
 
 	/**
 	 * Bind (or rebind) the mechanic to a tile.
+	 *
 	 * Resets internal state first to avoid leaking references.
 	 *
 	 * @param {Tile|null} tile Tile providing physics + jumps configuration.
@@ -37,7 +38,6 @@ export default class WallJump {
 
 	/**
 	 * Reset internal references back to an inert state.
-	 * Useful when recycling objects or clearing between room loads.
 	 */
 	reset = () => {
 		this.tile      = null;

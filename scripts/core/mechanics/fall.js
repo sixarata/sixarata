@@ -88,9 +88,14 @@ export default class Fall {
 	 * Do the fall.
 	 */
 	do = () => {
-		if ( this.velocity.y <= this.max ) {
-			this.velocity.y += ( Game.Gravity.force * Time.scale );
+
+		// Skip if maxed.
+		if ( this.maxed() ) {
+			return;
 		}
+
+		// Apply gravity.
+		this.velocity.y += this.force();
 	}
 
 	/**
@@ -108,7 +113,7 @@ export default class Fall {
 	 * Apply base gravity force.
 	 */
 	idle = () => {
-		this.velocity.y = ( Game.Gravity.force * Time.scale );
+		this.velocity.y = this.force();
 	}
 
 	/**
@@ -124,5 +129,14 @@ export default class Fall {
 			&&
 			! this.tile?.physics?.contact?.bottom
 		);
+	}
+
+	/**
+	 * Get the current fall force.
+	 *
+	 * @returns {Number} The current fall force.
+	 */
+	force = () => {
+		return ( Game.Gravity.force * Time.scale );
 	}
 }

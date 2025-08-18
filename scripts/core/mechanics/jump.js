@@ -47,6 +47,7 @@ export default class Jump {
 	 */
 	listen = () => {
 
+		// Skip if not listening.
 		if ( ! this.listening ) {
 			return;
 		}
