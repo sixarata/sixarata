@@ -1,6 +1,14 @@
 import Sixarata from '../core/game.js';
 import { Particle } from '../core/tiles/exports.js';
 import { Scale, Sound } from '../core/sound/exports.js';
+import { Rain } from '../core/weather/exports.js';
+
+// Weather: Rain (optional)
+const rain = new Rain( Sixarata.Room );
+
+Sixarata.Hooks.add( 'Frame.tick',   rain.tick,   30 );
+Sixarata.Hooks.add( 'Frame.render', rain.render, 30 );
+Sixarata.Weather = { rain };
 
 /**
  * This is a very primitive example of using the Hooks API
