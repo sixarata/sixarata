@@ -1,6 +1,5 @@
 import Settings from '../../custom/settings.js';
 import Tile from '../tiles/tile.js';
-import Time from '../utilities/time.js';
 import Timer from '../utilities/timer.js';
 import Game from '../game.js';
 
@@ -106,7 +105,7 @@ export default class Coyote {
             return false;
         }
 
-        // If all checks pass, coyote jump is allowed.
+        // If all checks pass, coyote jump is doable.
         return true;
 	}
 
@@ -131,20 +130,22 @@ export default class Coyote {
     idle = () => {
 
         // Get the current tile contact state.
-        const contact = this.tile?.physics?.contact || {};
+        const bottom = this.tile?.physics?.contact?.bottom || false;
 
-        // If landed, reset coyote timer.
-        if ( contact.bottom ) {
+        // Not on ground.
+        if ( ! bottom ) {
+
+            // Only just left the ground this frame
+            if ( this.wasOnGround ) {
+                this.freefall.set( this.settings.time );
+            }
+
+        // On ground, so reset the coyote timer.
+        } else {
             this.freefall.clear();
         }
 
-        // If just left ground this frame:
-        // - (re)start window regardless of jump input
-        // - jump mechanic will consume if pressed
-        if ( this.wasOnGround && ! contact.bottom ) {
-            this.freefall.set( this.settings.time );
-        }
-
-        this.wasOnGround = !! contact.bottom;
+        // Update the ground state.
+        this.wasOnGround = !! bottom;
     }
 }
