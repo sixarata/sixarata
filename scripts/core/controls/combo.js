@@ -20,26 +20,39 @@ export default class Combos {
 	}
 
 	reset = () => {
-		this.lastFire   = {}; // comboName -> last fired timestamp (debounce)
-		this.cooldownMs = 30; // minimal separation to avoid multi-fire same frame
+		this.lastFire   = {};
+		this.cooldownMs = 30;
 	}
 
 	hooks = () => {
-		Game.Hooks.add( 'Frame.tick', this.tick, 12 ); // after History (11)
+		Game.Hooks.add( 'Frame.tick', this.tick, 12 );
 	}
 
 	tick = () => {
 		const combos = Settings.combos || {};
 		const events = Game.History?.events || [];
-		if ( ! events.length ) return;
+
+		// Skip if no events.
+		if ( ! events.length ) {
+			return;
+		}
 
 		for ( const [ name, cfg ] of Object.entries( combos ) ) {
 			const { sequence = [], window = 0 } = cfg || {};
-			if ( sequence.length === 0 ) continue;
+
+			if ( sequence.length === 0 ) {
+				continue;
+			}
+
 			if ( this.matched( sequence, window ) ) {
 				const now = Time.now;
-				if ( ( now - ( this.lastFire[ name ] || 0 ) ) < this.cooldownMs ) continue;
+
+				if ( ( now - ( this.lastFire[ name ] || 0 ) ) < this.cooldownMs ) {
+					continue;
+				}
+
 				this.lastFire[ name ] = now;
+
 				Game.Hooks.do( 'Combo.trigger', name, { sequence, window } );
 			}
 		}
@@ -49,31 +62,49 @@ export default class Combos {
 	 * Determine if the given sequence of actions occurred (press events) in
 	 * order within the time window (ms) ending now.
 	 */
-	matched = ( sequence = [], window = 0 ) => {
-		const now = Time.now;
+	matched = (
+		sequence = [],
+		window = 0
+	) => {
 		const events = Game.History?.events || [];
-		if ( ! events.length ) return false;
+
+		if ( ! events.length ) {
+			return false;
+		}
 
 		// Filter to presses inside window.
-		const startTime = window > 0 ? ( now - window ) : 0;
+		const startTime = window > 0
+			? ( Time.now - window )
+			: 0;
 		const candidates = [];
+
 		for ( let i = events.length - 1; i >= 0; i-- ) {
 			const ev = events[ i ];
-			if ( ev.time < startTime ) break; // earlier than window
-			if ( ev.type !== 'press' ) continue;
+
+			if ( ev.time < startTime ) {
+				break;
+			}
+
+			if ( ev.type !== 'press' ) {
+				continue;
+			}
+
 			candidates.push( ev );
 		}
+
 		// Reverse to chronological order.
 		candidates.reverse();
 
 		// Walk sequence against candidates using pointer.
 		let si = 0;
+
 		for ( const ev of candidates ) {
 			if ( ev.action === sequence[ si ] ) {
 				si++;
 				if ( si === sequence.length ) return true;
 			}
 		}
+
 		return false;
 	}
 }
