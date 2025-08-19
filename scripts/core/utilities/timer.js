@@ -44,7 +44,7 @@ export default class Timer {
         this.d = 0;
 
         // expiry timestamp
-        this.t = 0;
+        this.expires = 0;
 
         // remaining ms when paused
         this.rem = 0;
@@ -73,7 +73,7 @@ export default class Timer {
 
         this.s      = Time.now;
         this.d      = ms;
-        this.t      = this.s + ms;
+        this.expires      = this.s + ms;
         this.rem    = 0;
         this.paused = false;
 
@@ -107,14 +107,14 @@ export default class Timer {
      *
      * @returns {Boolean}
      */
-    active = () => ( ! this.paused && this.t > 0 && Time.now < this.t )
+    active = () => ( ! this.paused && this.expires > 0 && Time.now < this.expires )
 
     /**
      * True when expired (and not paused).
      *
      * @returns {Boolean}
      */
-    done = () => ( ! this.paused && this.t > 0 && Time.now >= this.t )
+    done = () => ( ! this.paused && this.expires > 0 && Time.now >= this.expires )
 
     /**
      * Remaining milliseconds.
@@ -122,7 +122,7 @@ export default class Timer {
      * @returns {Number}
      */
     left = () => ( this.active()
-        ? ( this.t - Time.now )
+        ? ( this.expires - Time.now )
         : 0 );
 
     /**
@@ -140,7 +140,7 @@ export default class Timer {
     elapsed = () => {
 
         // Return 0 if no time.
-        if ( ! this.t ) {
+        if ( ! this.expires ) {
             return 0;
         }
 
@@ -167,11 +167,16 @@ export default class Timer {
      * @returns {Timer} this
      */
     pause = () => {
-        if ( ! this.paused && this.t > 0 ) {
-            this.rem = this.t - Time.now;
-            if ( this.rem < 0 ) this.rem = 0;
+        if ( ! this.paused && this.expires > 0 ) {
+            this.rem = this.expires - Time.now;
+
+            if ( this.rem < 0 ) {
+                this.rem = 0;
+            }
+
             this.paused = true;
         }
+
         return this;
     }
 
@@ -184,12 +189,15 @@ export default class Timer {
         if ( this.paused ) {
             if ( this.rem > 0 ) {
                 this.s = Time.now - ( this.d - this.rem );
-                this.t = Time.now + this.rem;
+                this.expires = Time.now + this.rem;
             } else {
-                this.t = 0; this.d = 0;
+                this.expires = 0;
+                this.d = 0;
             }
+
             this.rem = 0; this.paused = false;
         }
+
         return this;
     }
 
@@ -199,13 +207,18 @@ export default class Timer {
      * @param   {Number} ms Interval in ms (0 disables).
      * @returns {Timer} this
      */
-    repeat = ( ms = 0 ) => {
+    repeat = (
+        ms = 0
+    ) => {
+
         this.interval = ms;
+
         if ( this.interval > 0 && this.done() ) {
             this.s = Time.now;
             this.d = this.interval;
-            this.t = this.s + this.interval;
+            this.expires = this.s + this.interval;
         }
+
         return this;
     }
 
@@ -217,12 +230,16 @@ export default class Timer {
      * @returns {Boolean}
      */
     ping = () => {
+
+        // Check if interval is active and done
         if ( this.interval > 0 && this.done() ) {
             this.s = Time.now;
             this.d = this.interval;
-            this.t = this.s + this.interval;
+            this.expires = this.s + this.interval;
+
             return true;
         }
+
         return false;
     }
 
@@ -247,7 +264,7 @@ export default class Timer {
 
         // Extend active timer.
         } else if ( this.active() ) {
-            this.t += ms;
+            this.expires += ms;
             this.d += ms;
 
         // Restart if done.
@@ -277,11 +294,11 @@ export default class Timer {
             this.rem = Math.max( 0, this.rem - ms );
 
         } else if ( this.active() ) {
-            this.t -= ms;
+            this.expires -= ms;
             his.d = Math.max( 0, this.d - ms );
 
-            if ( this.t <= Time.now ) {
-                this.t = Time.now;
+            if ( this.expires <= Time.now ) {
+                this.expires = Time.now;
             }
         }
 
@@ -305,13 +322,13 @@ export default class Timer {
         }
 
         // Skip if no time.
-        if ( ! this.t ) {
+        if ( ! this.expires ) {
             return this;
         }
 
         // Add time.
         this.s += ms;
-        this.t += ms;
+        this.expires += ms;
 
         // Return.
         return this;
