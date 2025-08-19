@@ -62,13 +62,21 @@ export default class Timer {
      * @param {Number} ms Duration in ms (<=0 clears).
      * @returns {Timer} this
      */
-    set = ( ms = 0 ) => {
-        if ( ms <= 0 ) return this.clear();
-        this.s = Time.now;
-        this.d = ms;
-        this.t = this.s + ms;
-        this.rem = 0;
+    set = (
+        ms = 0
+    ) => {
+
+        // Clear if negative.
+        if ( ms <= 0 ) {
+            return this.clear();
+        }
+
+        this.s      = Time.now;
+        this.d      = ms;
+        this.t      = this.s + ms;
+        this.rem    = 0;
         this.paused = false;
+
         return this;
     }
 
@@ -115,14 +123,14 @@ export default class Timer {
      */
     left = () => ( this.active()
         ? ( this.t - Time.now )
-        : 0 )
+        : 0 );
 
     /**
      * Alias for left().
      *
      * @returns {Number}
      */
-    remain = () => this.left()
+    remain = () => this.left();
 
     /**
      * Elapsed milliseconds (clamped to duration).
@@ -130,9 +138,19 @@ export default class Timer {
      * @returns {Number}
      */
     elapsed = () => {
-        if ( ! this.t ) return 0;
-        if ( this.paused ) return this.d - this.rem;
+
+        // Return 0 if no time.
+        if ( ! this.t ) {
+            return 0;
+        }
+
+        // Return
+        if ( this.paused ) {
+            return this.d - this.rem;
+        }
+
         const e = Time.now - this.s;
+
         return ( e < 0 ? 0 : ( e > this.d ? this.d : e ) );
     }
 
@@ -214,15 +232,29 @@ export default class Timer {
      * @param   {Number} ms Additional milliseconds.
      * @returns {Timer} this
      */
-    extend = ( ms = 0 ) => {
-        if ( ms <= 0 ) return this;
+    extend = (
+        ms = 0
+    ) => {
+
+        // Skip if no time.
+        if ( ms <= 0 ) {
+            return this;
+        }
+
+        // Capture remaining time if paused.
         if ( this.paused ) {
             this.rem += ms;
+
+        // Extend active timer.
         } else if ( this.active() ) {
-            this.t += ms; this.d += ms;
+            this.t += ms;
+            this.d += ms;
+
+        // Restart if done.
         } else if ( this.done() ) {
             this.set( ms );
         }
+
         return this;
     }
 
@@ -232,14 +264,28 @@ export default class Timer {
      * @param   {Number} ms Milliseconds to remove.
      * @returns {Timer} this
      */
-    reduce = ( ms = 0 ) => {
-        if ( ms <= 0 ) return this;
+    reduce = (
+        ms = 0
+    ) => {
+
+        // Skip if no time.
+        if ( ms <= 0 ) {
+            return this;
+        }
+
         if ( this.paused ) {
             this.rem = Math.max( 0, this.rem - ms );
+
         } else if ( this.active() ) {
-            this.t -= ms; this.d = Math.max( 0, this.d - ms );
-            if ( this.t <= Time.now ) { this.t = Time.now; }
+            this.t -= ms;
+            his.d = Math.max( 0, this.d - ms );
+
+            if ( this.t <= Time.now ) {
+                this.t = Time.now;
+            }
         }
+
+        // Return.
         return this;
     }
 
@@ -249,9 +295,25 @@ export default class Timer {
      * @param   {Number} ms Offset in ms.
      * @returns {Timer} this
      */
-    shift = ( ms = 0 ) => {
-        if ( ! this.t ) return this;
-        this.s += ms; this.t += ms;
+    shift = (
+        ms = 0
+    ) => {
+
+        // Skip if no time.
+        if ( ms <= 0 ) {
+            return this;
+        }
+
+        // Skip if no time.
+        if ( ! this.t ) {
+            return this;
+        }
+
+        // Add time.
+        this.s += ms;
+        this.t += ms;
+
+        // Return.
         return this;
     }
 }
