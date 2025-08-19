@@ -35,7 +35,7 @@ export default {
 		},
 		jumps: {
 			coyote: {
-				time: 200,
+				time: 300,
 			},
 			fall: {
 				speed: 16
@@ -75,6 +75,7 @@ export default {
 			default:  '#ffbb00',
 			falling:  '#ff9900',
 			walljump: '#ff6600',
+			coyote:   '#ff6600',
 		}
 	},
 

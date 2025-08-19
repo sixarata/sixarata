@@ -1,5 +1,8 @@
 import Settings from '../../custom/settings.js';
 import Tile from '../tiles/tile.js';
+import Time from '../utilities/time.js';
+import Timer from '../utilities/timer.js';
+import Game from '../game.js';
 
 /**
  * Coyote mechanic (arrow property version).
@@ -39,54 +42,9 @@ export default class Coyote {
         this.tile        = null;
         this.listening   = true;
         this.settings    = Settings.player.jumps.coyote;
-        this.timer       = 0;
+        this.freefall    = new Timer();
         this.wasOnGround = false;
     }
-
-
-
-	/**
-	 * Check if the mechanic is being done.
-	 *
-	 * @returns {Boolean} True if the mechanic is being done, false otherwise.
-	 */
-	doing = () => {
-
-		// Skip if can't.
-		if ( ! this.can() ) {
-			return false;
-		}
-
-		// Return if jump button is pressed.
-		return Game.Inputs.pressed( 'jump' );
-	}
-
-	/**
-	 * Determine if the tile is allowed to execute a coyote jump on this frame.
-	 *
-	 * Conditions:
-	 * - Coyote jumping enabled in this.settings.coyote.
-	 * - Tile is NOT grounded (forces usage only while airborne beside a wall).
-	 *
-	 * @returns {Boolean} True when a coyote jump may be initiated.
-	 */
-	can = () => {
-
-		// Conditions.
-		const set      = ( this.settings.coyote && this.settings.max );
-		const walled   = this.walled();
-		const grounded = this.tile?.mechanics?.jump?.grounded() || false;
-        const now      = performance.now();
-
-		// Return eligibility.
-		return (
-			! grounded
-			&&
-			( set && walled )
-            &&
-            this.timer && ( now < this.timer )
-		);
-	}
 
     /**
      * Standalone listener for coyote logic. Call once per frame.
@@ -103,27 +61,90 @@ export default class Coyote {
             return;
         }
 
-        const contact  = this.tile?.physics?.contact || {};
-        const now      = performance.now();
-        const duration = this.settings.time;
+        // Idling.
+        this.idle();
 
-        // If just left ground, start coyote timer
-        if ( this.wasOnGround && ! contact.bottom ) {
-            this.timer = now + duration;
+        // Execute jump.
+        if ( this.doing() ) {
+            this.do();
+        }
+    }
+
+	/**
+	 * Check if the mechanic is being done.
+	 *
+	 * @returns {Boolean} True if the mechanic is being done, false otherwise.
+	 */
+	doing = () => {
+        return ( this.can() && Game.Inputs.pressed( 'jump' ) );
+	}
+
+	/**
+	 * Determine if the tile is allowed to execute a coyote jump on this frame.
+	 *
+	 * Conditions:
+	 * - Freefalling
+     * - No jumps
+	 * - Tile is NOT grounded
+	 *
+	 * @returns {Boolean} True when a coyote jump may be initiated.
+	 */
+	can = () => {
+
+        // Eligible only while coyote timer active...
+        if ( ! this.freefall.active() ) {
+            return false;
         }
 
-        // If landed, reset coyote timer
-        if ( contact.bottom ) {
-            this.timer = 0;
+        // ...and not currently grounded.
+        if ( this.tile?.physics?.contact?.bottom ) {
+            return false;
         }
 
-        this.wasOnGround = !! contact.bottom;
+        // Prevent double-using if a normal jump is still allowed.
+        if ( this.tile?.mechanics?.jump?.can?.() ) {
+            return false;
+        }
+
+        // If all checks pass, coyote jump is allowed.
+        return true;
+	}
+
+    /**
+     * Execute the coyote jump.
+     */
+    do = () => {
+
+        // Not on ground anymore.
+        this.wasOnGround = false;
+
+        // Restart the freefall timer.
+        this.freefall.clear();
+
+        // Execute the jump mechanic.
+        this.tile?.mechanics?.jump?.do();
     }
 
     /**
-     * Consume coyote timer (call after jump).
+     * Standalone idle logic for coyote mechanic.
      */
-    consume = () => {
-        this.timer = 0;
+    idle = () => {
+
+        // Get the current tile contact state.
+        const contact = this.tile?.physics?.contact || {};
+
+        // If landed, reset coyote timer.
+        if ( contact.bottom ) {
+            this.freefall.clear();
+        }
+
+        // If just left ground this frame:
+        // - (re)start window regardless of jump input
+        // - jump mechanic will consume if pressed
+        if ( this.wasOnGround && ! contact.bottom ) {
+            this.freefall.set( this.settings.time );
+        }
+
+        this.wasOnGround = !! contact.bottom;
     }
 }

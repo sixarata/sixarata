@@ -113,19 +113,21 @@ export default class Player extends Tile {
 	 */
 	respond = () => {
 
-		// Fall then Jump.
+		// Falling.
 		this.mechanics.fall.listen();
-		this.mechanics.jump.listen();
-		this.mechanics.dash.listen();
 
-		// Jump modifiers
-		this.mechanics.wall.listen();
+		// Coyote jump, edge detection - before jump.
 		this.mechanics.coyote.listen();
 
-		// Left & Right.
+		// Primary jump, then modifiers - rely on airborne state.
+		this.mechanics.jump.listen();
+		this.mechanics.wall.listen();
+		this.mechanics.dash.listen();
+
+		// Horizontal movement.
 		this.mechanics.walk.listen();
 
-		// Orient.
+		// Orientation.
 		this.mechanics.orient.listen();
 	}
 
@@ -145,6 +147,11 @@ export default class Player extends Tile {
 		// Wall jump.
 		if ( this.mechanics.wall.can() ) {
 			this.color = Settings.player.colors.walljump
+		};
+
+		// Coyote jump.
+		if ( this.mechanics.coyote.can() ) {
+			this.color = Settings.player.colors.coyote;
 		};
 	}
 
