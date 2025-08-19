@@ -28,17 +28,17 @@ export default class Rain {
 		Game.Hooks.add( 'Frame.tick', this.tick, 9 );
 	}
 
-    /**
-     * Tick event handler.
-     */
-    tick = () => {
+	/**
+	 * Tick event handler.
+	 */
+	tick = () => {
 
-    }
+	}
 
-    /**
-     * Render event handler.
-     */
-    render = () => {
+	/**
+	 * Render event handler.
+	 */
+	render = () => {
 
-    }
+	}
 }

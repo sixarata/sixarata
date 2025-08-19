@@ -11,63 +11,63 @@ import Game from '../game.js';
  */
 export default class Coyote {
 
-    /**
-     * Construct the Coyote mechanic.
-     *
-     * @param {Tile} tile A Tile with a `physics` property.
-     */
-    constructor(
-        tile = null
-    ) {
-        this.set( tile );
-    }
+	/**
+	 * Construct the Coyote mechanic.
+	 *
+	 * @param {Tile} tile A Tile with a `physics` property.
+	 */
+	constructor(
+		tile = null
+	) {
+		this.set( tile );
+	}
 
-    /**
-     * Set the mechanic.
-     *
-     * @param {Tile} tile A Tile with a `physics` property.
-     */
-    set = (
-        tile = null
-    ) => {
-        this.reset();
-        this.tile = tile;
-    }
+	/**
+	 * Set the mechanic.
+	 *
+	 * @param {Tile} tile A Tile with a `physics` property.
+	 */
+	set = (
+		tile = null
+	) => {
+		this.reset();
+		this.tile = tile;
+	}
 
-    /**
-     * Reset the mechanic.
-     */
-    reset = () => {
-        this.tile        = null;
-        this.listening   = true;
-        this.settings    = Settings.player.jumps.coyote;
-        this.freefall    = new Timer();
-        this.wasOnGround = false;
-    }
+	/**
+	 * Reset the mechanic.
+	 */
+	reset = () => {
+		this.tile		= null;
+		this.listening   = true;
+		this.settings	= Settings.player.jumps.coyote;
+		this.freefall	= new Timer();
+		this.wasOnGround = false;
+	}
 
-    /**
-     * Standalone listener for coyote logic. Call once per frame.
-     */
-    listen = () => {
+	/**
+	 * Standalone listener for coyote logic. Call once per frame.
+	 */
+	listen = () => {
 
-        // Skip if not listening.
-        if ( ! this.listening ) {
-            return;
-        }
+		// Skip if not listening.
+		if ( ! this.listening ) {
+			return;
+		}
 
-        // Skip if no tile.
-        if ( ! this.tile ) {
-            return;
-        }
+		// Skip if no tile.
+		if ( ! this.tile ) {
+			return;
+		}
 
-        // Idling.
-        this.idle();
+		// Idling.
+		this.idle();
 
-        // Execute jump.
-        if ( this.doing() ) {
-            this.do();
-        }
-    }
+		// Execute jump.
+		if ( this.doing() ) {
+			this.do();
+		}
+	}
 
 	/**
 	 * Check if the mechanic is being done.
@@ -75,7 +75,7 @@ export default class Coyote {
 	 * @returns {Boolean} True if the mechanic is being done, false otherwise.
 	 */
 	doing = () => {
-        return ( this.can() && Game.Inputs.pressed( 'jump' ) );
+		return ( this.can() && Game.Inputs.pressed( 'jump' ) );
 	}
 
 	/**
@@ -83,69 +83,69 @@ export default class Coyote {
 	 *
 	 * Conditions:
 	 * - Freefalling
-     * - No jumps
+	 * - No jumps
 	 * - Tile is NOT grounded
 	 *
 	 * @returns {Boolean} True when a coyote jump may be initiated.
 	 */
 	can = () => {
 
-        // Eligible only while coyote timer active...
-        if ( ! this.freefall.active() ) {
-            return false;
-        }
+		// Eligible only while coyote timer active...
+		if ( ! this.freefall.active() ) {
+			return false;
+		}
 
-        // ...and not currently grounded.
-        if ( this.tile?.physics?.contact?.bottom ) {
-            return false;
-        }
+		// ...and not currently grounded.
+		if ( this.tile?.physics?.contact?.bottom ) {
+			return false;
+		}
 
-        // Prevent double-using if a normal jump is still allowed.
-        if ( this.tile?.mechanics?.jump?.can?.() ) {
-            return false;
-        }
+		// Prevent double-using if a normal jump is still allowed.
+		if ( this.tile?.mechanics?.jump?.can?.() ) {
+			return false;
+		}
 
-        // If all checks pass, coyote jump is doable.
-        return true;
+		// If all checks pass, coyote jump is doable.
+		return true;
 	}
 
-    /**
-     * Execute the coyote jump.
-     */
-    do = () => {
+	/**
+	 * Execute the coyote jump.
+	 */
+	do = () => {
 
-        // Not on ground anymore.
-        this.wasOnGround = false;
+		// Not on ground anymore.
+		this.wasOnGround = false;
 
-        // Restart the freefall timer.
-        this.freefall.clear();
+		// Restart the freefall timer.
+		this.freefall.clear();
 
-        // Execute the jump mechanic.
-        this.tile?.mechanics?.jump?.do();
-    }
+		// Execute the jump mechanic.
+		this.tile?.mechanics?.jump?.do();
+	}
 
-    /**
-     * Standalone idle logic for coyote mechanic.
-     */
-    idle = () => {
+	/**
+	 * Standalone idle logic for coyote mechanic.
+	 */
+	idle = () => {
 
-        // Get the current tile contact state.
-        const bottom = this.tile?.physics?.contact?.bottom || false;
+		// Get the current tile contact state.
+		const bottom = this.tile?.physics?.contact?.bottom || false;
 
-        // Not on ground.
-        if ( ! bottom ) {
+		// Not on ground.
+		if ( ! bottom ) {
 
-            // Only just left the ground this frame
-            if ( this.wasOnGround ) {
-                this.freefall.set( this.settings.time );
-            }
+			// Only just left the ground this frame
+			if ( this.wasOnGround ) {
+				this.freefall.set( this.settings.time );
+			}
 
-        // On ground, so reset the coyote timer.
-        } else {
-            this.freefall.clear();
-        }
+		// On ground, so reset the coyote timer.
+		} else {
+			this.freefall.clear();
+		}
 
-        // Update the ground state.
-        this.wasOnGround = !! bottom;
-    }
+		// Update the ground state.
+		this.wasOnGround = !! bottom;
+	}
 }

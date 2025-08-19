@@ -25,8 +25,8 @@ export default class Dash {
 	 * @param {Tile|null} tile Optional tile to bind immediately.
 	 */
 	constructor(
-        tile = null
-    ) {
+		tile = null
+	) {
 		this.set( tile );
 	}
 
@@ -37,8 +37,8 @@ export default class Dash {
 	 * @param {Tile|null} tile Tile that owns this mechanic.
 	 */
 	set = (
-        tile = null
-    ) => {
+		tile = null
+	) => {
 		this.reset();
 		this.tile = tile;
 	}
@@ -48,13 +48,13 @@ export default class Dash {
 	 */
 	reset = () => {
 
-        // Attributes.
+		// Attributes.
 		this.tile      = null;
-        this.settings  = Settings.player.dash;
-        this.listening = true;
-        this.uses      = 0;
+		this.settings  = Settings.player.dash;
+		this.listening = true;
+		this.uses      = 0;
 
-        // Timers.
+		// Timers.
 		this.impulse   = new Timer();
 		this.hover     = new Timer();
 		this.cool      = new Timer();
@@ -62,9 +62,9 @@ export default class Dash {
 
 	/**
 	 * Per‑frame housekeeping.
-     * - expires active dash
-     * - resets use counter
-     *
+	 * - expires active dash
+	 * - resets use counter
+	 *
 	 * Should be invoked once per frame, before velocity integration.
 	 */
 	listen = () => {
@@ -81,22 +81,22 @@ export default class Dash {
 
 		if (
 
-            // Maybe reset use counter when grounded.
-            (
-                this.settings.reset.ground
-                &&
-                this.tile.mechanics.jump.grounded()
-            )
+			// Maybe reset use counter when grounded.
+			(
+				this.settings.reset.ground
+				&&
+				this.tile.mechanics.jump.grounded()
+			)
 
-            ||
+			||
 
-            // Maybe reset use counter when walled.
-            (
-                this.settings.reset.wall
-                &&
-                this.tile.mechanics.wall.walled()
-            )
-        ) {
+			// Maybe reset use counter when walled.
+			(
+				this.settings.reset.wall
+				&&
+				this.tile.mechanics.wall.walled()
+			)
+		) {
 			this.uses = 0;
 		}
 
@@ -138,16 +138,16 @@ export default class Dash {
 
 	/**
 	 * Combo hook callback.
-     *
-     * Translates combo name -> direction and initiates dash.
+	 *
+	 * Translates combo name -> direction and initiates dash.
 	 *
 	 * @param {String} name  Combo identifier.
 	 * @param {Object} data  Additional combo metadata (unused presently).
 	 */
 	combo = (
-        name = '',
-        data = {}
-    ) => {
+		name = '',
+		data = {}
+	) => {
 
 		// Skip if not listening.
 		if ( ! this.listening ) {
@@ -179,8 +179,8 @@ export default class Dash {
 
 	/**
 	 * Determine if a dash can begin.
-     *
-     * In the specified direction at a given timestamp.
+	 *
+	 * In the specified direction at a given timestamp.
 	 *
 	 * @param   {String}  dir Direction: 'left'|'right'|'up'|'down'.
 	 * @returns {Boolean} True if dash is permitted.
@@ -189,12 +189,12 @@ export default class Dash {
 		dir = ''
 	) => {
 
-        // Skip if not listening.
+		// Skip if not listening.
 		if ( ! this.listening ) {
 			return false;
 		}
 
-        // Skip if no tile.
+		// Skip if no tile.
 		if ( ! this.tile ) {
 			return false;
 		}
@@ -204,12 +204,12 @@ export default class Dash {
 			return false;
 		}
 
-        // Skip if not cooled down.
+		// Skip if not cooled down.
 		if ( this.cool.active() ) {
 			return false;
 		}
 
-        // Skip if maxed uses.
+		// Skip if maxed uses.
 		if ( this.maxed() ) {
 			return false;
 		}
@@ -218,23 +218,23 @@ export default class Dash {
 		if (
 			! this.settings.air
 			&&
-            ! this.tile.mechanics.jump.grounded()
+			! this.tile.mechanics.jump.grounded()
 		) {
 			return false;
 		}
 
-        // Return default of true.
+		// Return default of true.
 		return true;
 	}
 
-    /**
-     * Check if the dash has reached its maximum uses.
-     *
-     * @returns {Boolean} True if dash has maxed out.
-     */
-    maxed = () => {
-        return ( this.uses >= this.settings.limit );
-    }
+	/**
+	 * Check if the dash has reached its maximum uses.
+	 *
+	 * @returns {Boolean} True if dash has maxed out.
+	 */
+	maxed = () => {
+		return ( this.uses >= this.settings.limit );
+	}
 
 	/**
 	 * Whether the dash is currently active (in progress).
@@ -245,41 +245,41 @@ export default class Dash {
 			dir = ''
 		) => {
 
-            // Skip if can't.
+			// Skip if can't.
 			if ( ! this.can( dir ) ) {
 				return false;
 			}
 
-            // Execute dash.
+			// Execute dash.
 			this.do( dir );
 
-            // Return if impulse is active.
+			// Return if impulse is active.
 			return this.impulse.active();
 		}
 
 	/**
 	 * Do the dash.
-     *
-     * Apply velocity impulse, start timers, and suspend some other mechanics.
+	 *
+	 * Apply velocity impulse, start timers, and suspend some other mechanics.
 	 *
 	 * @param {String} dir Direction of dash.
 	 */
 	do = (
-	    dir = ''
+		dir = ''
 	) => {
 
-        // Get velocity.
+		// Get velocity.
 		const v = this.tile?.physics?.velocity;
 
-        // Skip if no velocity.
+		// Skip if no velocity.
 		if ( ! v ) {
 			return;
 		}
 
-        // Activate state.
-        this.uses++;
+		// Activate state.
+		this.uses++;
 
-        // Update timers.
+		// Update timers.
 		this.impulse.set( this.settings.duration );
 		this.hover.set( this.settings.duration + this.settings.hover );
 		this.cool.set( this.settings.cooldown );
@@ -294,7 +294,7 @@ export default class Dash {
 		} else if ( dir === 'right' ) {
 			v.x = this.settings.xpower;
 
-        // Vertical.
+		// Vertical.
 		} else if ( dir === 'up' ) {
 			v.y = -( this.settings.ypower );
 		} else if ( dir === 'down' ) {
@@ -302,22 +302,22 @@ export default class Dash {
 		}
 
 		// Avoid locomotion interference.
-        this.ignore( false );
+		this.ignore( false );
 	}
 
 	/**
 	 * Enable / disable overlapping locomotion mechanics while dashing.
-     *
+	 *
 	 * @param {Boolean} enable True to restore, false to suspend.
 	 */
 	ignore = (
-        enable = true
-    ) => {
+		enable = true
+	) => {
 
-        // Get mechanics.
+		// Get mechanics.
 		const m = this.tile?.mechanics;
 
-        // Skip if no mechanics.
+		// Skip if no mechanics.
 		if ( ! m ) {
 			return;
 		}

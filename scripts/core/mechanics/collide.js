@@ -47,7 +47,7 @@ export default class Collide {
 			return;
 		}
 
-        // Skip if no tile.
+		// Skip if no tile.
 		if ( ! this.tile ) {
 			return;
 		}
@@ -56,33 +56,33 @@ export default class Collide {
 		let solids = Game.Room.tiles.platforms.concat( Game.Room.tiles.walls );
 		let len    = solids.length;
 
-        // Skip if no solids.
+		// Skip if no solids.
 		if ( ! len ) {
 			return;
 		}
 
-        // Check each solid tile.
+		// Check each solid tile.
 		const contact = this.tile.physics?.contact;
 
 		for ( let i = 0; i < len; i++ ) {
 
-            // Get the solid tile.
+			// Get the solid tile.
 			let s = solids[ i ];
 
-            // Skip if no density.
+			// Skip if no density.
 			if ( ! s.density ) {
 				continue;
 			}
 
-            // Check for collision.
+			// Check for collision.
 			let check = new Collision( this.tile, s );
 
-            // Skip if not collided.
+			// Skip if not collided.
 			if ( ! check.detect() ) {
 				continue;
 			}
 
-            // Check contact.
+			// Check contact.
 			contact.check( velocity, this.tile, s );
 		}
 	}

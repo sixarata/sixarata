@@ -25,13 +25,13 @@ export default class History {
 
 	reset = () => {
 
-        // Action -> { down, beganAt, duration, endedAt }
-		this.state   = {};
+		// Action -> { down, beganAt, duration, endedAt }
+		this.state  = {};
 
 		// Ordered list of recent events
-        this.events  = [];
+		this.events = [];
 
-        // Cap to avoid unbounded growth
+		// Cap to avoid unbounded growth
 		this.maxEvents = 256;
 	}
 
@@ -40,7 +40,7 @@ export default class History {
 	 */
 	hooks = () => {
 
-        // after Inputs (default 10)
+		// after Inputs (default 10)
 		Game.Hooks.add( 'Frame.tick', this.tick, 11 );
 	}
 
@@ -49,10 +49,10 @@ export default class History {
 	 */
 	tick = () => {
 
-        // Skip if no devices.
+		// Skip if no devices.
 		if ( ! Game?.Inputs?.devices ) {
-            return;
-        }
+			return;
+		}
 
 		const now = Time.now;
 
@@ -62,8 +62,8 @@ export default class History {
 		for ( const d of Game.Inputs.devices ) {
 			if ( d?.map ) {
 				Object.keys( d.map ).forEach(
-                    a => actions.add( a )
-                );
+					a => actions.add( a )
+				);
 			}
 		}
 
@@ -73,57 +73,57 @@ export default class History {
 
 			let s = this.state[ action ];
 
-            let e = {};
+			let e = {};
 
 			if ( ! s ) {
 				s = this.state[ action ] = {
-                    down: false,
-                    beganAt: 0,
-                    duration: 0,
-                    endedAt: 0
-                };
+					down: false,
+					beganAt: 0,
+					duration: 0,
+					endedAt: 0
+				};
 			}
 
 			if ( isDown ) {
 
-                // Fresh press.
+				// Fresh press.
 				if ( ! s.down ) {
-					s.down     = true;
+					s.down	 = true;
 					s.beganAt  = now;
 					s.duration = 0;
 					s.endedAt  = 0;
 
-                    // Create press event.
-                    e = {
-                        action,
-                        type: 'press',
-                        time: now
-                    };
+					// Create press event.
+					e = {
+						action,
+						type: 'press',
+						time: now
+					};
 
-                // Continue hold; update duration.
+				// Continue hold; update duration.
 				} else {
 					s.duration = now - s.beganAt;
 				}
 
-            // Release detected.
+			// Release detected.
 			} else if ( s.down ) {
-				s.down     = false;
+				s.down	 = false;
 				s.duration = now - s.beganAt;
 				s.endedAt  = now;
 
-                // Create release event.
-                e = {
-                    action,
-                    type: 'release',
-                    time: now,
-                    duration: s.duration
-                }
+				// Create release event.
+				e = {
+					action,
+					type: 'release',
+					time: now,
+					duration: s.duration
+				}
 			}
 
-            // Push the event.
-            if ( e.action ) {
-                this.pushEvent( e );
-            }
+			// Push the event.
+			if ( e.action ) {
+				this.pushEvent( e );
+			}
 		}
 	}
 
@@ -150,15 +150,15 @@ export default class History {
 
 	/**
 	 * Get recent events (optionally filtered).
-     *
+	 *
 	 * @param {Object} options { action, type, window }
 	 */
 	recent = ( options = {} ) => {
 		const {
-            action = null,
-            type   = null,
-            window = 0
-        } = options;
+			action = null,
+			type   = null,
+			window = 0
+		} = options;
 
 		const now = Time.now;
 
@@ -173,13 +173,13 @@ export default class History {
 	 * Count presses for an action within a window (ms).
 	 */
 	pressCount = (
-        action = '',
-        window = 0
-    ) => {
+		action = '',
+		window = 0
+	) => {
 		return this.recent( {
-            action,
-            type: 'press',
-            window
-        } ).length;
+			action,
+			type: 'press',
+			window
+		} ).length;
 	}
 }

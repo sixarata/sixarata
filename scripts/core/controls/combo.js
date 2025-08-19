@@ -47,7 +47,7 @@ export default class Combos {
 
 	/**
 	 * Determine if the given sequence of actions occurred (press events) in
-     * order within the time window (ms) ending now.
+	 * order within the time window (ms) ending now.
 	 */
 	matched = ( sequence = [], window = 0 ) => {
 		const now = Time.now;

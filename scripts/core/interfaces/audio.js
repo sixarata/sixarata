@@ -40,14 +40,14 @@ export default class Audio {
 		this.sound = new Sound();
 
 		// Return.
-        return this;
+		return this;
 	}
 
 	/**
 	 * Reset the Audio component.
 	 */
 	reset = () => {
-        this.set();
+		this.set();
 	}
 
 	/**
