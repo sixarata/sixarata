@@ -6,3 +6,4 @@ export * as Physics    from './physics/exports.js';
 export * as Sound      from './sound/exports.js';
 export * as Tiles      from './tiles/exports.js';
 export * as Utilities  from './utilities/exports.js';
+export * as Weather    from './weather/exports.js';
