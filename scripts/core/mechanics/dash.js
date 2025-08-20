@@ -1,6 +1,5 @@
 import Game from '../game.js';
 import Settings from '../../custom/settings.js';
-import Time from '../utilities/time.js';
 import Timer from '../utilities/timer.js';
 
 /**
@@ -100,12 +99,12 @@ export default class Dash {
 			this.uses = 0;
 		}
 
-		// While impulse active we exit early (movement locked to dash velocity set in do()).
+		// While impulse active we exit early.
 		if ( this.impulse.active() ) {
 			return;
 		}
 
-		// Impulse just ended (impulse.done true & hover still active): zero any residual velocity each frame until hover ends.
+		// Impulse just ended.
 		if (
 			this.impulse.done()
 			&&
@@ -122,7 +121,7 @@ export default class Dash {
 		if ( this.hover.active() ) {
 			return;
 
-		// Hover existed and ended
+		// Hover existed and ended.
 		} else if ( this.hover.done() ) {
 			this.hover.clear();
 			this.ignore( true );
@@ -241,21 +240,21 @@ export default class Dash {
 	 *
 	 * @returns {Boolean}
 	 */
-		doing = (
-			dir = ''
-		) => {
+	doing = (
+		dir = ''
+	) => {
 
-			// Skip if can't.
-			if ( ! this.can( dir ) ) {
-				return false;
-			}
-
-			// Execute dash.
-			this.do( dir );
-
-			// Return if impulse is active.
-			return this.impulse.active();
+		// Skip if can't.
+		if ( ! this.can( dir ) ) {
+			return false;
 		}
+
+		// Execute dash.
+		this.do( dir );
+
+		// Return if impulse is active.
+		return this.impulse.active();
+	}
 
 	/**
 	 * Do the dash.

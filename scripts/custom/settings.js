@@ -37,6 +37,10 @@ export default {
 			coyote: {
 				time: 300,
 			},
+			knievel: {
+				distance: 64,
+				lift:     8,
+			},
 			fall: {
 				speed: 16
 			},
@@ -47,7 +51,8 @@ export default {
 			wall: {
 				power:   18,
 				lateral: 18,
-				max:     1
+				max:     1,
+				time:    100,
 			},
 		},
 		dash: {
@@ -76,6 +81,7 @@ export default {
 			falling:  '#ff9900',
 			walljump: '#ff6600',
 			coyote:   '#ff6600',
+			knievel:  '#f00',
 		}
 	},
 

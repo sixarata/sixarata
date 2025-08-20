@@ -1,5 +1,6 @@
 import Game from '../game.js';
 import Settings from '../../custom/settings.js';
+import Timer from '../utilities/timer.js';
 
 /**
  * The WallJump mechanic.
@@ -43,6 +44,7 @@ export default class WallJump {
 		this.tile      = null;
 		this.settings  = Settings.player.jumps.wall;
 		this.listening = true;
+		this.impulse   = new Timer();
 	}
 
 	/**
@@ -53,6 +55,11 @@ export default class WallJump {
 		// Skip if not listening.
 		if ( ! this.listening ) {
 			return;
+		}
+
+		// Release lock if impulse expired.
+		if ( this.impulse.done() ) {
+			this.ignore( true );
 		}
 
 		// Do the wall jump.
@@ -82,7 +89,6 @@ export default class WallJump {
 	 *
 	 * Conditions:
 	 * - Wall jumping enabled in this.settings.power.
-	 * - A maximum jump count (this.settings.max) is defined (prevents unlimited air actions when disabled).
 	 * - Tile is NOT grounded (forces usage only while airborne beside a wall).
 	 * - Tile is touching a wall side (left or right contact flag).
 	 *
@@ -91,7 +97,7 @@ export default class WallJump {
 	can = () => {
 
 		// Conditions.
-		const set      = ( this.settings.power && this.settings.max );
+		const set      = this.settings.power;
 		const walled   = this.walled();
 		const grounded = this.tile?.mechanics?.jump?.grounded() || false;
 
@@ -99,7 +105,11 @@ export default class WallJump {
 		return (
 			! grounded
 			&&
-			( set && walled )
+			(
+				set
+				&&
+				walled
+			)
 		);
 	}
 
@@ -134,6 +144,10 @@ export default class WallJump {
 
 		// Vertical (slightly boosted for wall jump flair).
 		velocity.y = -( power );
+
+		// Set the impulse timer.
+		this.impulse.set( this.settings.time );
+		this.ignore( false );
 	}
 
 	/**
@@ -152,6 +166,26 @@ export default class WallJump {
 		}
 
 		// Return wall contact status.
-		return ( contact.left || contact.right )
+		return ( contact.left || contact.right );
+	}
+
+	/**
+	 * Enable / disable overlapping locomotion mechanics while walljumping.
+	 *
+	 * @param {Boolean} enable True to restore, false to suspend.
+	 */
+	ignore = ( enable = true ) => {
+		const m = this.tile?.mechanics;
+
+		if ( ! m ) {
+			return;
+		}
+
+		if ( m.jump )     m.jump.listening     = enable;
+		if ( m.walk )     m.walk.listening     = enable;
+		if ( m.fall )     m.fall.listening     = enable;
+		if ( m.walljump ) m.walljump.listening = enable;
+		if ( m.coyote )   m.coyote.listening   = enable;
+		if ( m.orient )   m.orient.listening   = enable;
 	}
 }
