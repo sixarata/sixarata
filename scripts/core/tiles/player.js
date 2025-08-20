@@ -116,18 +116,18 @@ export default class Player extends Tile {
 		// Falling.
 		this.mechanics.fall.listen();
 
-		// Coyote jump, edge detection - before jump.
+		// Horizontal movement (intent) before ledge assist.
+		this.mechanics.walk.listen();
+
+		// Coyote window check (still before jump consumption).
 		this.mechanics.coyote.listen();
 
-		// Primary jump, then modifiers - rely on airborne state.
+		// Primary jump + modifiers.
 		this.mechanics.jump.listen();
 		this.mechanics.wall.listen();
 		this.mechanics.dash.listen();
 
-		// Horizontal movement.
-		this.mechanics.walk.listen();
-
-		// Orientation.
+		// Orientation last.
 		this.mechanics.orient.listen();
 	}
 
