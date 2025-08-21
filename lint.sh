@@ -4,18 +4,87 @@
 # (block openings/closures, control keywords, class/interface declarations, etc).
 #
 # Usage:
-#   ./lint.sh            # run check (non-zero exit on violations)
-#   ./lint.sh fix        # attempt auto-fix (adds missing trailing semicolons heuristically)
+#   ./lint.sh [check]                # run check (non-zero exit on violations)
+#   ./lint.sh fix                    # attempt auto-fix (adds missing trailing semicolons heuristically)
+#   ./lint.sh --staged               # only lint staged *.js files (auto-detect mode=check)
+#   ./lint.sh fix --staged           # auto-fix only staged *.js files
+#   ./lint.sh check file1.js file2.js  # limit to specific files
+#
+# Tips (pre-commit): add a hook like:
+#   #!/usr/bin/env bash
+#   exec ./src/lint.sh --staged || exit 1
+# This dramatically speeds up runs by linting only changed files.
 #
 # Limitations: heuristic; may miss edge cases or produce a false positive. Review diffs.
 
 set -euo pipefail
-MODE=${1:-check}
+MODE=check
+STAGED=0
+FILES=()
+for arg in "$@"; do
+  case "$arg" in
+    fix) MODE=fix ;;
+    check) MODE=check ;;
+    --staged|--cached) STAGED=1 ;;
+    -h|--help)
+      sed -n '1,80p' "$0"
+      exit 0
+      ;;
+    --) shift; FILES+=("$@" ); break ;;
+    -*) echo "Unknown flag: $arg" >&2; exit 2 ;;
+    *) FILES+=("$arg") ;;
+  esac
+done
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-JS_FILES=$(find "$ROOT_DIR/scripts" -type f -name '*.js' | sort)
+
+# Gather JS files.
+gather_files() {
+  local gathered=()
+  if [ ${#FILES[@]} -gt 0 ]; then
+    for f in "${FILES[@]}"; do
+      [ -f "$f" ] || { echo "Skipping missing file $f" >&2; continue; }
+      case "$f" in *.js) gathered+=("$f") ;; *) ;; esac
+    done
+  elif [ $STAGED -eq 1 ]; then
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        [ -f "$f" ] || continue
+        case "$f" in *.js) gathered+=("$f") ;; esac
+      done < <(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.js$' || true)
+    fi
+  fi
+  if [ ${#gathered[@]} -eq 0 ]; then
+    # Default: full scan (fallback)
+    while IFS= read -r f; do
+      gathered+=("$f")
+    done < <(find "$ROOT_DIR/scripts" -type f -name '*.js' | sort)
+  fi
+  echo "${gathered[@]}"
+}
+
+read -r -a JS_FILES <<<"$(gather_files)"
+
+if [ ${#JS_FILES[@]} -eq 0 ]; then
+  echo "No JavaScript files to lint." >&2
+  exit 0
+fi
 
 missing=()
+
+# --- Performance helpers (avoid spawning external processes in hot loop) ---
+count_char() { # $1 string, $2 single-char pattern
+  local _s=$1 _c=$2
+  # Remove every char except target, length of remainder = count
+  local _only=${_s//[^$_c]/}
+  printf '%d' "${#_only}"
+}
+
+starts_return_paren() { # line starts with 'return (' (allow spaces after return)
+  local _l=$1
+  [[ $_l =~ ^return[[:space:]]*\( ]]
+}
 
 is_ignorable_line() {
   local line="$1"
@@ -83,7 +152,7 @@ autofix_line() {
   fi
 }
 
-for f in $JS_FILES; do
+for f in "${JS_FILES[@]}"; do
   lineno=0
   tmpfile="$f.autofix.tmp"
   : > "$tmpfile"
@@ -138,9 +207,9 @@ for f in $JS_FILES; do
       done
       # Trim leading whitespace after removing braces.
       check_line="${check_line#"${check_line%%[![:space:]]*}"}"
-      if echo "$check_line" | grep -Eq '^(if|while|for|else[[:space:]]+if)[[:space:]]*\('; then
-        opens=$(printf '%s' "$trimmed_line" | tr -cd '(' | wc -c | tr -d ' ')
-        closes=$(printf '%s' "$trimmed_line" | tr -cd ')' | wc -c | tr -d ' ')
+      if [[ $check_line =~ ^(if|while|for|else[[:space:]]+if)[[:space:]]*\( ]]; then
+        opens=$(count_char "$trimmed_line" '(')
+        closes=$(count_char "$trimmed_line" ')')
         cond_paren_depth=$((opens - closes))
         if [ $cond_paren_depth -gt 0 ]; then
           in_cond_block=1
@@ -148,8 +217,8 @@ for f in $JS_FILES; do
         fi
       fi
     else
-      opens=$(printf '%s' "$trimmed_line" | tr -cd '(' | wc -c | tr -d ' ')
-      closes=$(printf '%s' "$trimmed_line" | tr -cd ')' | wc -c | tr -d ' ')
+      opens=$(count_char "$trimmed_line" '(')
+      closes=$(count_char "$trimmed_line" ')')
       cond_paren_depth=$((cond_paren_depth + opens - closes))
       suppress=1
       if [ $cond_paren_depth -le 0 ]; then
@@ -160,9 +229,9 @@ for f in $JS_FILES; do
     # Multi-line return ( parenthesis block ) detection.
     if [ $in_return_block -eq 0 ]; then
       # Start if line begins with 'return' and has unmatched '('
-      if echo "$trimmed_line" | grep -Eq '^return[[:space:]]*\('; then
-        ropens=$(printf '%s' "$trimmed_line" | tr -cd '(' | wc -c | tr -d ' ')
-        rcloses=$(printf '%s' "$trimmed_line" | tr -cd ')' | wc -c | tr -d ' ')
+      if starts_return_paren "$trimmed_line"; then
+        ropens=$(count_char "$trimmed_line" '(')
+        rcloses=$(count_char "$trimmed_line" ')')
         return_paren_depth=$((ropens - rcloses))
         if [ $return_paren_depth -gt 0 ]; then
           in_return_block=1
@@ -170,8 +239,8 @@ for f in $JS_FILES; do
       fi
     else
       # Continue tracking inside return block.
-      ro=$(printf '%s' "$trimmed_line" | tr -cd '(' | wc -c | tr -d ' ')
-      rc=$(printf '%s' "$trimmed_line" | tr -cd ')' | wc -c | tr -d ' ')
+      ro=$(count_char "$trimmed_line" '(')
+      rc=$(count_char "$trimmed_line" ')')
       return_paren_depth=$((return_paren_depth + ro - rc))
       suppress=1
       if [ $return_paren_depth -le 0 ]; then
