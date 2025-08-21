@@ -208,7 +208,7 @@ export default class Keyboard extends Device {
 		// Return X & Y.
 		return [
 			x,
-			y
+			y,
 		];
 	}
 }

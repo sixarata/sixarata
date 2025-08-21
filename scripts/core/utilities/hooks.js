@@ -276,7 +276,7 @@ export default class Hooks {
 			callback,
 			priority,
 			expires: ( ms > 0 ) ? ( now + ms ) : 0,
-			frames: ( frames > 0 ) ? frames : 0
+			frames: ( frames > 0 ) ? frames : 0,
 		} );
 
 		return true;

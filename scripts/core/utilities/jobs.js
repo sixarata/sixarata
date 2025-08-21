@@ -30,9 +30,9 @@ export default class Jobs {
 	 * Reset internal state.
 	 */
 	reset = () => {
-		this._nextId   = 1;      // incremental id
-		this._pending  = [];     // active jobs
-		this._indexKey = {};     // key -> [ids]
+		this._nextId   = 1;
+		this._pending  = [];
+		this._indexKey = {};
 	}
 
 	/**
@@ -147,7 +147,7 @@ export default class Jobs {
 			}
 
 			const timeReady  = job.expiresAt > 0 && nowElapsed >= job.expiresAt;
-			const frameReady = job.framesLeft === 0 && job.intervalFrames !== 0; // treat zero framesLeft as ready if frames were specified
+			const frameReady = job.framesLeft === 0 && job.intervalFrames !== 0;
 			const ready = (
 				( job.expiresAt > 0 && job.framesLeft > 0 )
 				? ( timeReady || ( job.framesLeft === 0 ) )

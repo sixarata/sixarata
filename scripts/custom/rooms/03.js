@@ -18,4 +18,4 @@ export default [
 'r B            x                           xxx          G   ',
 'xxxxxxx                                            xxxxxxxxx',
 
-]
+];

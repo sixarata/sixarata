@@ -39,4 +39,4 @@ export default [
 '   B                                                        ',
 ' xxxxxxxx                                                   ',
 
-]
+];

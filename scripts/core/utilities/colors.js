@@ -15,7 +15,7 @@ export default class Colors {
 	}
 
 	reset = () => {
-		
+
 	}
 
 	random = () => {
@@ -37,10 +37,10 @@ export default class Colors {
 			base    = '3',
 			seed    = Math.random() * letters.length,
 			hex     = letters[ Math.floor( seed ) ],
-			color   = '#'
-					+ base + hex
-					+ base + hex
-					+ base + hex;
+			color   = '#' +
+					base + hex +
+					base + hex +
+					base + hex;
 
 		return color;
 	}

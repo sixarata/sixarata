@@ -47,7 +47,7 @@ export default class View {
 		this.buffer.resize( {
 			w: innerWidth,
 			h: innerHeight,
-			d: 1
+			d: 1,
 		} );
 	}
 

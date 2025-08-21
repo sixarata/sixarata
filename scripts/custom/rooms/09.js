@@ -21,4 +21,4 @@ export default [
 ' B                     xxxxx       xxxxx                    ',
 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
 
-]
+];

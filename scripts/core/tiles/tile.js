@@ -7,7 +7,7 @@ import {
 	Position,
 	Size,
 	Velocity,
-	Contact
+	Contact,
 } from '../physics/exports.js';
 
 /**
@@ -196,7 +196,7 @@ export default class Tile {
 		const offset = {
 				physics: {
 					position: this.offset(),
-					size:     this.physics.size
+					size:     this.physics.size,
 				}
 			},
 
@@ -204,7 +204,7 @@ export default class Tile {
 			viewport = {
 				physics: {
 					position: Game.View.buffer.position,
-					size:     Game.View.buffer.size
+					size:     Game.View.buffer.size,
 				}
 			},
 

@@ -125,7 +125,7 @@ export default class Scale {
 		const scale = this.semitones.map(
 			note => ( {
 				note,
-				frequency: this.getFrequency( note, octave )
+				frequency: this.getFrequency( note, octave ),
 			} )
 		);
 

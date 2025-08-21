@@ -54,7 +54,7 @@ export default class Coordinate extends Number {
 	 */
 	add = (
 		c = {
-			value: 0
+			value: 0,
 		}
 	) => {
 		return this.set(
@@ -72,7 +72,7 @@ export default class Coordinate extends Number {
 		l = 1
 	) => {
 		return this.add( {
-			value: l
+			value: l,
 		} );
 	}
 
@@ -84,7 +84,7 @@ export default class Coordinate extends Number {
 	 */
 	sub = (
 		c = {
-			value: 0
+			value: 0,
 		}
 	) => {
 		return this.set(
@@ -102,7 +102,7 @@ export default class Coordinate extends Number {
 		l = 1
 	) => {
 		return this.sub( {
-			value: l
+			value: l,
 		} );
 	}
 
@@ -114,7 +114,7 @@ export default class Coordinate extends Number {
 	 */
 	multiply = (
 		c = {
-			value: 0
+			value: 0,
 		}
 	) => {
 		return this.set(
@@ -132,7 +132,7 @@ export default class Coordinate extends Number {
 		l = 1
 	) => {
 		return this.multiply( {
-			value: l
+			value: l,
 		} );
 	}
 
@@ -144,7 +144,7 @@ export default class Coordinate extends Number {
 	 */
 	divide = (
 		c = {
-			value: 0
+			value: 0,
 		}
 	) => {
 		return this.set(
@@ -163,7 +163,7 @@ export default class Coordinate extends Number {
 	) => {
 		if ( l ) {
 			return this.divide( {
-				value: l
+				value: l,
 			} );
 		} else {
 			return this.reset();
@@ -178,7 +178,7 @@ export default class Coordinate extends Number {
 	 */
 	import = (
 		c = {
-			value: 0
+			value: 0,
 		}
 	) => {
 		return this.set( c.value );
@@ -201,7 +201,7 @@ export default class Coordinate extends Number {
 	 */
 	square = (
 		c = {
-			value: 0
+			value: 0,
 		}
 	) => {
 		return (
@@ -219,7 +219,7 @@ export default class Coordinate extends Number {
 	 */
 	length = (
 		c = {
-			value: 0
+			value: 0,
 		}
 	) => {
 		return Math.sqrt( this.square( c ) );
@@ -233,7 +233,7 @@ export default class Coordinate extends Number {
 	 */
 	squareDistance = (
 		c = {
-			value: 0
+			value: 0,
 		}
 	) => {
 		let d = ( this.value - c.value );
@@ -249,7 +249,7 @@ export default class Coordinate extends Number {
 	 */
 	distance = (
 		c = {
-			value: 0
+			value: 0,
 		}
 	) => {
 		return Math.sqrt( this.squareDistance( c ) );
@@ -263,7 +263,7 @@ export default class Coordinate extends Number {
 	 */
 	equals = (
 		c = {
-			value: 0
+			value: 0,
 		}
 	) => {
 		return ( this.distance( c ) < this.#tolerance );
@@ -286,7 +286,7 @@ export default class Coordinate extends Number {
 	 */
 	dot = (
 		c = {
-			value: 0
+			value: 0,
 		}
 	) => {
 		return ( this.value * c.value );
@@ -301,7 +301,7 @@ export default class Coordinate extends Number {
 	 */
 	lerp = (
 		c = {
-			value: 0
+			value: 0,
 		},
 		l = 1
 	) => {

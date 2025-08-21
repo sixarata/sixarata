@@ -62,7 +62,7 @@ export default class Room {
 		this.buffer.resize( {
 			w: innerWidth,
 			h: innerHeight,
-			d: 1
+			d: 1,
 		} );
 	}
 

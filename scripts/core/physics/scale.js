@@ -19,7 +19,7 @@ export default class Scale extends Point {
 	 */
 	static defaults = {
 		size: 32,
-		dpr:  2
+		dpr:  2,
 	}
 
 	/**

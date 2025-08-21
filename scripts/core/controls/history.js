@@ -80,7 +80,7 @@ export default class History {
 					down: false,
 					beganAt: 0,
 					duration: 0,
-					endedAt: 0
+					endedAt: 0,
 				};
 			}
 
@@ -97,7 +97,7 @@ export default class History {
 					e = {
 						action,
 						type: 'press',
-						time: now
+						time: now,
 					};
 
 				// Continue hold; update duration.
@@ -116,7 +116,7 @@ export default class History {
 					action,
 					type: 'release',
 					time: now,
-					duration: s.duration
+					duration: s.duration,
 				}
 			}
 
@@ -157,7 +157,7 @@ export default class History {
 		const {
 			action = null,
 			type   = null,
-			window = 0
+			window = 0,
 		} = options;
 
 		const now = Time.now;
@@ -179,7 +179,7 @@ export default class History {
 		return this.recent( {
 			action,
 			type: 'press',
-			window
+			window,
 		} ).length;
 	}
 }

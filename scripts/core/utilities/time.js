@@ -20,9 +20,9 @@ class Time {
 		const t = performance.now();
 		this.now   = t;
 		this.prev  = t;
-		this.delta = 0; // ms
-		this.diff  = 1; // normalized frame diff
-		this.scale = 1; // movement scale
+		this.delta = 0;
+		this.diff  = 1;
+		this.scale = 1;
 	}
 
 	/**

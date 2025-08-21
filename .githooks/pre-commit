@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Git pre-commit hook delegating to lint.sh (semicolon policy) without Node.
+ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
+cd "$ROOT_DIR" || exit 1
+
+if [[ ! -x ./lint.sh ]]; then
+  echo "lint.sh missing or not executable; aborting commit." >&2
+  exit 1
+fi
+
+./lint.sh || {
+  echo "Commit blocked due to semicolon lint errors." >&2
+  exit 1
+}
+
+exit 0

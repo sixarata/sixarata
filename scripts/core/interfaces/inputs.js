@@ -91,7 +91,7 @@ export default class Inputs {
 		// Default if no device has axes
 		return [
 			0,
-			0
+			0,
 		];
 	}
 }

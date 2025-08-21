@@ -75,35 +75,35 @@ export default class Timer {
 	 * @param {Number} ms Duration ms.
 	 * @returns {Timer} this
 	 */
-	start = ( ms = 0 ) => this.set( ms )
+	start = ( ms = 0 ) => this.set( ms );
 
 	/**
 	 * Clear / deactivate.
 	 *
 	 * @returns {Timer} this
 	 */
-	clear = () => this.reset()
+	clear = () => this.reset();
 
 	/**
 	 * Alias for clear().
 	 *
 	 * @returns {Timer} this
 	 */
-	stop = () => this.clear()
+	stop = () => this.clear();
 
 	/**
 	 * True while counting down.
 	 *
 	 * @returns {Boolean}
 	 */
-	active = () => ( ! this.paused && this.expires > 0 && Time.now < this.expires )
+	active = () => ( ! this.paused && this.expires > 0 && Time.now < this.expires );
 
 	/**
 	 * True when expired (and not paused).
 	 *
 	 * @returns {Boolean}
 	 */
-	done = () => ( ! this.paused && this.expires > 0 && Time.now >= this.expires )
+	done = () => ( ! this.paused && this.expires > 0 && Time.now >= this.expires );
 
 	/**
 	 * Remaining milliseconds.
@@ -153,7 +153,7 @@ export default class Timer {
 	 *
 	 * @returns {Number}
 	 */
-	ratio = () => ( this.duration > 0 ? ( this.elapsed() / this.duration ) : 0 )
+	ratio = () => ( this.duration > 0 ? ( this.elapsed() / this.duration ) : 0 );
 
 	/**
 	 * Pause (capture remaining).

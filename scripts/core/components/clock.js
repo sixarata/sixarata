@@ -34,7 +34,7 @@ export default class Clock {
 		this.times = {
 			start:   now,
 			current: now,
-			elapsed: 0
+			elapsed: 0,
 		};
 	}
 

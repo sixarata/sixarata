@@ -29,5 +29,4 @@ export default [
     '                 x                               e                         x           ',
     '                          x             e                        x                     ',
     '                            x        x        x          x                  x          ',
-    ]
-    
+    ];

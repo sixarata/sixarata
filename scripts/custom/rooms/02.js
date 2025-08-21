@@ -12,4 +12,4 @@ export default [
 ' B                                           x          G   ',
 'xxxxxxx                                            xxxxxxxxx',
 
-]
+];

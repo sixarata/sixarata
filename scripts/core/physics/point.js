@@ -66,7 +66,7 @@ export default class Point {
 		p = {
 			x: 0,
 			y: 0,
-			z: 0
+			z: 0,
 		}
 	) => {
 		return this.set(
@@ -88,7 +88,7 @@ export default class Point {
 		return this.add( {
 			x: l,
 			y: l,
-			z: l
+			z: l,
 		} );
 	}
 
@@ -102,7 +102,7 @@ export default class Point {
 		p = {
 			x: 0,
 			y: 0,
-			z: 0
+			z: 0,
 		}
 	) => {
 		return this.set(
@@ -124,7 +124,7 @@ export default class Point {
 		return this.sub( {
 			x: l,
 			y: l,
-			z: l
+			z: l,
 		} );
 	}
 
@@ -138,7 +138,7 @@ export default class Point {
 		p = {
 			x: 0,
 			y: 0,
-			z: 0
+			z: 0,
 		}
 	) => {
 		return this.set(
@@ -160,7 +160,7 @@ export default class Point {
 		return this.multiply( {
 			x: l,
 			y: l,
-			z: l
+			z: l,
 		} );
 	}
 
@@ -174,7 +174,7 @@ export default class Point {
 		p = {
 			x: 0,
 			y: 0,
-			z: 0
+			z: 0,
 		}
 	) => {
 		return this.set(
@@ -197,7 +197,7 @@ export default class Point {
 			return this.divide( {
 				x: l,
 				y: l,
-				z: l
+				z: l,
 			} );
 		} else {
 			return this.reset();
@@ -214,7 +214,7 @@ export default class Point {
 		p = {
 			x: 0,
 			y: 0,
-			z: 0
+			z: 0,
 		}
 	) => {
 		return this.set(
@@ -233,7 +233,7 @@ export default class Point {
 		return new Point(
 			this.x,
 			this.y,
-			this.z
+			this.z,
 		);
 	}
 
@@ -279,7 +279,7 @@ export default class Point {
 		p = {
 			x: 0,
 			y: 0,
-			z: 0
+			z: 0,
 		}
 	) => {
 		let dx = this.x.sub( p.x ),
@@ -305,7 +305,7 @@ export default class Point {
 		p = {
 			x: 0,
 			y: 0,
-			z: 0
+			z: 0,
 		}
 	) => {
 		return Math.sqrt( this.squareDistance( p ) );
@@ -321,7 +321,7 @@ export default class Point {
 		p = {
 			x: 0,
 			y: 0,
-			z: 0
+			z: 0,
 		}
 	) => {
 		return ( this.distance( p ) < this.#tolerance );
@@ -346,7 +346,7 @@ export default class Point {
 		p = {
 			x: 0,
 			y: 0,
-			z: 0
+			z: 0,
 		}
 	) => {
 		return (
@@ -369,7 +369,7 @@ export default class Point {
 		p = {
 			x: 0,
 			y: 0,
-			z: 0
+			z: 0,
 		},
 		l = 1
 	) => {

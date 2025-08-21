@@ -43,7 +43,7 @@ export default class Player extends Tile {
 	reset = () => {
 
 		// Settings.
-		this.retries = Settings.player.retries
+		this.retries = Settings.player.retries;
 		this.health  = Settings.player.health;
 
 		// Physics
@@ -146,13 +146,13 @@ export default class Player extends Tile {
 
 		// Wall jump.
 		if ( this.mechanics.wall.can() ) {
-			this.color = Settings.player.colors.walljump
-		};
+			this.color = Settings.player.colors.walljump;
+		}
 
 		// Coyote jump.
 		if ( this.mechanics.coyote.can() ) {
 			this.color = Settings.player.colors.coyote;
-		};
+		}
 	}
 
 	/**

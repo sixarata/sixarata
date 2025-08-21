@@ -25,8 +25,8 @@ export default class Frame {
 		throttle: 0.5,
 		second:   1000,
 		goal:     60,
-		clamp:    5
-	};
+		clamp:    5,
+	}
 
 	/**
 	 * Construct the object.
@@ -199,10 +199,10 @@ export default class Frame {
 		const delta   = ( [ x = 0, ...xs ] ) => xs.reduce(
 				(
 					[ acc, last ],
-					x
+					x,
 				) => [
 					[ ...acc, x - last ],
-					x
+					x,
 				],
 				[ [], x ]
 			)[ 0 ];

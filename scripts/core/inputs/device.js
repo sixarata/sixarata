@@ -51,7 +51,7 @@ export default class Device {
 	axes = () => {
 		return [
 			0,
-			0
+			0,
 		];
 	}
 
@@ -99,7 +99,7 @@ export default class Device {
 		// Merge keys.
 		const keys = new Set( [
 			...Object.keys( defaults ),
-			...Object.keys( overrides )
+			...Object.keys( overrides ),
 		] );
 
 		// Merge overrides into defaults.

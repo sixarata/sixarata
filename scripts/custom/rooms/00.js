@@ -58,4 +58,4 @@ export default [
 '                                                               G   ',
 'xxxxxxxx        xxxxxx       xxxxxxx       xxxxxxx         xxxxxxxx',
 
-]
+];

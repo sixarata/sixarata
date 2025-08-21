@@ -17,4 +17,4 @@ export default [
 '                               x            x               ',
 'xxxxxxxxxxxxxxx           xxxxxxxxxxxxxxxx                  ',
 
-]
+];

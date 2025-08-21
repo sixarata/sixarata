@@ -3,7 +3,7 @@ export default {
 
 	// Room.
 	room: {
-		start: 0
+		start: 0,
 	},
 
 	// View.
@@ -14,7 +14,7 @@ export default {
 	// Scale.
 	scale: {
 		size: 32,
-		dpr:  2
+		dpr:  2,
 	},
 
 	// Frames.
@@ -22,7 +22,7 @@ export default {
 		throttle: 0.5,
 		second:   1000,
 		goal:     60,
-		clamp:    5
+		clamp:    5,
 	},
 
 	// Player.
@@ -42,7 +42,7 @@ export default {
 				lift:     8,
 			},
 			fall: {
-				speed: 16
+				speed: 16,
 			},
 			ground: {
 				power: 16,
@@ -90,7 +90,7 @@ export default {
 		keyboard: {},
 		gamepad: {},
 		detect: {
-			doubleTapWindow: 180 // fallback if mechanic doesn't supply
+			doubleTapWindow: 180,
 		}
 	},
 
@@ -126,7 +126,7 @@ export default {
 		},
 		doors: {
 			forward: 'G',
-			backward: 'B'
+			backward: 'B',
 		},
 		enemies: {
 			shooter: 'e',
