@@ -1,4 +1,5 @@
 import { Position, Scale, Size } from '../physics/exports.js';
+import Screen from '../interfaces/screen.js';
 
 /**
  * The Buffer object.
@@ -65,8 +66,8 @@ export default class Buffer {
 		this.canvas.innerText = 'Sorry, but your web browser does not support this.';
 		this.context.imageSmoothingEnabled = false;
 
-		// Physics.
-		this.scale    = new Scale();
+		// Display & physics.
+		this.screen   = new Screen();
 		this.position = new Position();
 
 		// Resize & Rescale.
@@ -85,13 +86,21 @@ export default class Buffer {
 		smooth = false
 	) => {
 
-		// Adjust the size based on the pixel ratio.
-		size = new Size(
-			size.w * this.scale.dpr,
-			size.h * this.scale.dpr,
-			size.d * this.scale.dpr,
+		// Resize the screen.
+		this.screen.resize( this.context.canvas, size );
+
+		// Track size for camera/collision comparisons.
+		this.size = new Size(
+			size.w,
+			size.h,
+			size.d,
 			false
 		);
+
+		// Maybe reapply scaling after changes reset the transform.
+		if ( this._scale ) {
+			this.rescale( this._scale );
+		}
 
 		// Smoothing.
 		if ( this.context.imageSmoothingEnabled !== smooth ) {
@@ -143,10 +152,8 @@ export default class Buffer {
 	rescale = (
 		scale = { x: 300, y: 300, z: 0 }
 	) => {
-		this.context.scale(
-			( scale.x * this.scale.dpr ),
-			( scale.y * this.scale.dpr )
-		);
+		this._scale = scale;
+		this.screen.scale( this.context, scale );
 	}
 
 	/**
@@ -251,24 +258,13 @@ export default class Buffer {
 		opacity  = 1
 	) => {
 
-		// Adjust the font size based on the pixel ratio.
-		let fontSize = font.substring( 0, font.indexOf( 'px' ) ),
-			adjusted = fontSize * this.scale.dpr;
-
-		// Override the font parameter, with adjusted size.
-		font = adjusted + 'px' + font.substring( font.indexOf( 'px' ) + 2 );
-
 		// Properties.
 		this.context.fillStyle   = color;
 		this.context.globalAlpha = opacity;
 		this.context.font        = font;
 
 		// Draw.
-		this.context.fillText(
-			text,
-			( position.x * this.scale.dpr ),
-			( position.y * this.scale.dpr ),
-		);
+		this.context.fillText( text, position.x, position.y );
 	}
 
 	/**

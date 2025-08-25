@@ -16,6 +16,7 @@ class Time {
 	}
 
 	reset = () => {
+
 		// Monotonic timestamps / frame metrics.
 		const t = performance.now();
 		this.now   = t;
@@ -28,7 +29,9 @@ class Time {
 	/**
 	 * Update the cached time (called by Frame.animate).
 	 */
-	update = ( value = performance.now() ) => {
+	update = (
+		value = performance.now()
+	) => {
 		this.prev  = this.now;
 		this.now   = value;
 		this.delta = ( this.now - this.prev );

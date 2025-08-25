@@ -104,13 +104,13 @@ export default class Hud {
 	update = () => {
 		Game.Hooks.do( 'Hud.update' );
 
-		let w = ( this.buffer.size.w / this.buffer.scale.dpr );
+		let w = this.buffer.screen.width() - 70;
 
 		this.buffer.open();
 		this.buffer.text( '🚀 ' + this.room,    { x: 15,  y: 21 } );
 		this.buffer.text( '🔁 ' + this.retries, { x: 90,  y: 21 } );
 		this.buffer.text( '⏳ ' + this.time,    { x: 165, y: 21 } );
-		this.buffer.text( '🎥 ' + this.frames,  { x: w - 70, y: 21 } );
+		this.buffer.text( '🎥 ' + this.frames,  { x: w,   y: 21 } );
 		this.buffer.close();
 	}
 

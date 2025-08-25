@@ -43,7 +43,7 @@ export default class Projectile extends Tile {
 				source.x,
 				source.y,
 				source.z,
-				'down'
+				false
 			),
 
 			// Recolor based on type.
@@ -102,7 +102,7 @@ export default class Projectile extends Tile {
 			this.bullseye.x,
 			this.bullseye.y,
 			this.bullseye.z,
-			'down'
+			false
 		);
 
 		// Angle.

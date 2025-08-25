@@ -19,7 +19,6 @@ export default class Scale extends Point {
 	 */
 	static defaults = {
 		size: 32,
-		dpr:  2,
 	}
 
 	/**
@@ -53,15 +52,8 @@ export default class Scale extends Point {
 		// Get the scale settings.
 		this.settings = Settings.scale ?? Scale.defaults;
 
-		// Set the tile size in pixels.
-		this.size = this.settings.size;
-
-		// Set the pixel ratio.
-		this.dpr = devicePixelRatio
-			?? this.settings.dpr;
-
-		// Set the pixel-to-size ratio.
-		this.ratio = ( this.size * this.dpr );
+		// Get the physics ratio.
+		this.ratio = this.settings.size;
 	}
 
 	/**

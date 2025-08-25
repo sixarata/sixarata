@@ -8,6 +8,7 @@ const Game = {
 	// Interfaces.
 	Audio:      new Core.Interfaces.Audio(),
 	Inputs:     new Core.Interfaces.Inputs(),
+	Screen:     new Core.Interfaces.Screen(),
 
 	// Components.
 	Camera:     new Core.Components.Camera(),

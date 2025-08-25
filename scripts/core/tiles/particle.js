@@ -109,7 +109,7 @@ export default class Particle extends Tile {
 			return this.destroy();
 		}
 
-		const scale = Time.scale;
+		const scale = ( Time.scale / Game.Screen.dpr );
 
 		// Update position.
 		this.physics.position.x += ( this.physics.velocity.x * scale );

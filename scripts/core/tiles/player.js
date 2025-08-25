@@ -164,7 +164,7 @@ export default class Player extends Tile {
 		this.physics.contact.reset();
 
 		// Cached per-frame movement scale.
-		const scale = Time.scale;
+		const scale = ( Time.scale / Game.Screen.dpr );
 
 		// Update X.
 		this.physics.position.x += ( this.physics.velocity.x * scale );
