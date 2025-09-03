@@ -8,7 +8,7 @@ export default {
 
 	// View.
 	view: {
-		hud: false,
+		hud: true,
 	},
 
 	// Scale.

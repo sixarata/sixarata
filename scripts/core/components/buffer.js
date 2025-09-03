@@ -86,20 +86,19 @@ export default class Buffer {
 		smooth = false
 	) => {
 
-		// Resize the screen.
-		this.screen.resize( this.context.canvas, size );
-
 		// Track size for camera/collision comparisons.
-		this.size = new Size(
-			size.w,
-			size.h,
-			size.d,
-			false
-		);
+		this.size = {
+			w: size.w ?? 0,
+			h: size.h ?? 0,
+			d: size.d ?? 0,
+		};
+
+		// Resize the screen.
+		this.screen.resize( this.context.canvas, this.size );
 
 		// Maybe reapply scaling after changes reset the transform.
-		if ( this._scale ) {
-			this.rescale( this._scale );
+		if ( this.scale ) {
+			this.rescale( this.scale );
 		}
 
 		// Smoothing.
@@ -113,9 +112,6 @@ export default class Buffer {
 			||
 			( size.h !== this.context.canvas.height )
 		) {
-
-			// Size.
-			this.size = size;
 
 			// Set size.
 			this.context.canvas.width  = size.w;
@@ -150,9 +146,9 @@ export default class Buffer {
 	 * @param {Scale} scale
 	 */
 	rescale = (
-		scale = { x: 300, y: 300, z: 0 }
+		scale = { x: 1, y: 1, z: 1 }
 	) => {
-		this._scale = scale;
+		this.scale = scale;
 		this.screen.scale( this.context, scale );
 	}
 
