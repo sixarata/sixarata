@@ -79,7 +79,7 @@ export default class Device {
 	 * @returns {Object} Override mappings.
 	 */
 	overrides = () => {
-		return Settings?.inputs?.[ this.name().toLowerCase() ] || {};
+		return Settings?.interfaces?.inputs?.[ this.name().toLowerCase() ] || {};
 	}
 
 	/**

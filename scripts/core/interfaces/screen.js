@@ -11,7 +11,7 @@ export default class Screen {
 	/**
 	 * Default Screen settings.
 	 *
-	 * These are overridden by Settings.scale.
+	 * These are overridden by Settings.interfaces.screen.
 	 */
 	static defaults = {
 		size: 32,
@@ -38,51 +38,18 @@ export default class Screen {
 	 */
 	reset = () => {
 
-		// Settings (mirror Frame.defaults pattern)
-		this.settings = Settings.scale ?? Screen.defaults;
+		// Sizes.
+		this.size  = { w: 0, h: 0, d: 0 };
+		this.pixel = { w: 0, h: 0, d: 0 };
+
+		// Settings.
+		this.settings = Settings.interfaces.screen ?? Screen.defaults;
 
 		// Tile size.
 		this.tile = this.settings.size ?? Screen.defaults.size;
 
 		// Device pixel ratio.
-		this.dpr = this.getDpr( this.settings.dpr ?? Screen.defaults.dpr );
-
-		// Sizes.
-		this.size  = { w: 0, h: 0, d: 0 };
-		this.pixel = { w: 0, h: 0, d: 0 };
-	}
-
-	/**
-	 * Add the Listeners.
-	 */
-	listen = () => {
-
-		// Skip if not in a browser environment.
-		if (
-			( typeof window === 'undefined' )
-			||
-			( typeof window.matchMedia !== 'function' )
-		) {
-			return;
-		}
-
-		// Create a media query for the current device pixel ratio.
-		const query = `(resolution: ${window.devicePixelRatio}dppx)`;
-		const mq    = window.matchMedia( query );
-
-		// Listen for changes to the media query.
-		mq.addEventListener(
-			'change',
-			this.change,
-			false
-		);
-	}
-
-	/**
-	 * Handle changes to the device pixel ratio.
-	 */
-	change = () => {
-		this.dpr = this.getDpr();
+		this.setDpr( this.settings.dpr ?? Screen.defaults.dpr );
 	}
 
 	/**
@@ -102,6 +69,19 @@ export default class Screen {
 
 		// Fallback.
 		return fallback;
+	}
+
+	/**
+	 * Set the device pixel ratio.
+	 *
+	 * @param {Number} value
+	 */
+	setDpr = (
+		value = 2
+	) => {
+
+		// Update the device pixel ratio.
+		this.dpr = value;
 	}
 
 	/**
@@ -221,4 +201,89 @@ export default class Screen {
 	 * @returns {Number} The current height.
 	 */
 	height = () => this.size.h;
+
+	/**
+	 * Add the Listeners.
+	 *
+	 * @returns {void}
+	 */
+	listen = () => {
+
+		// Ensure only one active listener at a time.
+		this.ignore();
+
+		// Arm the media query listener for the new DPR.
+		this.rematch();
+
+		// Listen for changes to the media query.
+		if ( this.match && this.match.addEventListener ) {
+			this.match.addEventListener(
+				'change',
+				this.change,
+				false
+			);
+		}
+	}
+
+	/**
+	 * Re-establish the media query listener.
+	 *
+	 * @returns {void}
+	 */
+	rematch = () => {
+
+		// Skip if not in a browser environment.
+		if (
+			( typeof window === 'undefined' )
+			||
+			( typeof window.matchMedia !== 'function' )
+		) {
+			this.unmatch();
+			return;
+		}
+
+		// Set the query.
+		this.match = window.matchMedia( `(resolution: ${this.dpr}dppx)` );
+	}
+
+	unmatch = () => {
+		this.match = null;
+	}
+
+	/**
+	 * Handle changes to the device pixel ratio.
+	 */
+	change = () => {
+
+		// Update DPR from environment.
+		this.setDpr( this.getDpr() );
+
+		// Re-listen for changes.
+		this.listen();
+	}
+
+	/**
+	 * Remove the DPR media query listener if present.
+	 *
+	 * @returns {void}
+	 */
+	ignore = () => {
+
+		// Skip if no match media query exists.
+		if ( ! this.match ) {
+			return;
+		}
+
+		// Remove the event listener.
+		if ( this.match.removeEventListener ) {
+			this.match.removeEventListener(
+				'change',
+				this.change,
+				false
+			);
+		}
+
+		// Clear the match media query.
+		this.unmatch();
+	}
 }

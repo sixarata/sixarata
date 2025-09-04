@@ -17,7 +17,7 @@ export default class Frame {
 	/**
 	 * Default Frame settings.
 	 *
-	 * These are overridden by Settings.frames.
+	 * These are overridden by Settings.components.frames.
 	 *
 	 * @type {Object}
 	 */
@@ -55,7 +55,7 @@ export default class Frame {
 		this.history  = [ Time.now ];
 
 		// Settings.
-		this.settings = Settings.frames ?? Frame.defaults;
+		this.settings = Settings.components.frames ?? Frame.defaults;
 
 		// Step.
 		this.step     = ( this.settings.second / this.settings.goal );

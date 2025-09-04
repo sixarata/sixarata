@@ -120,7 +120,7 @@ export default class Hud {
 	render = () => {
 
 		// Skip if no HUD.
-		if ( ! Settings.view.hud ) {
+		if ( ! Settings.components.view.hud ) {
 			return;
 		}
 

@@ -1,28 +1,43 @@
 // Default settings.
 export default {
 
-	// Room.
-	room: {
-		start: 0,
+	// Interfaces
+	interfaces: {
+
+		// Inputs.
+		inputs: {
+			keyboard: {},
+			gamepad:  {},
+			mouse:    {},
+		},
+
+		// Screen.
+		screen: {
+			dpr:  2,
+			size: 32,
+		},
 	},
 
-	// View.
-	view: {
-		hud: true,
-	},
+	// Components.
+	components: {
 
-	// Scale.
-	scale: {
-		size: 32,
-		dpr:  2,
-	},
+		// Frames.
+		frames: {
+			throttle: 0.5,
+			second:   1000,
+			goal:     60,
+			clamp:    5,
+		},
 
-	// Frames.
-	frames: {
-		throttle: 0.5,
-		second:   1000,
-		goal:     60,
-		clamp:    5,
+		// Room.
+		room: {
+			start: 0,
+		},
+
+		// View.
+		view: {
+			hud: true,
+		},
 	},
 
 	// Player.
@@ -82,15 +97,6 @@ export default {
 			walljump: '#ff6600',
 			coyote:   '#ff6600',
 			knievel:  '#f00',
-		}
-	},
-
-	// Player movement.
-	inputs: {
-		keyboard: {},
-		gamepad: {},
-		detect: {
-			doubleTapWindow: 180,
 		}
 	},
 
