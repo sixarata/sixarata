@@ -78,13 +78,22 @@ export default class Buffer {
 	/**
 	 * Resize the Buffer.
 	 *
-	 * @param {Size}    size
-	 * @param {Boolean} smooth
+	 * @param {Size} size
 	 */
 	resize = (
-		size   = { w: 0, h: 0, d: 0 },
-		smooth = false
+		size = { w: 0, h: 0, d: 0 }
 	) => {
+
+		// Skip if not resizing.
+		if (
+			( size?.w ?? 0 ) === ( this.size?.w ?? 0 )
+			&&
+			( size?.h ?? 0 ) === ( this.size?.h ?? 0 )
+			&&
+			( size?.d ?? 0 ) === ( this.size?.d ?? 0 )
+		) {
+			return;
+		}
 
 		// Track size for camera/collision comparisons.
 		this.size = {
@@ -93,29 +102,55 @@ export default class Buffer {
 			d: size.d ?? 0,
 		};
 
-		// Resize the screen.
+		// Resize the canvas using screen DPR.
 		this.screen.resize( this.context.canvas, this.size );
 
-		// Maybe reapply scaling after changes reset the transform.
-		if ( this.scale ) {
-			this.rescale( this.scale );
+		// Resize the canvas.
+		this.context.canvas.width  = size.w;
+		this.context.canvas.height = size.h;
+	}
+
+	/**
+	 * Rescale the Buffer.
+	 *
+	 * @param {Scale} scale
+	 */
+	rescale = (
+		scale = { x: 1, y: 1, z: 1 }
+	) => {
+
+		// Skip if not resizing.
+		if (
+			( scale?.x ?? 1 ) === ( this.scale?.x ?? 1 )
+			&&
+			( scale?.y ?? 1 ) === ( this.scale?.y ?? 1 )
+			&&
+			( scale?.z ?? 1 ) === ( this.scale?.z ?? 1 )
+		) {
+			return;
 		}
 
-		// Smoothing.
+		// Track size for camera/collision comparisons.
+		this.scale = {
+			x: scale.x ?? 1,
+			y: scale.y ?? 1,
+			z: scale.z ?? 1,
+		};
+
+		// Rescale the canvas using screen DPR.
+		this.screen.rescale( this.context, this.scale );
+	}
+
+	/**
+	 * Resmooth the Buffer.
+	 *
+	 * @param {Boolean} smooth
+	 */
+	resmooth = (
+		smooth = false
+	) => {
 		if ( this.context.imageSmoothingEnabled !== smooth ) {
 			this.context.imageSmoothingEnabled = smooth;
-		}
-
-		// Only resize if needed.
-		if (
-			( size.w !== this.context.canvas.width )
-			||
-			( size.h !== this.context.canvas.height )
-		) {
-
-			// Set size.
-			this.context.canvas.width  = size.w;
-			this.context.canvas.height = size.h;
 		}
 	}
 
@@ -138,18 +173,6 @@ export default class Buffer {
 	 */
 	render = () => {
 
-	}
-
-	/**
-	 * Rescale the Buffer.
-	 *
-	 * @param {Scale} scale
-	 */
-	rescale = (
-		scale = { x: 1, y: 1, z: 1 }
-	) => {
-		this.scale = scale;
-		this.screen.scale( this.context, scale );
 	}
 
 	/**

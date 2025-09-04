@@ -23,6 +23,7 @@ export default class Screen {
 	 */
 	constructor() {
 		this.set();
+		this.listen();
 	}
 
 	/**
@@ -43,14 +44,64 @@ export default class Screen {
 		// Tile size.
 		this.tile = this.settings.size ?? Screen.defaults.size;
 
-		// Device pixel ratio used for backing store (env wins over settings)
-		this.dpr = (typeof devicePixelRatio !== 'undefined' && devicePixelRatio)
-			? devicePixelRatio
-			: ( this.settings.dpr ?? Screen.defaults.dpr );
+		// Device pixel ratio.
+		this.dpr = this.getDpr( this.settings.dpr ?? Screen.defaults.dpr );
 
-		// Track sizes.
-		this.size = { w: 0, h: 0, d: 0 };
-		this.pixel   = { w: 0, h: 0, d: 0 };
+		// Sizes.
+		this.size  = { w: 0, h: 0, d: 0 };
+		this.pixel = { w: 0, h: 0, d: 0 };
+	}
+
+	/**
+	 * Add the Listeners.
+	 */
+	listen = () => {
+
+		// Skip if not in a browser environment.
+		if (
+			( typeof window === 'undefined' )
+			||
+			( typeof window.matchMedia !== 'function' )
+		) {
+			return;
+		}
+
+		// Create a media query for the current device pixel ratio.
+		const query = `(resolution: ${window.devicePixelRatio}dppx)`;
+		const mq    = window.matchMedia( query );
+
+		// Listen for changes to the media query.
+		mq.addEventListener(
+			'change',
+			this.change,
+			false
+		);
+	}
+
+	/**
+	 * Handle changes to the device pixel ratio.
+	 */
+	change = () => {
+		this.dpr = this.getDpr();
+	}
+
+	/**
+	 * Get the device pixel ratio.
+	 *
+	 * @param {Number} fallback Fallback DPR if the environment doesn't provide one.
+	 * @returns {Number}
+	 */
+	getDpr = (
+		fallback = 2
+	) => {
+
+		// Check for the device pixel ratio.
+		if ( typeof devicePixelRatio !== 'undefined' && devicePixelRatio ) {
+			return devicePixelRatio;
+		}
+
+		// Fallback.
+		return fallback;
 	}
 
 	/**
@@ -89,13 +140,16 @@ export default class Screen {
 	 * Apply DPR scaling to a CanvasRenderingContext2D using a vector.
 	 *
 	 * @param {CanvasRenderingContext2D} ctx
-	 * @param {{x:number,y:number}} v
+	 * @param {{x:Number,y:Number}} v
 	 */
-	scale = (
+	rescale = (
 		ctx,
 		v = { x: 1, y: 1 }
 	) => {
-		ctx.scale( ( v.x * this.dpr ), ( v.y * this.dpr ) );
+		ctx.scale(
+			( v.x * this.dpr ),
+			( v.y * this.dpr )
+		);
 	}
 
 	/**
@@ -124,7 +178,7 @@ export default class Screen {
 	 * Resize canvas backing store using DPR.
 	 *
 	 * @param {HTMLCanvasElement} canvas
-	 * @param {{w:number,h:number,d:number}} size
+	 * @param {{w:Number,h:Number,d:Number}} size
 	 */
 	resize = (
 		canvas,
