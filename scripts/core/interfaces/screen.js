@@ -219,8 +219,13 @@ export default class Screen {
 		// Arm the media query listener for the new DPR.
 		this.rematch();
 
+		// Skip if no match media query exists.
+		if ( ! this.match ) {
+			return;
+		}
+
 		// Listen for changes to the media query.
-		if ( this.match && this.match.addEventListener ) {
+		if ( this.match.addEventListener ) {
 			this.match.addEventListener(
 				'change',
 				this.change,
@@ -250,6 +255,9 @@ export default class Screen {
 		this.match = window.matchMedia( `(resolution: ${this.dpr}dppx)` );
 	}
 
+	/**
+	 * Remove the media query listener.
+	 */
 	unmatch = () => {
 		this.match = null;
 	}
