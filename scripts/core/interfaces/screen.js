@@ -48,8 +48,12 @@ export default class Screen {
 		// Tile size.
 		this.tile = this.settings.size ?? Screen.defaults.size;
 
-		// Device pixel ratio.
-		this.setDpr( this.settings.dpr ?? Screen.defaults.dpr );
+		// Device pixel ratio: prefer environment with settings fallback.
+		this.setDpr(
+			this.getDpr(
+				this.settings.dpr ?? Screen.defaults.dpr
+			)
+		);
 	}
 
 	/**
