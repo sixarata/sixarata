@@ -120,7 +120,7 @@ export default class Jump {
 	 * @returns {Boolean} True if max jump count is reached, false otherwise.
 	 */
 	maxed = () => {
-		return ( this.count >= this.settings.max );
+		return Boolean( this.count >= this.settings.max );
 	}
 
 	/**
