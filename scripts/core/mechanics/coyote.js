@@ -82,8 +82,8 @@ export default class Coyote {
 	 * Determine if the tile is allowed to execute a coyote jump on this frame.
 	 *
 	 * Conditions:
-	 * - Freefalling
-	 * - No jumps
+	 * - Freefall timer active (just left ground recently)
+	 * - No jumps consumed yet in this airtime
 	 * - Tile is NOT grounded
 	 *
 	 * @returns {Boolean} True when a coyote jump may be initiated.
@@ -100,8 +100,13 @@ export default class Coyote {
 			return false;
 		}
 
-		// Prevent double-using if a normal jump is still allowed.
+		// Prevent overlap if a normal jump is somehow still allowed.
 		if ( this.tile?.mechanics?.jump?.can?.() ) {
+			return false;
+		}
+
+		// Prevent instant double-jump.
+		if ( this.jumpcount() > 0 ) {
 			return false;
 		}
 
@@ -120,8 +125,10 @@ export default class Coyote {
 		// Restart the freefall timer.
 		this.freefall.clear();
 
-		// Execute the jump mechanic.
-		this.tile?.mechanics?.jump?.do();
+		// Execute the jump mechanic if no jump was used yet.
+		if ( ! this.jumpcount() ) {
+			this.tile?.mechanics?.jump?.do();
+		}
 	}
 
 	/**
@@ -147,5 +154,14 @@ export default class Coyote {
 
 		// Update the ground state.
 		this.wasOnGround = !! bottom;
+	}
+
+	/**
+	 * Get the current jump count.
+	 *
+	 * @returns {Number} The current jump count.
+	 */
+	jumpcount = () => {
+		return ( this.tile?.mechanics?.jump?.count ?? 0 );
 	}
 }
