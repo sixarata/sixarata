@@ -86,9 +86,9 @@ export default class Jump {
      */
 	can = () => {
 		return (
-			! this.maxed()
-			&&
 			this.grounded()
+			||
+			! this.maxed()
 		);
 	}
 
@@ -102,7 +102,7 @@ export default class Jump {
 		this.count++;
 
 		// Apply jump impulse to velocity.
-		velocity.y = -this.settings.power;
+		velocity.y = -this.settings.power.min;
 	}
 
 	/**
@@ -120,7 +120,7 @@ export default class Jump {
 	 * @returns {Boolean} True if max jump count is reached, false otherwise.
 	 */
 	maxed = () => {
-		return Boolean( this.count >= this.settings.max );
+		return Boolean( this.count >= this.settings.count.max );
 	}
 
 	/**

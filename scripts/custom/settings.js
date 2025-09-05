@@ -60,8 +60,13 @@ export default {
 				speed: 16,
 			},
 			ground: {
-				power: 16,
-				max:   1,
+				power: {
+					min: 16,
+					max: 32,
+				},
+				count: {
+					max: 2,
+				},
 			},
 			wall: {
 				power:   18,
