@@ -15,14 +15,23 @@ import Time from '../utilities/time.js';
  */
 export default class History {
 
+	/**
+	 * Constructor.
+	 */
 	constructor() {
 		this.set();
 	}
 
+	/**
+	 * Initialize the history state.
+	 */
 	set = () => {
 		this.reset();
 	}
 
+	/**
+	 * Reset the history state.
+	 */
 	reset = () => {
 
 		// Action -> { down, beganAt, duration, endedAt }
@@ -57,30 +66,21 @@ export default class History {
 		const now = Time.now;
 
 		// Collect unique action names across devices.
-		const actions = new Set();
-
-		for ( const d of Game.Inputs.devices ) {
-			if ( d?.map ) {
-				Object.keys( d.map ).forEach(
-					a => actions.add( a )
-				);
-			}
-		}
+		const actions = this.actions();
 
 		// Update each action.
 		for ( const action of actions ) {
 			const isDown = Game.Inputs.pressed( action );
 
-			let s = this.state[ action ];
-
-			let e = {};
+			let s = this.state[ action ],
+				e = {};
 
 			if ( ! s ) {
 				s = this.state[ action ] = {
-					down: false,
-					beganAt: 0,
+					down:     false,
+					beganAt:  0,
 					duration: 0,
-					endedAt: 0,
+					endedAt:  0,
 				};
 			}
 
@@ -88,7 +88,7 @@ export default class History {
 
 				// Fresh press.
 				if ( ! s.down ) {
-					s.down	 = true;
+					s.down	   = true;
 					s.beganAt  = now;
 					s.duration = 0;
 					s.endedAt  = 0;
@@ -107,15 +107,15 @@ export default class History {
 
 			// Release detected.
 			} else if ( s.down ) {
-				s.down	 = false;
+				s.down	   = false;
 				s.duration = now - s.beganAt;
 				s.endedAt  = now;
 
 				// Create release event.
 				e = {
 					action,
-					type: 'release',
-					time: now,
+					type:     'release',
+					time:     now,
 					duration: s.duration,
 				}
 			}
@@ -128,10 +128,31 @@ export default class History {
 	}
 
 	/**
+	 * Get all unique action names.
+	 *
+	 * @returns {Array}
+	 */
+	actions = () => {
+		const actions = new Set();
+
+		for ( const d of Game.Inputs.devices ) {
+			if ( d?.map ) {
+				Object.keys( d.map ).forEach(
+					a => actions.add( a )
+				);
+			}
+		}
+
+		return actions;
+	}
+
+	/**
 	 * Internal: push event & trim.
 	 */
-	pushEvent = ( evt = {} ) => {
-		this.events.push( evt );
+	pushEvent = (
+		e = {}
+	) => {
+		this.events.push( e );
 
 		if ( this.events.length > this.maxEvents ) {
 			this.events.splice( 0, this.events.length - this.maxEvents );
@@ -144,7 +165,9 @@ export default class History {
 	 * @param {String} action
 	 * @returns {Object|undefined}
 	 */
-	hold = ( action = '' ) => {
+	hold = (
+		action = ''
+	) => {
 		return this.state[ action ];
 	}
 
@@ -152,25 +175,33 @@ export default class History {
 	 * Get recent events (optionally filtered).
 	 *
 	 * @param {Object} options { action, type, window }
+	 * @returns {Array}
 	 */
-	recent = ( options = {} ) => {
+	recent = (
+		options = {}
+	) => {
+
+		// Destructure options.
 		const {
 			action = null,
 			type   = null,
 			window = 0,
 		} = options;
 
-		const now = Time.now;
-
+		// Filter events based on options.
 		return this.events.filter( e => (
 			( ! action || e.action === action ) &&
-			( ! type || e.type === type ) &&
-			( ! window || ( now - e.time ) <= window )
+			( ! type   || e.type   === type   ) &&
+			( ! window || ( Time.now - e.time ) <= window )
 		) );
 	}
 
 	/**
 	 * Count presses for an action within a window (ms).
+	 *
+	 * @param {String} action
+	 * @param {Number} window
+	 * @returns {Number}
 	 */
 	pressCount = (
 		action = '',
