@@ -20,7 +20,7 @@ export default class Keyboard extends Device {
 	static defaults = {
 		left:  [ 'ArrowLeft', 'KeyA' ],
 		right: [ 'ArrowRight', 'KeyD' ],
-		up:	[ 'ArrowUp', 'KeyW' ],
+		up:	   [ 'ArrowUp', 'KeyW' ],
 		down:  [ 'ArrowDown', 'KeyS' ],
 		jump:  [ 'Space', 'KeyZ' ],
 		pause: [ 'Escape' ],
@@ -55,8 +55,7 @@ export default class Keyboard extends Device {
 	reset = () => {
 
 		// Keys
-		this.keysDown = {};
-		this.keysPrev = {};
+		this.keys = {};
 
 		// Mapping
 		this.map = this.actions();
@@ -64,22 +63,9 @@ export default class Keyboard extends Device {
 
 	/**
 	 * Tick through time.
-	 *
-	 * Updates previous key state for tap/double-tap logic.
 	 */
 	tick = () => {
 
-		// Get the Clock time.
-		const now = Game.Clock?.times?.elapsed ?? 0;
-
-		// Stash the previous keys.
-		this.keysPrev[now] = { ...this.keysDown };
-
-		// Trim off keys older than the max (keep last 10).
-		const keys = Object.keys( this.keysPrev );
-		if ( keys.length > 10 ) {
-			delete this.keysPrev[ keys[ 0 ] ];
-		}
 	}
 
 	/**
@@ -107,9 +93,7 @@ export default class Keyboard extends Device {
 			return;
 		}
 
-		this.keysDown[ e.code ] = true;
-
-		Game.Hooks.do( 'Keyboard.keyDown', this.keysDown, e );
+		this.keys[ e.code ] = true;
 	}
 
 	/**
@@ -126,9 +110,7 @@ export default class Keyboard extends Device {
 			return;
 		}
 
-		this.keysDown[ e.code ] = false;
-
-		Game.Hooks.do( 'Keyboard.keyUp', this.keysDown, e );
+		this.keys[ e.code ] = false;
 	}
 
 	/**
@@ -144,8 +126,6 @@ export default class Keyboard extends Device {
 		if ( ! this.valid( e ) ) {
 			return;
 		}
-
-		Game.Hooks.do( 'Keyboard.keyPressed', this.keysDown, e );
 	}
 
 	/**
@@ -170,7 +150,7 @@ export default class Keyboard extends Device {
 		action = ''
 	) => {
 		return ( this.map[ action ] || [] ).some(
-			code => this.keysDown[ code ]
+			code => this.keys[ code ]
 		);
 	}
 

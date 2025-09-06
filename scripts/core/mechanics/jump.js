@@ -75,8 +75,8 @@ export default class Jump {
 			return false;
 		}
 
-		// Return if jump button is pressed.
-		return Game.Inputs.pressed( 'jump' );
+		// Use global edge detection: only first frame of press
+		return Game.History.edge( 'jump' );
 	}
 
 	/**

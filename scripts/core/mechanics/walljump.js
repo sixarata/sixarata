@@ -80,8 +80,8 @@ export default class WallJump {
 			return false;
 		}
 
-		// Return if jump button is pressed.
-		return Game.Inputs.pressed( 'jump' );
+		// Use edge detection to only trigger once per press.
+		return Game.History.edge( 'jump' );
 	}
 
 	/**

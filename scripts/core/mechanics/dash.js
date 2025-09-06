@@ -249,7 +249,30 @@ export default class Dash {
 			return false;
 		}
 
-		// Execute dash.
+		// If invoked manually (not via combo), require edge on the direction.
+		if ( dir ) {
+			let action = '';
+
+			// Map direction to action.
+			if (
+				( dir === 'left' )
+				||
+				( dir === 'right' )
+				||
+				( dir === 'up' )
+				||
+				( dir === 'down' )
+			) {
+				action = dir;
+			}
+
+			// Require edge on the action.
+			if ( action && ! Game.History.edge( action ) ) {
+				return false;
+			}
+		}
+
+		// Do the dash.
 		this.do( dir );
 
 		// Return if impulse is active.

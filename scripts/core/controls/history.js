@@ -200,17 +200,83 @@ export default class History {
 	 * Count presses for an action within a window (ms).
 	 *
 	 * @param {String} action
+	 * @param {String} type
 	 * @param {Number} window
 	 * @returns {Number}
 	 */
-	pressCount = (
+	presses = (
 		action = '',
+		type   = 'press',
 		window = 0
 	) => {
 		return this.recent( {
 			action,
-			type: 'press',
+			type: type,
 			window,
 		} ).length;
+	}
+
+	/**
+	 * Edge detection: true only on the first frame of a fresh action.
+	 *
+	 * @param {String} action
+	 * @returns {Boolean}
+	 */
+	edge = (
+		action = ''
+	) => {
+		const s = this.state[ action ];
+
+		return !!( s && s.down && s.duration === 0 );
+	}
+
+	/**
+	 * Held: current action for at least ms (default 0 = any hold).
+	 *
+	 * @param {String} action
+	 * @param {Number} ms Minimum duration (ms)
+	 * @returns {Boolean}
+	 */
+	held = (
+		action = '',
+		ms     = 0
+	) => {
+		const s = this.state[ action ];
+
+		if ( ! s || ! s.down ) {
+			return false;
+		}
+
+		return ( s.duration >= ms );
+	}
+
+	/**
+	 * Released: true on first frame after release (duration>0 and endedAt just set this tick).
+	 *
+	 * Simplest practical heuristic: last event for action is a release within this frame delta window.
+	 *
+	 * @param {String} action
+	 * @returns {Boolean}
+	 */
+	released = (
+		action = ''
+	) => {
+
+		// Look at most recent event for this action.
+		for ( let i = this.events.length - 1; i >= 0; i-- ) {
+			const e = this.events[ i ];
+
+			// Skip if not matching action.
+			if ( e.action !== action ) {
+				continue;
+			}
+
+			// Same tick.
+			return ( e.type === 'release' )
+				&& ( Time.now - e.time ) <= 0;
+		}
+
+		// Not released.
+		return false;
 	}
 }

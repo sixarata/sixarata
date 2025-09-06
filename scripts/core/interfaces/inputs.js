@@ -62,7 +62,7 @@ export default class Inputs {
 	/**
 	 * Check if a logical action is pressed on any device.
 	 *
-	 * @param {String} action - The action name (e.g. 'left', 'jump').
+	 * @param {String} action The action name (e.g. 'left', 'jump').
 	 * @returns {Boolean} True if the action is pressed on any device.
 	 */
 	pressed = (
