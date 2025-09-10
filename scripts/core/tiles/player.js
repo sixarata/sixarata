@@ -1,10 +1,11 @@
 import Game from '../game.js';
 import Settings from '../../custom/settings.js';
 import Time from '../utilities/time.js';
+import { Particle } from './exports.js';
 
 import { Tile } from './exports.js';
 import { Collision, Contact, Orientation, Position, Velocity } from '../physics/exports.js';
-import { Collide, Coyote, Dash, Fall, Jump, Orient, Walk, WallJump } from '../mechanics/exports.js';
+import { Collide, Coyote, Dash, Fall, Jump, Orient, WallJump, WallSlide, Nudge, Walk, Sprint, Brake, MicroTap, Decay } from '../mechanics/exports.js';
 
 /**
  * The Player object.
@@ -51,16 +52,25 @@ export default class Player extends Tile {
 		this.physics.orientation = new Orientation( 90, 0 );
 		this.physics.velocity    = new Velocity( 0, 0 );
 
-		// Mechanics.
+		// Mechanics (including horizontal movement stages bundled here).
 		this.mechanics = {
-			collide: new Collide( this ),
-			coyote:  new Coyote( this ),
-			dash:    new Dash( this ),
-			fall:    new Fall( this ),
-			jump:    new Jump( this ),
-			orient:  new Orient( this ),
-			walk:    new Walk( this ),
-			wall:    new WallJump( this ),
+			collide:  new Collide( this ),
+			coyote:   new Coyote( this ),
+			dash:     new Dash( this ),
+			fall:     new Fall( this ),
+			slide:    new WallSlide( this ),
+			jump:     new Jump( this ),
+			orient:   new Orient( this ),
+			wall:     new WallJump( this ),
+			// Horizontal locomotion pipeline with keyed access + ordered array.
+			walk: {
+				nudge:  new Nudge( this ),
+				brake:  new Brake( this ),
+				base:   new Walk( this ),
+				sprint: new Sprint( this ),
+				micro:  new MicroTap( this ),
+				decay:  new Decay( this ),
+			},
 		};
 
 		// Register combo hook listeners for mechanics that need them.
@@ -113,11 +123,25 @@ export default class Player extends Tile {
 	 */
 	respond = () => {
 
-		// Falling.
-		this.mechanics.fall.listen();
+		// Gravity / vertical: prefer wall slide reduced gravity when eligible, else normal fall.
+		if ( this.mechanics.slide.can?.() ) {
+			if ( this.mechanics.slide.can() ) {
+				this.mechanics.slide.listen();
+			} else {
+				this.mechanics.fall.listen();
+			}
+		} else {
+			this.mechanics.fall.listen();
+		}
 
-		// Horizontal movement (intent) before ledge assist.
-		this.mechanics.walk.listen();
+		// Horizontal movement (intent) before ledge assist: iterate stage list.
+		const walk = this.mechanics.walk;
+		if ( walk ) {
+			for ( const key of Object.keys( walk ) ) {
+				const stage = walk[ key ];
+				if ( stage?.listen && stage.listening ) stage.listen();
+			}
+		}
 
 		// Coyote window check (still before jump consumption).
 		this.mechanics.coyote.listen();

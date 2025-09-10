@@ -1,6 +1,7 @@
-import Game from '../game.js';
-import Settings from '../../custom/settings.js';
-import Timer from '../utilities/timer.js';
+import Game from '../../game.js';
+import Settings from '../../../custom/settings.js';
+import { Particle } from '../../tiles/exports.js';
+import Timer from '../../utilities/timer.js';
 
 /**
  * Dash mechanic
@@ -325,6 +326,9 @@ export default class Dash {
 
 		// Avoid locomotion interference.
 		this.ignore( false );
+
+		// Emit dash particles.
+		Game.Hooks.do( 'Player.dash', this.tile, dir );
 	}
 
 	/**
@@ -335,21 +339,20 @@ export default class Dash {
 	ignore = (
 		enable = true
 	) => {
-
-		// Get mechanics.
 		const m = this.tile?.mechanics;
-
-		// Skip if no mechanics.
-		if ( ! m ) {
-			return;
-		}
-
-		// Temporarily suppress.
+		if ( ! m ) { return; }
 		if ( m.jump )     m.jump.listening     = enable;
-		if ( m.walk )     m.walk.listening     = enable;
 		if ( m.fall )     m.fall.listening     = enable;
 		if ( m.walljump ) m.walljump.listening = enable;
+		if ( m.slide )    m.slide.listening    = enable;
 		if ( m.coyote )   m.coyote.listening   = enable;
 		if ( m.orient )   m.orient.listening   = enable;
+		const walk = this.tile.mechanics?.walk;
+		if ( walk ) {
+			for ( const key of Object.keys( walk ) ) {
+				const s = walk[ key ];
+				if ( s && s.listening !== undefined ) s.listening = enable;
+			}
+		}
 	}
 }

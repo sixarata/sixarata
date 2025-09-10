@@ -1,6 +1,6 @@
 import Sixarata from '../core/game.js';
 import { Particle } from '../core/tiles/exports.js';
-import { Scale, Sound } from '../core/sound/exports.js';
+import { Sound } from '../core/sound/exports.js';
 import { Rain } from '../core/weather/exports.js';
 
 // Weather: Rain (optional)

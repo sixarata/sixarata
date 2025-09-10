@@ -1,5 +1,6 @@
-import Game from '../game.js';
-import Settings from '../../custom/settings.js';
+import Game from '../../game.js';
+import Settings from '../../../custom/settings.js';
+import { Particle } from '../../tiles/exports.js';
 
 /**
  * The Jump mechanic.
@@ -80,10 +81,10 @@ export default class Jump {
 	}
 
 	/**
-     * Determine if tile can jump.
+    * Determine if tile can jump.
 	 *
 	 * @returns {Boolean} True if tile can jump, false otherwise.
-     */
+    */
 	can = () => {
 		return (
 			this.grounded()
@@ -103,6 +104,9 @@ export default class Jump {
 
 		// Apply jump impulse to velocity.
 		velocity.y = -this.settings.power.min;
+
+		// Hook.
+		Game.Hooks.do( 'Player.jump', this.tile );
 	}
 
 	/**

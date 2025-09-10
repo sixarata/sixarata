@@ -31,7 +31,7 @@ export default {
 
 		// Room.
 		room: {
-			start: 0,
+			start: 3,
 		},
 
 		// View.
@@ -42,7 +42,20 @@ export default {
 
 	// Player.
 	player: {
-		speed:      16,
+		move: {
+			base:    1,
+			walk:    10,
+			run:     16,
+			accel:   100,
+			runHold: 100,
+			brake:   0.4,
+			tap:     60,
+			micro:   0.3,
+		},
+		orient: {
+			debounce:  40,
+			flipGrace: 30,
+		},
 		invincible: false,
 		hits: {
 			max:     10,
@@ -73,6 +86,10 @@ export default {
 				lateral: 18,
 				max:     1,
 				time:    100,
+				slide: {
+					factor: 0.1,
+					max:    6,
+				},
 			},
 		},
 		dash: {
@@ -102,7 +119,7 @@ export default {
 			walljump: '#ff6600',
 			coyote:   '#ff6600',
 			knievel:  '#f00',
-		}
+		},
 	},
 
 	// Combos: map combo name -> { sequence:[actions], window:ms }

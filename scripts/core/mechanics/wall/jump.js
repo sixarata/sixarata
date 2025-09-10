@@ -1,6 +1,6 @@
-import Game from '../game.js';
-import Settings from '../../custom/settings.js';
-import Timer from '../utilities/timer.js';
+import Game from '../../game.js';
+import Settings from '../../../custom/settings.js';
+import Timer from '../../utilities/timer.js';
 
 /**
  * The WallJump mechanic.
@@ -123,7 +123,6 @@ export default class WallJump {
 	 * - Magnitude: 40% of vertical jump power
 	 * - Direction: Opposite the contacting wall. If both sides somehow reported,
 	 *   left contact is prioritized.
-	 * - Side effects only occur if eligibility still passes at the moment of calling.
 	 *
 	 * @returns {void}
 	 */
@@ -182,10 +181,22 @@ export default class WallJump {
 		}
 
 		if ( m.jump )     m.jump.listening     = enable;
-		if ( m.walk )     m.walk.listening     = enable;
 		if ( m.fall )     m.fall.listening     = enable;
 		if ( m.walljump ) m.walljump.listening = enable;
+		if ( m.slide )    m.slide.listening    = enable;
 		if ( m.coyote )   m.coyote.listening   = enable;
 		if ( m.orient )   m.orient.listening   = enable;
+
+		const walk = this.tile.mechanics?.walk;
+
+		if ( walk ) {
+			for ( const key of Object.keys( walk ) ) {
+				const s = walk[ key ];
+
+				if ( s && s.listening !== undefined ) {
+					s.listening = enable;
+				}
+			}
+		}
 	}
 }
