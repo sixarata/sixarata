@@ -73,17 +73,25 @@ export default class Room {
 	 * @param {Number} previous The previous Room ID.
 	 */
 	load = (
-		id       = 0,
-		previous = 0
+		id,
+		previous
 	) => {
+
+		// Fallback ID when called without explicit args.
+		if ( id === undefined || id === null ) {
+			id = this.id;
+		}
+
+		// Default previous to current ID unless explicitly provided.
+		if ( previous === undefined ) {
+			previous = this.id;
+		}
 
 		// Juggle previous, so retries are correctly located.
 		if ( this.rooms[ id ] ) {
-			this.previous = ( previous )
-				? previous
-				: this.id;
-			this.id   = id;
-			this.grid = this.rooms[ id ];
+			this.previous = previous;
+			this.id       = id;
+			this.grid     = this.rooms[ id ];
 		}
 
 		// Skip if no Room.
