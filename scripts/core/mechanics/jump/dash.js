@@ -223,6 +223,15 @@ export default class Dash {
 			return false;
 		}
 
+		// Skip if no ground.
+		if (
+			! this.settings.ground
+			&&
+			this.tile.mechanics.jump.grounded()
+		) {
+			return false;
+		}
+
 		// Return default of true.
 		return true;
 	}
@@ -340,19 +349,35 @@ export default class Dash {
 		enable = true
 	) => {
 		const m = this.tile?.mechanics;
-		if ( ! m ) { return; }
+		if ( ! m ) {
+			return;
+		}
+
 		if ( m.jump )     m.jump.listening     = enable;
 		if ( m.fall )     m.fall.listening     = enable;
 		if ( m.walljump ) m.walljump.listening = enable;
 		if ( m.slide )    m.slide.listening    = enable;
 		if ( m.coyote )   m.coyote.listening   = enable;
 		if ( m.orient )   m.orient.listening   = enable;
+
 		const walk = this.tile.mechanics?.walk;
 		if ( walk ) {
 			for ( const key of Object.keys( walk ) ) {
 				const s = walk[ key ];
-				if ( s && s.listening !== undefined ) s.listening = enable;
+
+				if ( s && s.listening !== undefined ) {
+					s.listening = enable;
+				}
 			}
 		}
+	}
+
+	/**
+	 * Whether or not the dash is active (impulse or hover).
+	 *
+	 * @returns {Boolean}
+	 */
+	active = () => {
+		return this.impulse.active() || this.hover.active();
 	}
 }
