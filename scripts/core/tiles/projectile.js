@@ -35,7 +35,8 @@ export default class Projectile extends Tile {
 			source = Game.View.center(
 				tile.physics.position,
 				tile.physics.size,
-				sizeo
+				sizeo,
+				false
 			),
 
 			// Start position.
@@ -97,8 +98,15 @@ export default class Projectile extends Tile {
 	setTrajectory = () => {
 
 		// Target.
-		this.bullseye = Game.View.center( this.target.physics.position, this.target.physics.size, this.physics.size );
-		this.end      = new Position(
+		this.bullseye = Game.View.center(
+			this.target.physics.position,
+			this.target.physics.size,
+			this.physics.size,
+			false
+		);
+
+		// Goal position.
+		this.end = new Position(
 			this.bullseye.x,
 			this.bullseye.y,
 			this.bullseye.z,
