@@ -56,26 +56,46 @@ export default class Clock {
 	/**
 	 * Return the elapsed time.
 	 *
-	 * @param   {String} format     Default '000.000'.
-	 * @param   {String} delineator Default '.'.
+	 * @param   {String} format Token format like 'hh:mm:ss.SSS'.
 	 * @returns {String}
 	 */
 	elapsed = (
-		format     = '000.000',
-		delineator = '.'
+		format = 'hh:mm:ss.SSS',
 	) => {
 
-		// Parse the format by the delineator.
-		const
-			elapsed = this.times.elapsed.toString(),
-			pos     = format.indexOf( delineator ),
-			trim    = Math.max( elapsed.length - pos, 0 ),
-			ms      = elapsed.slice( -pos ),
-			s       = elapsed.slice( 0, trim ),
-			f       = s + delineator + ms,
-			ret     = f.padStart( format.length, format );
+		// Total elapsed milliseconds as integer (clamp to >= 0).
+		const totalMs = Math.max( 0, Math.floor( this.times.elapsed ) );
 
-		// Return formatted time.
-		return ret;
+		// Check for token-based formatting (true time units).
+		const hasTokens = /h{1,2}|m{1,2}|s{1,2}|S{1,3}/.test( format );
+
+		// Decompose total time to units.
+		const hours = Math.floor( totalMs / 3600000 );
+		const mins  = Math.floor( ( totalMs % 3600000 ) / 60000 );
+		const secs  = Math.floor( ( totalMs % 60000 ) / 1000 );
+		const ms    = totalMs % 1000;
+
+		if ( hasTokens ) {
+
+			// Helper padding.
+			const p2 = ( n ) => String( n ).padStart( 2, '0' );
+			const p3 = ( n ) => String( n ).padStart( 3, '0' );
+
+			// Replace tokens. Process longer tokens first to avoid overlaps.
+			let out = format;
+
+			// Milliseconds: support S, SS, SSS (truncate to precision available)
+			out = out.replace( /S{1,3}/g, ( m ) => p3( ms ).slice( 0, m.length ) );
+			out = out.replace( /hh/g, p2( hours ) );
+			out = out.replace( /mm/g, p2( mins ) );
+			out = out.replace( /ss/g, p2( secs ) );
+
+			// Optional single-letter tokens without padding.
+			out = out.replace( /h(?!h)/g, String( hours ) );
+			out = out.replace( /m(?!m)/g, String( mins ) );
+			out = out.replace( /s(?!s)/g, String( secs ) );
+
+			return out;
+		}
 	}
 }
