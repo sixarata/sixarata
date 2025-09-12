@@ -95,10 +95,11 @@ export default {
 		dash: {
 			xpower:   75,
 			ypower:   75,
-			duration: 60,
+			duration: 80,
 			cooldown: 250,
 			hover:    250,
 			air:      true,
+			ground:   false,
 			limit:    3,
 			reset: {
 				ground: true,
@@ -118,7 +119,7 @@ export default {
 			falling:  '#ff9900',
 			walljump: '#ff6600',
 			coyote:   '#ff6600',
-			knievel:  '#f00',
+			dash:     '#ff3300',
 		},
 	},
 

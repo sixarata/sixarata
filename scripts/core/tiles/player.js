@@ -177,6 +177,11 @@ export default class Player extends Tile {
 		if ( this.mechanics.coyote.can() ) {
 			this.color = Settings.player.colors.coyote;
 		}
+
+		// Dash.
+		if ( this.mechanics.dash.active() ) {
+			this.color = Settings.player.colors.dash;
+		}
 	}
 
 	/**
