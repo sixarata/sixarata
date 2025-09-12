@@ -31,7 +31,7 @@ export default {
 
 		// Room.
 		room: {
-			start: 3,
+			start: 0,
 		},
 
 		// View.
