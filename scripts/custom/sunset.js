@@ -27,6 +27,7 @@ Sixarata.Hooks.add( 'Player.jump', () => {
 				{
 					w: 0.15,
 					h: 0.15,
+					d: 0.15,
 				},
 				{
 					x: ( 3 * Math.random() - 1.5 ),
