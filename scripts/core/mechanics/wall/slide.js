@@ -1,7 +1,6 @@
 import Settings from '../../../custom/settings.js';
 import Game from '../../game.js';
 import Time from '../../utilities/time.js';
-import { Particle } from '../../tiles/exports.js';
 
 /**
  * The WallSlide mechanic.

@@ -1,6 +1,5 @@
 import Game from '../../game.js';
 import Settings from '../../../custom/settings.js';
-import { Particle } from '../../tiles/exports.js';
 import Timer from '../../utilities/timer.js';
 
 /**
