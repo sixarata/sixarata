@@ -48,7 +48,7 @@ export default class Jump {
 	listen = () => {
 
 		// Skip if not listening.
-		if ( ! this.listening ) {
+		if ( ! this.listening || ! this.tile ) {
 			return;
 		}
 

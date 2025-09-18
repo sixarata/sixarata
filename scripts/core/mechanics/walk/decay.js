@@ -1,7 +1,7 @@
 import Game from '../../game.js';
 
 /**
- * The DecayWalk mechanic.
+ * The Decay mechanic.
  *
  * Applies passive frictional decay when no horizontal input is held and
  * snaps very small velocities to zero to prevent drift.
@@ -23,6 +23,7 @@ export default class Decay {
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
 	 */
 	set = ( tile = null ) => {
+		this.reset();
 		this.tile = tile;
 	}
 
@@ -30,16 +31,17 @@ export default class Decay {
 	 * Reset the mechanic.
 	 */
 	reset = () => {
-		this.tile = null;
+		this.tile      = null;
+		this.listening = true;
 	}
 
-	// Whether mechanic is active.
-	listening = true;
 
 	/**
 	 * Listen for idle decay.
 	 */
 	listen = () => {
+
+		// Skip if not listening or no tile.
 		if ( ! this.listening || ! this.tile ) {
 			return;
 		}

@@ -30,6 +30,7 @@ export default class Nudge {
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
 	 */
 	set = ( tile = null ) => {
+		this.reset();
 		this.tile = tile;
 	}
 
@@ -37,11 +38,10 @@ export default class Nudge {
 	 * Reset the mechanic.
 	 */
 	reset = () => {
-		this.tile = null;
+		this.tile      = null;
+		this.listening = true;
 	}
 
-	// Whether mechanic is active.
-	listening = true;
 
 	/**
 	 * Listen for nudge input.
