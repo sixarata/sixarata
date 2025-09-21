@@ -14,9 +14,35 @@ export default class Timer {
 
 	/**
 	 * Timer constructor.
+	 *
+	 * @param {Number} ms Duration in ms (<=0 clears).
 	 */
-	constructor() {
+	constructor(
+		ms = 0
+	) {
+		return this.set( ms );
+	}
+
+	/**
+	 * Set with duration.
+	 *
+	 * @param {Number} ms Duration in ms (<=0 clears).
+	 * @returns {Timer} this
+	 */
+	set = (
+		ms = 0
+	) => {
+
+		// Reset.
 		this.reset();
+
+		// Apply new timing window.
+		this.starts   = Time.now;
+		this.duration = ms;
+		this.expires  = this.starts + ms;
+
+		// Return.
+		return this;
 	}
 
 	/**
@@ -26,46 +52,15 @@ export default class Timer {
 	 */
 	reset = () => {
 
-		// Start timestamp
+		// Defaults.
 		this.starts   = 0;
-
-		// Duration ms.
 		this.duration = 0;
-
-		// Expiry timestamp.
 		this.expires  = 0;
-
-		// Remaining ms.
 		this.remains  = 0;
 		this.paused   = false;
-
-		// Repeat interval ms.
 		this.interval = 0;
 
-		return this;
-	}
-
-	/**
-	 * Begin / restart with duration.
-	 *
-	 * @param {Number} ms Duration in ms (<=0 clears).
-	 * @returns {Timer} this
-	 */
-	set = (
-		ms = 0
-	) => {
-
-		// Clear if negative.
-		if ( ms <= 0 ) {
-			return this.clear();
-		}
-
-		this.starts   = Time.now;
-		this.duration = ms;
-		this.expires  = this.starts + ms;
-		this.remains  = 0;
-		this.paused   = false;
-
+		// Return.
 		return this;
 	}
 
@@ -133,13 +128,15 @@ export default class Timer {
 			return 0;
 		}
 
-		// Return
+		// Return.
 		if ( this.paused ) {
 			return this.duration - this.remains;
 		}
 
+		// Compute elapsed.
 		const e = Time.now - this.starts;
 
+		// Clamp.
 		return ( e < 0
 			? 0
 			: ( e > this.duration
@@ -153,7 +150,9 @@ export default class Timer {
 	 *
 	 * @returns {Number}
 	 */
-	ratio = () => ( this.duration > 0 ? ( this.elapsed() / this.duration ) : 0 );
+	ratio = () => ( this.duration > 0
+		? ( this.elapsed() / this.duration )
+		: 0 );
 
 	/**
 	 * Pause (capture remaining).
@@ -161,16 +160,23 @@ export default class Timer {
 	 * @returns {Timer} this
 	 */
 	pause = () => {
+
+		// Only if running.
 		if ( ! this.paused && this.expires > 0 ) {
+
+			// Capture remaining time.
 			this.remains = this.expires - Time.now;
 
+			// Clamp.
 			if ( this.remains < 0 ) {
 				this.remains = 0;
 			}
 
+			// Set paused flag.
 			this.paused = true;
 		}
 
+		// Return.
 		return this;
 	}
 
@@ -180,19 +186,27 @@ export default class Timer {
 	 * @returns {Timer} this
 	 */
 	resume = () => {
+
+		// Only if paused.
 		if ( this.paused ) {
+
+			// Restore expiry from remaining time.
 			if ( this.remains > 0 ) {
-				this.starts = Time.now - ( this.duration - this.remains );
+				this.starts  = Time.now - ( this.duration - this.remains );
 				this.expires = Time.now + this.remains;
+
+			// Clear if no remaining time.
 			} else {
-				this.expires = 0;
+				this.expires  = 0;
 				this.duration = 0;
 			}
 
+			// Clear remaining and paused flag.
 			this.remains = 0;
 			this.paused  = false;
 		}
 
+		// Return.
 		return this;
 	}
 
@@ -206,14 +220,17 @@ export default class Timer {
 		ms = 0
 	) => {
 
+		// Apply interval.
 		this.interval = ms;
 
+		// Start immediately if interval active and done
 		if ( this.interval > 0 && this.done() ) {
-			this.starts = Time.now;
+			this.starts   = Time.now;
 			this.duration = this.interval;
-			this.expires = this.starts + this.interval;
+			this.expires  = this.starts + this.interval;
 		}
 
+		// Return.
 		return this;
 	}
 
@@ -228,13 +245,15 @@ export default class Timer {
 
 		// Check if interval is active and done
 		if ( this.interval > 0 && this.done() ) {
-			this.starts = Time.now;
+			this.starts   = Time.now;
 			this.duration = this.interval;
-			this.expires = this.starts + this.interval;
+			this.expires  = this.starts + this.interval;
 
+			// Done.
 			return true;
 		}
 
+		// Not done.
 		return false;
 	}
 
@@ -267,6 +286,7 @@ export default class Timer {
 			this.set( ms );
 		}
 
+		// Return.
 		return this;
 	}
 
@@ -285,13 +305,16 @@ export default class Timer {
 			return this;
 		}
 
+		// Reduce remaining time if paused.
 		if ( this.paused ) {
 			this.remains = Math.max( 0, this.remains - ms );
 
+		// Reduce active timer.
 		} else if ( this.active() ) {
 			this.expires -= ms;
 			this.duration = Math.max( 0, this.duration - ms );
 
+			// Clamp expiry.
 			if ( this.expires <= Time.now ) {
 				this.expires = Time.now;
 			}
