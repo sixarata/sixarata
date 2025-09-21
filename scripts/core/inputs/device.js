@@ -21,8 +21,21 @@ export default class Device {
 	 * Construct the Device.
 	 *
 	 * Base constructor for input devices.
+	 *
+	 * @returns {Device} The constructed Device instance.
 	 */
-	constructor() {}
+	constructor() {
+		return this.set();
+	}
+
+	/**
+	 * Initialize Device (default no-op) and support chaining.
+	 *
+	 * @returns {Device}
+	 */
+	set = () => {
+		return this;
+	}
 
 	/**
 	 * Tick through time.

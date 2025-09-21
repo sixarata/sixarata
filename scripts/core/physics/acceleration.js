@@ -22,5 +22,8 @@ import Point from './point.js';
 		z = 0
 	) {
 		super( x, y, z );
+
+		// Return.
+		return this;
 	}
 }

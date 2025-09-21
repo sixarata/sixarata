@@ -23,7 +23,7 @@ export default class Size {
 		d     = 0,
 		scale = 'up'
 	) {
-		this.set( w, h, d, scale );
+		return this.set( w, h, d, scale );
 	}
 
 	/**
@@ -51,6 +51,9 @@ export default class Size {
 
 		// Scale.
 		this.rescale( scale );
+
+		// Return.
+		return this;
 	}
 
 	/**
@@ -98,6 +101,7 @@ export default class Size {
 
 		this.scaled = type;
 
+		// Return.
 		return this;
 	}
 

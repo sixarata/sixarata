@@ -24,7 +24,8 @@ export default class Position extends Point {
 	) {
 		super( x, y, z );
 
-		this.set( scale );
+		// Return.
+		return this.set( scale );
 	}
 
 	/**
@@ -88,7 +89,7 @@ export default class Position extends Point {
 		// Set type.
 		this.scaled = type;
 
-		// Return object.
+		// Return.
 		return this;
 	}
 }

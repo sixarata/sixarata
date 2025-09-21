@@ -14,13 +14,14 @@ export default class Volume {
 	 * @param {Number} w
 	 * @param {Number} h
 	 * @param {Number} d
+	 * @returns {Volume}
 	 */
 	constructor(
 		w = 0,
 		h = 0,
 		d = 0
 	) {
-		this.set( w, h, d );
+		return this.set( w, h, d );
 	}
 
 	/**
@@ -29,6 +30,7 @@ export default class Volume {
 	 * @param {Number} w
 	 * @param {Number} h
 	 * @param {Number} d
+	 * @returns {Volume}
 	 */
 	set = (
 		w = 0,
@@ -40,6 +42,9 @@ export default class Volume {
 		this.w = w;
 		this.h = h;
 		this.d = d;
+
+		// Return.
+		return this;
 	}
 
 	/**

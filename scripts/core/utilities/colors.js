@@ -7,11 +7,14 @@
 export default class Colors {
 
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	set = () => {
 		this.reset();
+
+		// Return.
+		return this;
 	}
 
 	reset = () => {

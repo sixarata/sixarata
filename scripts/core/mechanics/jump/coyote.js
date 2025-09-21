@@ -15,27 +15,38 @@ export default class Coyote {
 	 * Construct the Coyote mechanic.
 	 *
 	 * @param {Tile} tile A Tile with a `physics` property.
+	 * @returns {Coyote} this
 	 */
 	constructor(
 		tile = null
 	) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
 	/**
 	 * Set the mechanic.
 	 *
 	 * @param {Tile} tile A Tile with a `physics` property.
+	 * @returns {Coyote} this
 	 */
 	set = (
 		tile = null
 	) => {
+
+		// Reset.
 		this.reset();
+
+		// Set properties.
 		this.tile = tile;
+
+		// Return.
+		return this;
 	}
 
 	/**
 	 * Reset the mechanic.
+	 *
+	 * @returns {Coyote} this
 	 */
 	reset = () => {
 		this.tile        = null;
@@ -43,6 +54,9 @@ export default class Coyote {
 		this.settings    = Settings.player.jumps.coyote;
 		this.freefall    = new Timer();
 		this.wasOnGround = false;
+
+		// Return.
+		return this;
 	}
 
 	/**
@@ -118,10 +132,9 @@ export default class Coyote {
 	 * Idle logic updates timers and ground state.
 	 */
 	idle = () => {
-		const bottom = this.grounded() || false;
 
         // On ground.
-		if ( bottom ) {
+		if ( this.grounded() ) {
 			this.wasOnGround = true;
 			this.freefall.clear();
 			return;

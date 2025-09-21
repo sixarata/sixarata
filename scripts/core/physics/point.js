@@ -24,7 +24,7 @@ export default class Point {
 		y = 0,
 		z = 0
 	) {
-		this.set( x, y, z );
+		return this.set( x, y, z );
 	}
 
 	/**
@@ -44,6 +44,7 @@ export default class Point {
 		this.y = new Coordinate( y );
 		this.z = new Coordinate( z );
 
+		// Return.
 		return this;
 	}
 

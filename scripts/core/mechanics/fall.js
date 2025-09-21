@@ -13,32 +13,46 @@ export default class Fall {
 	 * Construct the Fall mechanic.
 	 *
 	 * @param {Tile} tile A Tile with `velocity`, `contact`, `jumps`.
+	 * @return {Fall} this
 	 */
 	constructor(
 		tile = null
 	) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
 	/**
 	 * Set the mechanic.
+	 *
+	 * @param {Tile} tile A Tile with `velocity`, `contact`, `jumps`.
+	 * @return {Fall} this
 	 */
 	set = (
 		tile = null
 	) => {
 		this.reset();
+
+		// Set properties.
 		this.tile     = tile;
 		this.velocity = this.tile?.physics.velocity;
+
+		// Return.
+		return this;
 	}
 
 	/**
 	 * Reset the mechanic.
+	 *
+	 * @returns {Fall} this
 	 */
 	reset = () => {
 		this.tile      = null;
 		this.settings  = Settings.player.jumps.fall;
 		this.max       = Settings.physics.terminal ?? this.settings.speed;
 		this.listening = true;
+
+		// Return.
+		return this;
 	}
 
 	/**

@@ -27,6 +27,7 @@ export default class Scale extends Point {
 	 * @param {Number} x Default 0.
 	 * @param {Number} y Default 0.
 	 * @param {Number} z Default 0.
+	 * @returns {Scale} This Scale object.
 	 */
 	constructor(
 		x = 0,
@@ -34,18 +35,24 @@ export default class Scale extends Point {
 		z = 0
 	) {
 		super( x, y, z );
-		this.set();
+
+		// Return.
+		return this.set();
 	}
 
 	/**
 	 * Set the object.
+	 *
+	 * @returns {Scale}
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
 	 * Reset Scale.
+	 *
+	 * @returns {Scale}
 	 */
 	reset = () => {
 
@@ -54,6 +61,9 @@ export default class Scale extends Point {
 
 		// Get the physics ratio.
 		this.ratio = this.settings.size;
+
+		// Return.
+		return this;
 	}
 
 	/**

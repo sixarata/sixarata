@@ -10,20 +10,27 @@ export default class Gravity {
 
 	/**
 	 * Construct the object.
+	 *
+	 * @returns {Gravity}
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Set the object.
+	 *
+	 * @returns {Gravity}
 	 */
 	set = () => {
-		this.reset();
+			this.reset();
+			return this;
 	}
 
 	/**
 	 * Reset Gravity.
+	 *
+	 * @returns {Gravity}
 	 */
 	reset = () => {
 

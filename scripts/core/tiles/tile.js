@@ -40,7 +40,7 @@ export default class Tile {
 		mass     = 1,
 		opacity  = 1
 	) {
-		this.set( group, position, size, color, type, density, mass, opacity );
+		return this.set( group, position, size, color, type, density, mass, opacity );
 	}
 
 	/**
@@ -66,6 +66,9 @@ export default class Tile {
 		opacity  = 1
 	) => {
 		this.reset( group, position, size, color, type, density, mass, opacity );
+
+		// Return.
+		return this;
 	}
 
 	/**
@@ -112,6 +115,9 @@ export default class Tile {
 
 		// Add to group.
 		this.add( this );
+
+		// Return.
+		return this;
 	}
 
 	/**

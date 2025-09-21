@@ -22,5 +22,8 @@ export default class Velocity extends Point {
 		z = 0
 	) {
 		super( x, y, z );
+
+		// Return.
+		return this;
 	}
 }

@@ -1,10 +1,14 @@
 export default class Shape {
 
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	set = () => {
+		return this.reset();
+	}
 
+	reset = () => {
+		return this;
 	}
 }

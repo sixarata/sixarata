@@ -85,7 +85,7 @@ export default class Gamepad extends Device {
 	 * Resets state and attaches event listeners.
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
@@ -97,6 +97,9 @@ export default class Gamepad extends Device {
 		this.gamepads = [];
 		this.state = {};
 		this.prev = {};
+
+		// Return.
+		return this;
 	}
 
 	/**

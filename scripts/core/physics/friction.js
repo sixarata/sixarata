@@ -10,20 +10,29 @@ export default class Friction {
 
 	/**
 	 * Construct the object.
+	 *
+	 * @returns {Friction}
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Set the object.
+	 *
+	 * @returns {Friction}
 	 */
 	set = () => {
 		this.reset();
+
+		// Return.
+		return this;
 	}
 
 	/**
 	 * Reset Friction.
+	 *
+	 * @returns {Friction}
 	 */
 	reset = () => {
 
@@ -33,5 +42,8 @@ export default class Friction {
 
 		this.base  = ( f / 100 );
 		this.force = this.base;
+
+		// Return
+		return this;
 	}
 }

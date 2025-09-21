@@ -50,7 +50,7 @@ class Time {
 	 * Update the cached time (called by Frame.animate).
 	 *
 	 * @param {Number} value Optional time value (performance.now()).
-	 * @return {Time} this
+	 * @returns {Time} this
 	 */
 	update = (
 		value = performance.now()

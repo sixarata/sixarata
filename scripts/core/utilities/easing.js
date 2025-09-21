@@ -1,11 +1,11 @@
 export default class Easing {
 
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	set = () => {
-
+		return this;
 	}
 
 	outCubic = ( t ) => {
