@@ -13,13 +13,15 @@ export default class Orientation extends Point {
 	 *
 	 * @param {Number} x
 	 * @param {Number} y
-	 * @returns {Orientation}
+	 * @param {Number} z
+	 * @returns {Orientation} this
 	 */
 	constructor(
 		x = 0,
-		y = 0
+		y = 0,
+		z = 0,
 	) {
-		super( x, y );
+		super( x, y, z );
 
 		// Return.
 		return this;

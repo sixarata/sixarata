@@ -49,7 +49,7 @@ export default class Player extends Tile {
 
 		// Physics
 		this.physics.contact     = new Contact();
-		this.physics.orientation = new Orientation( 90, 0 );
+		this.physics.orientation = new Orientation( 90, 0, 0 );
 		this.physics.velocity    = new Velocity( 0, 0 );
 
 		// Mechanics (including horizontal movement stages bundled here).
