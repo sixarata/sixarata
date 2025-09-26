@@ -11,7 +11,7 @@ export default class Audio {
 	 * Construct the Audio component.
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
@@ -47,7 +47,7 @@ export default class Audio {
 	 * Reset the Audio component.
 	 */
 	reset = () => {
-		this.set();
+		return this.set();
 	}
 
 	/**

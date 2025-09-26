@@ -23,6 +23,6 @@ export default class Platform extends Tile {
 		type     = 'default',
 		density  = 1
 	) {
-		super( group, position, size, 'Green', type, density );
+		return super( group, position, size, 'Green', type, density );
 	}
 }

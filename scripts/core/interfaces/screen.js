@@ -20,21 +20,29 @@ export default class Screen {
 
 	/**
 	 * Construct the Screen.
+	 *
+	 * @returns {Screen} this
 	 */
 	constructor() {
 		this.set();
 		this.listen();
+
+		return this;
 	}
 
 	/**
 	 * Set properties from settings and environment.
+	 *
+	 * @returns {Screen} this
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
 	 * Reset with resolved settings and environment overrides.
+	 *
+	 * @returns {Screen} this
 	 */
 	reset = () => {
 
@@ -54,6 +62,9 @@ export default class Screen {
 				this.settings.dpr ?? Screen.defaults.dpr
 			)
 		);
+
+		// Return.
+		return this;
 	}
 
 	/**

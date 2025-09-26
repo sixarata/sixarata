@@ -13,7 +13,7 @@ export default class Fall {
 	 * Construct the Fall mechanic.
 	 *
 	 * @param {Tile} tile A Tile with `velocity`, `contact`, `jumps`.
-	 * @return {Fall} this
+	 * @returns {Fall} this
 	 */
 	constructor(
 		tile = null
@@ -25,7 +25,7 @@ export default class Fall {
 	 * Set the mechanic.
 	 *
 	 * @param {Tile} tile A Tile with `velocity`, `contact`, `jumps`.
-	 * @return {Fall} this
+	 * @returns {Fall} this
 	 */
 	set = (
 		tile = null

@@ -12,25 +12,37 @@ export default class Collide {
 	 * Construct the Collide mechanic.
 	 *
 	 * @param {Tile} tile The moving tile.
+	 * @returns {Collide} this
 	 */
 	constructor(
 		tile = null
 	) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
-	/** Set the mechanic. */
+	/**
+	 * Set the mechanic.
+	 *
+	 * @param {Tile} tile The moving tile.
+	 * @returns {Collide} this
+	 */
 	set = (
 		tile = null
 	) => {
 		this.reset();
 		this.tile = tile;
+
+		return this;
 	}
 
-	/** Reset the mechanic. */
+	/**
+	 * Reset the mechanic.
+	 */
 	reset = () => {
 		this.tile      = null;
 		this.listening = true;
+
+		return this;
 	}
 
 	/**

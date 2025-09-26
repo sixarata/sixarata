@@ -17,20 +17,26 @@ export default class Room {
 
 	/**
 	 * Construct the Room.
+	 *
+	 * @returns {Room} this
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Set the Room.
+	 *
+	 * @returns {Room} this
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
 	 * Reset the Room.
+	 *
+	 * @returns {Room} this
 	 */
 	reset = () => {
 
@@ -53,6 +59,9 @@ export default class Room {
 
 		// For now...
 		this.rooms = [];
+
+		// Return.
+		return this;
 	}
 
 	/**

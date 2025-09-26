@@ -23,6 +23,6 @@ export default class Wall extends Tile {
 		type     = 'default',
 		density  = 1
 	) {
-		super( group, position, size, '#555555', type, density );
+		return super( group, position, size, '#555555', type, density );
 	}
 }

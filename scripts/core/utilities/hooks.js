@@ -40,24 +40,29 @@ export default class Hooks {
 	 * Construct the object.
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Set the object.
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
 	 * Reset the Hooks.
 	 */
 	reset = () => {
+
+		// Reset attributes.
 		this.#current   = '';
 		this.#done      = [];
 		this.#suspended = [];
 		this.#queued    = [];
+
+		// Return.
+		return this;
 	}
 
 	/**
@@ -161,7 +166,7 @@ export default class Hooks {
 	 * @returns {Array} The completed hook names.
 	 */
 	done = () => {
-		return [...this.#done];
+		return [ ...this.#done ];
 	}
 
 	/**
@@ -179,7 +184,7 @@ export default class Hooks {
 	 * @returns {Array} The queued hook names.
 	 */
 	queued = () => {
-		return [ ...this.#queued];
+		return [ ...this.#queued ];
 	}
 
 	/**
@@ -239,10 +244,10 @@ export default class Hooks {
 	 *
 	 * If both are used, the first condition that is met triggers the restore.
 	 *
-	 * @param {String}   name     Hook name.
-	 * @param {Function} callback Callback reference originally added.
-	 * @param {Number}   priority Priority level (defaults to 10 like add/remove).
-	 * @param {Object}   options  { ms: Number, frames: Number }
+	 * @param {String}    name     Hook name.
+	 * @param {Function}  callback Callback reference originally added.
+	 * @param {Number}    priority Priority level (defaults to 10 like add/remove).
+	 * @param {Object}    options  { ms: Number, frames: Number }
 	 * @returns {Boolean} True if suspended, false if not found or invalid.
 	 */
 	suspend = (
@@ -285,9 +290,9 @@ export default class Hooks {
 	/**
 	 * Manually resume a suspended hook immediately.
 	 *
-	 * @param {String}  name
-	 * @param {Function} callback
-	 * @param {Number}  priority
+	 * @param {String}    name
+	 * @param {Function}  callback
+	 * @param {Number}    priority
 	 * @returns {Boolean} True if resumed, false if not found.
 	 */
 	resume = (
@@ -405,9 +410,9 @@ export default class Hooks {
 	/**
 	 * Return whether a hook callback has been queued.
 	 *
-	 * @param {String}   name
-	 * @param {String}   callback
-	 * @param {Number}   priority
+	 * @param {String}    name
+	 * @param {String}    callback
+	 * @param {Number}    priority
 	 * @returns {Boolean} True if hook callback has been queued.
 	 */
 	exists = (

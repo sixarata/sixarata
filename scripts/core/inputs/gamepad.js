@@ -72,17 +72,26 @@ export default class Gamepad extends Device {
 	 * Construct the Gamepad.
 	 *
 	 * Initializes state and sets up event listeners for gamepad connections.
+	 *
+	 * @returns {Gamepad} this
 	 */
 	constructor() {
 		super();
+
+		// Initialize.
 		this.set();
 		this.listen();
+
+		// Return.
+		return this;
 	}
 
 	/**
 	 * Set the Gamepad.
 	 *
 	 * Resets state and attaches event listeners.
+	 *
+	 * @returns {Gamepad} this
 	 */
 	set = () => {
 		return this.reset();
@@ -92,6 +101,8 @@ export default class Gamepad extends Device {
 	 * Reset the Gamepad.
 	 *
 	 * Clears all gamepad state, previous state, and connection status.
+	 *
+	 * @returns {Gamepad} this
 	 */
 	reset = () => {
 		this.gamepads = [];

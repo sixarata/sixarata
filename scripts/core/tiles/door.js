@@ -25,7 +25,7 @@ import { Trigger } from './exports.js';
 	) {
 		super( group, position, size, 'Black', 'default', 0, 0, 1 );
 
-		this.set( room );
+		return this.set( room );
 	}
 
 	/**
@@ -37,5 +37,7 @@ import { Trigger } from './exports.js';
 		room = 1
 	) => {
 		this.room = room;
+
+		return this;
 	}
 }

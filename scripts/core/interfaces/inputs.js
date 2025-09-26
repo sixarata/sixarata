@@ -15,7 +15,7 @@ export default class Inputs {
 	 * Initializes and stores all input device instances.
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
@@ -24,7 +24,7 @@ export default class Inputs {
 	 * Initializes all input devices.
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**

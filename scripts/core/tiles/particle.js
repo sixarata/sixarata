@@ -28,11 +28,14 @@ export default class Particle extends Tile {
 	/**
 	 * Construct the Particle.
 	 *
-	 * @param {array}  group
-	 * @param {Tile}   tile
-	 * @param {Tile}   target
-	 * @param {Size}   size
-	 * @param {String} type
+	 * @param {array}    group
+	 * @param {Tile}     tile
+	 * @param {String}   color
+	 * @param {Size}     size
+	 * @param {Velocity} velocity
+	 * @param {Number}   life
+	 * @param {Number}   fade
+	 * @returns {Particle}
 	 */
 	constructor(
 		group    = [],
@@ -56,7 +59,7 @@ export default class Particle extends Tile {
 		super( group, source, size, color, 'default', false );
 
 		// Initialize.
-		this.set( velocity, life, fade );
+		return this.set( velocity, life, fade );
 	}
 
 	/**
@@ -65,6 +68,7 @@ export default class Particle extends Tile {
 	 * @param {Velocity} velocity
 	 * @param {Number}   life
 	 * @param {Number}   fade
+	 * @returns {Particle}
 	 */
 	set = (
 		velocity = { x: 0, y: 0, z: 0 },
@@ -82,6 +86,10 @@ export default class Particle extends Tile {
 		// Attributes.
 		this.born = Time.now;
 		this.life = life;
+		this.fade = fade;
+
+		// Return.
+		return this;
 	}
 
 	/**

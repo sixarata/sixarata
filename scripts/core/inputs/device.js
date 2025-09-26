@@ -34,6 +34,15 @@ export default class Device {
 	 * @returns {Device}
 	 */
 	set = () => {
+		return this.reset();
+	}
+
+	/**
+	 * Reset the Device (default no-op) and support chaining.
+	 *
+	 * @returns {Device} this
+	 */
+	reset = () => {
 		return this;
 	}
 

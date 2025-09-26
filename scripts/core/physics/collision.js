@@ -12,12 +12,13 @@ export default class Collision {
 	 *
 	 * @param {Tile} tile1
 	 * @param {Tile} tile2
+	 * @returns {Collision}
 	 */
 	constructor(
 		tile1 = {},
 		tile2 = {}
 	) {
-		this.set( tile1, tile2 );
+		return this.set( tile1, tile2 );
 	}
 
 	/**
@@ -25,6 +26,7 @@ export default class Collision {
 	 *
 	 * @param {Tile} tile1
 	 * @param {Tile} tile2
+	 * @returns {Collision}
 	 */
 	set = (
 		tile1 = {},
@@ -32,6 +34,18 @@ export default class Collision {
 	) => {
 		this.tile1 = tile1;
 		this.tile2 = tile2;
+
+		// Return.
+		return this;
+	}
+
+	/**
+	 * Reset the object.
+	 *
+	 * @returns {Collision}
+	 */
+	reset = () => {
+		return this.set( {}, {} );
 	}
 
 	/**

@@ -15,7 +15,7 @@ export default class MicroTap {
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
 	 */
 	constructor( tile = null ) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
 	/**
@@ -26,6 +26,8 @@ export default class MicroTap {
 	set = ( tile = null ) => {
 		this.reset();
 		this.tile = tile;
+
+		return this;
 	}
 
 	/**
@@ -34,8 +36,9 @@ export default class MicroTap {
 	reset = () => {
 		this.tile = null;
 		this.listening = true;
-	}
 
+		return this;
+	}
 
 	/**
 	 * Listen for micro tap releases.

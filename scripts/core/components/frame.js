@@ -30,21 +30,29 @@ export default class Frame {
 
 	/**
 	 * Construct the object.
+	 *
+	 * @returns {Frame} this
 	 */
 	constructor() {
 		this.set();
 		this.listen();
+
+		return this;
 	}
 
 	/**
 	 * Set the object.
+	 *
+	 * @returns {Frame} this
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
 	 * Reset the Frame.
+	 *
+	 * @returns {Frame} this
 	 */
 	reset = () => {
 
@@ -65,6 +73,9 @@ export default class Frame {
 
 		// Start.
 		this.current  = this.request();
+
+		// Return.
+		return this;
 	}
 
 	/**

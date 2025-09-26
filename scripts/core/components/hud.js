@@ -14,20 +14,26 @@ export default class Hud {
 
 	/**
 	 * Construct the object.
+	 *
+	 * @returns {Hud} this
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Set the object.
+	 *
+	 * @returns {Hud} this
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
 	 * Reset the HUD.
+	 *
+	 * @returns {Hud} this
 	 */
 	reset = () => {
 
@@ -43,6 +49,9 @@ export default class Hud {
 
 		// Resize.
 		this.resize();
+
+		// Return.
+		return this;
 	}
 
 	/**

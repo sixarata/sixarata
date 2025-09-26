@@ -10,20 +10,20 @@ export default class Mass {
 	 * Construct the Mass.
 	 */
 	constructor( ...args ) {
-		this.set( args );
+		return this.set( args );
 	}
 
 	/**
 	 * Set the Mass.
 	 */
 	set = ( ...args ) => {
-		this.reset( args );
+		return this.reset( args );
 	}
 
 	/**
 	 * Reset the Mass.
 	 */
 	reset = ( ...args ) => {
-
+		return this;
 	}
 }

@@ -13,31 +13,39 @@ export default class Orient {
 	 * Construct the Orient mechanic.
 	 *
 	 * @param {Tile} tile A Tile with an `orientation` property.
+	 * @returns {Orient} this
 	 */
 	constructor(
 		tile = null
 	) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
 	/**
 	 * Set the mechanic.
 	 *
 	 * @param {Tile} tile A Tile with an `orientation` property.
+	 * @returns {Orient} this
 	 */
 	set = (
 		tile = null
 	) => {
 		this.reset();
 		this.tile = tile;
+
+		return this;
 	}
 
 	/**
 	 * Reset the mechanic.
+	 *
+	 * @returns {Orient} this
 	 */
 	reset = () => {
 		this.tile      = null;
 		this.listening = true;
+
+		return this;
 	}
 
 	/**

@@ -12,23 +12,29 @@ export default class Camera {
 
 	/**
 	 * Construct the object.
+	 *
+	 * @returns {Camera} this
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Set the Camera.
+	 *
+	 * @returns {Camera} this
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
 	 * Reset the Camera.
+	 *
+	 * @returns {Camera} this
 	 */
 	reset = () => {
-
+		return this;
 	}
 
 	/**

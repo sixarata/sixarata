@@ -13,33 +13,43 @@ export default class Jump {
 	 * Construct the Jump mechanic.
 	 *
 	 * @param {Tile} tile A Tile with `velocity`, `contact`, `jumps`, etc.
+	 * @returns {Jump} this
 	 */
 	constructor(
 		tile = null
 	) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
 	/**
 	 * Set the mechanic.
 	 *
 	 * @param {Tile} tile A Tile with `velocity`, `contact`, `jumps`, etc.
+	 * @returns {Jump} this
 	 */
 	set = (
 		tile = null
 	) => {
 		this.reset();
 		this.tile = tile;
+
+		// Return.
+		return this;
 	}
 
 	/**
 	 * Reset the mechanic.
+	 *
+	 * @returns {Jump} this
 	 */
 	reset = () => {
 		this.tile      = null;
 		this.count     = 0;
 		this.listening = true;
 		this.settings  = Settings.player.jumps.ground;
+
+		// Return.
+		return this;
 	}
 
 	/**

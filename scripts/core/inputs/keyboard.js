@@ -36,6 +36,8 @@ export default class Keyboard extends Device {
 		super();
 		this.set();
 		this.listen();
+
+		return this;
 	}
 
 	/**
@@ -44,7 +46,8 @@ export default class Keyboard extends Device {
 	 * Resets state and attaches event listeners.
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
+		// Return.
 	}
 
 	/**
@@ -54,11 +57,14 @@ export default class Keyboard extends Device {
 	 */
 	reset = () => {
 
-		// Keys
+		// Keys.
 		this.keys = {};
 
-		// Mapping
+		// Mapping.
 		this.map = this.actions();
+
+		// Return.
+		return this;
 	}
 
 	/**

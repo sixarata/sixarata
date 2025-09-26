@@ -16,24 +16,33 @@ export default class WallSlide {
 	 * Construct.
      *
 	 * @param {Tile|null} tile
+	 * @returns {WallSlide} this
 	 */
 	constructor( tile = null ) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
 	/**
 	 * Bind (or rebind) the mechanic to a tile.
      *
 	 * @param {Tile|null} tile
+	 * @returns {WallSlide} this
 	 */
 	set = ( tile = null ) => {
 		this.reset();
 		this.tile = tile;
 		this.velocity = this.tile?.physics?.velocity;
 		this.contact  = this.tile?.physics?.contact;
+
+		// Return.
+		return this;
 	}
 
-	/** Reset internal state. */
+	/**
+	 * Reset internal state.
+	 *
+	 * @returns {WallSlide} this
+	 */
 	reset = () => {
 		this.tile      = null;
 		this.velocity  = null;
@@ -46,6 +55,9 @@ export default class WallSlide {
 		this.factor = ( slideCfg.factor ?? 0.35 );
 		// Optional max slide speed (can be lower than normal terminal to feel sticky)
 		this.max    = ( slideCfg.max    ?? Settings.player.jumps.fall.speed * 0.75 );
+
+		// Return.
+		return this;
 	}
 
 	/** Primary loop hook. */

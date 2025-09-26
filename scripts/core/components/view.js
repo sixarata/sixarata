@@ -13,20 +13,26 @@ export default class View {
 
 	/**
 	 * Construct the View.
+	 *
+	 * @returns {View} this
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Set the View.
+	 *
+	 * @returns {View} this
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
 	 * Reset the View.
+	 *
+	 * @returns {View} this
 	 */
 	reset = () => {
 
@@ -38,6 +44,9 @@ export default class View {
 		// Append tiles to DOM.
 		document.body.appendChild( this.wrapper );
 		this.wrapper.appendChild( this.canvas );
+
+		// Return.
+		return this;
 	}
 
 	/**

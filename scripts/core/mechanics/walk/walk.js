@@ -16,7 +16,7 @@ export default class Walk {
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
 	 */
 	constructor( tile = null ) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
 	/**
@@ -27,6 +27,8 @@ export default class Walk {
 	set = ( tile = null ) => {
 		this.reset();
 		this.tile = tile;
+
+		return this;
 	}
 
 	/**
@@ -35,6 +37,8 @@ export default class Walk {
 	reset = () => {
 		this.tile      = null;
 		this.listening = true;
+
+		return this;
 	}
 
 	/**

@@ -56,7 +56,7 @@ export default class Projectile extends Tile {
 		super( group, start, size, color, type, false );
 
 		// Initialize.
-		this.set( tile, target );
+		return this.set( tile, target );
 	}
 
 	/**
@@ -72,6 +72,9 @@ export default class Projectile extends Tile {
 
 		// Trajectory.
 		this.setTrajectory();
+
+		// Return.
+		return this;
 	}
 
 	/**

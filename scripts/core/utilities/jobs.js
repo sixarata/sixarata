@@ -16,14 +16,14 @@ export default class Jobs {
 	 * Construct the Jobs utility.
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Set / initialize.
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
@@ -33,6 +33,8 @@ export default class Jobs {
 		this._nextId   = 1;
 		this._pending  = [];
 		this._indexKey = {};
+
+		return this;
 	}
 
 	/**

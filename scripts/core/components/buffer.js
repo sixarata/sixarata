@@ -16,6 +16,7 @@ export default class Buffer {
 	 * @param {Scale}  scale
 	 * @param {String} context
 	 * @param {Object} attr
+	 * @returns {Buffer} this
 	 */
 	constructor(
 		size    = { w: 0, h: 0, d: 0 },
@@ -23,7 +24,7 @@ export default class Buffer {
 		context = '2d',
 		attr    = { alpha: true, desynchronized: true }
 	) {
-		this.set( size, scale, context, attr );
+		return this.set( size, scale, context, attr );
 	}
 
 	/**
@@ -33,6 +34,7 @@ export default class Buffer {
 	 * @param {Scale}  scale
 	 * @param {String} context
 	 * @param {Object} attr
+	 * @return {Buffer} this
 	 */
 	set = (
 		size    = { w: 0, h: 0, d: 0 },
@@ -40,7 +42,7 @@ export default class Buffer {
 		context = '2d',
 		attr    = { alpha: true, desynchronized: true }
 	) => {
-		this.reset( size, scale, context, attr );
+		return this.reset( size, scale, context, attr );
 	}
 
 	/**
@@ -50,6 +52,7 @@ export default class Buffer {
 	 * @param {Scale}  scale
 	 * @param {String} context
 	 * @param {Object} attr
+	 * @return {Buffer} this
 	 */
 	reset = (
 		size    = { w: 0, h: 0, d: 0 },
@@ -73,6 +76,9 @@ export default class Buffer {
 		// Resize & Rescale.
 		this.resize( size );
 		this.rescale( scale );
+
+		// Return.
+		return this;
 	}
 
 	/**
@@ -108,6 +114,9 @@ export default class Buffer {
 		// Resize the canvas.
 		this.context.canvas.width  = size.w;
 		this.context.canvas.height = size.h;
+
+		// Return.
+		return this.canvas;
 	}
 
 	/**
@@ -139,6 +148,9 @@ export default class Buffer {
 
 		// Rescale the canvas using screen DPR.
 		this.screen.rescale( this.context, this.scale );
+
+		// Return.
+		return this;
 	}
 
 	/**
@@ -152,6 +164,9 @@ export default class Buffer {
 		if ( this.context.imageSmoothingEnabled !== smooth ) {
 			this.context.imageSmoothingEnabled = smooth;
 		}
+
+		// Return.
+		return this;
 	}
 
 	/**

@@ -15,11 +15,12 @@ export default class WallJump {
 	 * Construct the WallJump mechanic.
 	 *
 	 * @param {Tile|null} tile Optional tile to bind immediately.
+	 * @returns {WallJump} this
 	 */
 	constructor(
 		tile = null
 	) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
 	/**
@@ -28,23 +29,33 @@ export default class WallJump {
 	 * Resets internal state first to avoid leaking references.
 	 *
 	 * @param {Tile|null} tile Tile providing physics + jumps configuration.
-	 * @returns {void}
+	 * @returns {WallJump} this
 	 */
 	set = (
 		tile = null
 	) => {
 		this.reset();
+
+		// Set properties.
 		this.tile = tile;
+
+		// Return.
+		return this;
 	}
 
 	/**
 	 * Reset internal references back to an inert state.
+	 *
+	 * @returns {WallJump} this
 	 */
 	reset = () => {
 		this.tile      = null;
 		this.settings  = Settings.player.jumps.wall;
 		this.listening = true;
 		this.impulse   = new Timer();
+
+		// Return.
+		return this;
 	}
 
 	/**

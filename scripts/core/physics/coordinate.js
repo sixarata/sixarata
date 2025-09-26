@@ -15,12 +15,14 @@ export default class Coordinate extends Number {
 	 * Construct the Coordinate.
 	 *
 	 * @param {Number} value Default 0.
+	 * @returns {Coordinate}
 	 */
 	constructor(
 		value = 0
 	) {
 		super( value );
-		this.set( value );
+
+		return this.set( value );
 	}
 
 	/**
@@ -40,7 +42,7 @@ export default class Coordinate extends Number {
 	/**
 	 * Reset the value of this Coordinate to 0.
 	 *
-	 * @returns {Coordinate} The new Coordinate.
+	 * @returns {Coordinate} This Coordinate, with a 0 value.
 	 */
 	reset = () => {
 		return this.set( 0 );

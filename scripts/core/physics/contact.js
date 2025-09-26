@@ -16,6 +16,7 @@ export default class Contact {
 	 * @param {Boolean} right
 	 * @param {Boolean} bottom
 	 * @param {Boolean} left
+	 * @returns {Contact}
 	 */
 	constructor(
 		top    = false,
@@ -23,7 +24,7 @@ export default class Contact {
 		bottom = false,
 		left   = false
 	) {
-		this.set( top, right, bottom, left );
+		return this.set( top, right, bottom, left );
 	}
 
 	/**
@@ -33,6 +34,7 @@ export default class Contact {
 	 * @param {Boolean} right
 	 * @param {Boolean} bottom
 	 * @param {Boolean} left
+	 * @returns {Contact}
 	 */
 	set = (
 		top    = false,
@@ -46,16 +48,18 @@ export default class Contact {
 		this.right  = right;
 		this.bottom = bottom;
 		this.left   = left;
+
+		// Return.
+		return this;
 	}
 
 	/**
 	 * Reset the Position.
+	 *
+	 * @returns {Contact}
 	 */
 	reset = () => {
-		this.top    = false;
-		this.right  = false;
-		this.bottom = false;
-		this.left   = false;
+		return this.set( false, false, false, false );
 	}
 
 	/**

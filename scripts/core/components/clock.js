@@ -10,20 +10,26 @@ export default class Clock {
 
 	/**
 	 * Construct the object.
+	 *
+	 * @returns {Clock} this
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Set the object.
+	 *
+	 * @returns {Clock} this
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
 	 * Reset the Clock.
+	 *
+	 * @returns {Clock} this
 	 */
 	reset = () => {
 
@@ -36,6 +42,9 @@ export default class Clock {
 			current: now,
 			elapsed: 0,
 		};
+
+		// Return.
+		return this;
 	}
 
 	/**

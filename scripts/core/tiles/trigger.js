@@ -31,6 +31,6 @@ import { Tile } from './exports.js';
 		mass     = 1,
 		opacity  = 0
 	) {
-		super( group, position, size, color, type, density, mass, opacity );
+		return super( group, position, size, color, type, density, mass, opacity );
 	}
 }

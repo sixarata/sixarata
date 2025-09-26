@@ -28,14 +28,14 @@ export default class Player extends Tile {
 	) {
 		super( group, position, size, 'Yellow' );
 
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Set the Player.
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
@@ -75,6 +75,9 @@ export default class Player extends Tile {
 
 		// Register combo hook listeners for mechanics that need them.
 		this.mechanics.dash.hooks();
+
+		// Return.
+		return this;
 	}
 
 	/**

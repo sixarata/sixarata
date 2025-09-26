@@ -26,7 +26,7 @@ export default class Dash {
 	constructor(
 		tile = null
 	) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
 	/**
@@ -40,6 +40,8 @@ export default class Dash {
 	) => {
 		this.reset();
 		this.tile = tile;
+
+		return this;
 	}
 
 	/**
@@ -57,6 +59,9 @@ export default class Dash {
 		this.impulse   = new Timer();
 		this.hover     = new Timer();
 		this.cool      = new Timer();
+
+		// Return.
+		return this;
 	}
 
 	/**

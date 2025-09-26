@@ -18,12 +18,28 @@ export default class Enemy extends Tile {
 	) {
 		super( group, position, size, 'Red' );
 
-		this.reset();
+		return this.set();
 	}
 
+	/**
+	 * Set the Enemy.
+	 *
+	 * @returns {Enemy}
+	 */
+	set = () => {
+		return this.reset();
+	}
+
+	/**
+	 * Reset the Enemy.
+	 *
+	 * @returns {Enemy}
+	 */
 	reset = () => {
 		this.shootOffScreen = true;
 		this.shootCount = 0;
+
+		return this;
 	}
 
 	update = () => {

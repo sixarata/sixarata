@@ -15,7 +15,7 @@ export default class Brake {
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
 	 */
 	constructor( tile = null ) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
 	/**
@@ -23,9 +23,13 @@ export default class Brake {
 	 *
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
 	 */
-	set = ( tile = null ) => {
+	set = (
+		tile = null
+	) => {
 		this.reset();
 		this.tile = tile;
+
+		return this;
 	}
 
 	/**
@@ -34,8 +38,9 @@ export default class Brake {
 	reset = () => {
 		this.tile = null;
 		this.listening = true;
-	}
 
+		return this;
+	}
 
 	/**
 	 * Listen for braking edges.

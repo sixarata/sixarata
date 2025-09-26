@@ -17,7 +17,7 @@ export default class Sprint {
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
 	 */
 	constructor( tile = null ) {
-		this.set( tile );
+		return this.set( tile );
 	}
 
 	/**
@@ -28,6 +28,9 @@ export default class Sprint {
 	set = ( tile = null ) => {
 		this.reset();
 		this.tile = tile;
+
+		// Return.
+		return this;
 	}
 
 	/**
