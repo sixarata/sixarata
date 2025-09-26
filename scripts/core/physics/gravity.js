@@ -23,8 +23,7 @@ export default class Gravity {
 	 * @returns {Gravity}
 	 */
 	set = () => {
-			this.reset();
-			return this;
+		return this.reset();
 	}
 
 	/**

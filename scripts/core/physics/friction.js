@@ -23,10 +23,7 @@ export default class Friction {
 	 * @returns {Friction}
 	 */
 	set = () => {
-		this.reset();
-
-		// Return.
-		return this;
+		return this.reset();
 	}
 
 	/**
