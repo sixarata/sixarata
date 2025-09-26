@@ -69,7 +69,7 @@ export default class Frame {
 		this.step     = ( this.settings.second / this.settings.goal );
 
 		// Exponential moving average.
-		this.ema = 1;
+		this.ema      = 1;
 
 		// Start.
 		this.current  = this.request();
