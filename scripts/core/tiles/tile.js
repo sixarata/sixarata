@@ -54,6 +54,7 @@ export default class Tile {
 	 * @param {Number}   density
 	 * @param {Number}   mass
 	 * @param {Number}   opacity
+	 * @return {Tile}    this
 	 */
 	set = (
 		group    = [],
@@ -65,10 +66,16 @@ export default class Tile {
 		mass     = 1,
 		opacity  = 1
 	) => {
-		this.reset( group, position, size, color, type, density, mass, opacity );
-
-		// Return.
-		return this;
+		return this.reset(
+			group,
+			position,
+			size,
+			color,
+			type,
+			density,
+			mass,
+			opacity
+		);
 	}
 
 	/**
@@ -82,6 +89,7 @@ export default class Tile {
 	 * @param {Number}   density
 	 * @param {Number}   mass
 	 * @param {Number}   opacity
+	 * @return {Tile}    this
 	 */
 	reset = (
 		group    = [],
@@ -143,6 +151,8 @@ export default class Tile {
 
 	/**
 	 * Render the Tile.
+	 *
+	 * @returns {Void}
 	 */
 	render = () => {
 
@@ -159,6 +169,7 @@ export default class Tile {
 			this.opacity
 		);
 
+		// Hook.
 		Game.Hooks.do( 'Tile.render', this );
 	}
 
@@ -170,9 +181,12 @@ export default class Tile {
 	 * @returns {Position}
 	 */
 	offset = () => {
+
+		// Get camera and position.
 		let camera = Game.Camera.position,
 			pos    = this.physics.position;
 
+		// Return offset position.
 		return new Position(
 			( pos.x - camera.x ),
 			( pos.y - camera.y ),
@@ -228,11 +242,17 @@ export default class Tile {
 	 *
 	 * @returns {Array}
 	 */
-	add = ( item = {} ) => {
+	add = (
+		item = {}
+	) => {
+
+		// Get the group array.
 		this.group.push( item );
 
+		// Hook.
 		Game.Hooks.do( 'Tile.added', this );
 
+		// Return the group.
 		return this.group;
 	}
 

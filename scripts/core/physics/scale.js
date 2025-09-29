@@ -43,7 +43,7 @@ export default class Scale extends Point {
 	/**
 	 * Set the object.
 	 *
-	 * @returns {Scale}
+	 * @returns {Scale} this
 	 */
 	set = () => {
 		return this.reset();
@@ -52,7 +52,7 @@ export default class Scale extends Point {
 	/**
 	 * Reset Scale.
 	 *
-	 * @returns {Scale}
+	 * @returns {Scale} this
 	 */
 	reset = () => {
 

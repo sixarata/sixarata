@@ -17,20 +17,26 @@ export default class History {
 
 	/**
 	 * Constructor.
+	 *
+	 * @returns {History} The constructed History instance.
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Initialize the history state.
+	 *
+	 * @return {History} this
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
 	 * Reset the history state.
+	 *
+	 * @return {History} this
 	 */
 	reset = () => {
 
@@ -42,6 +48,9 @@ export default class History {
 
 		// Cap to avoid unbounded growth
 		this.maxEvents = 256;
+
+		// Return.
+		return this;
 	}
 
 	/**

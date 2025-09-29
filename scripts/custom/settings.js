@@ -121,14 +121,19 @@ export default {
 			coyote:   '#ff6600',
 			dash:     '#ff3300',
 		},
+
+		// Combos: name: { sequence: [ actions ], window: ms }
+		combos: {
+			dashLeft:  { sequence: [ 'left', 'left'  ], window: 200 },
+			dashRight: { sequence: [ 'right','right' ], window: 200 },
+			dashUp:    { sequence: [ 'up',   'up'    ], window: 200 },
+			dashDown:  { sequence: [ 'down', 'down'  ], window: 200 },
+		},
 	},
 
-	// Combos: map combo name -> { sequence:[actions], window:ms }
+	// Combos.
 	combos: {
-		dashLeft:  { sequence: [ 'left', 'left'  ], window: 200 },
-		dashRight: { sequence: [ 'right','right' ], window: 200 },
-		dashUp:    { sequence: [ 'up',   'up'    ], window: 200 },
-		dashDown:  { sequence: [ 'down', 'down'  ], window: 200 },
+		cooldown: 30,
 	},
 
 	// Physics.
