@@ -1,0 +1,25 @@
+name: Notify Desktop (nightly or main)
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Notify desktop repo (nightly or main)
+        env:
+          GH_TOKEN: ${{ secrets.DESKTOP_REPO_TOKEN }}
+        run: |
+          curl -sSf -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/sixarata/desktop/dispatches \
+            -d '{"event_type":"nightly","client_payload":{"repo":"sixarata/sixarata","ref":"main"}}'
