@@ -9,8 +9,8 @@ export default [
 '                                                                   ',
 '                                                                   ',
 '                                                                   ',
-'                                B                                  ',
-'                                P                                  ',
+'                                                                   ',
+'                                                                   ',
 '                                                                   ',
 '                                                                   ',
 '                                                                   ',
@@ -55,7 +55,7 @@ export default [
 '                                                                   ',
 '                                                                   ',
 '                                                                   ',
-'                                                               G   ',
+'   B                            P                              G   ',
 'xxxxxxxx        xxxxxx       xxxxxxx       xxxxxxx         xxxxxxxx',
 
 ];
