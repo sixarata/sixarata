@@ -13,6 +13,16 @@ import Time from '../../utilities/time.js';
 export default class WallSlide {
 
 	/**
+	 * Default wall slide settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		factor: 0.35,
+		max: 15,
+	}
+
+	/**
 	 * Construct.
      *
 	 * @param {Tile|null} tile
@@ -29,10 +39,12 @@ export default class WallSlide {
 	 * @returns {WallSlide} this
 	 */
 	set = ( tile = null ) => {
+
+		// Reset.
 		this.reset();
+
+		// Set tile.
 		this.tile = tile;
-		this.velocity = this.tile?.physics?.velocity;
-		this.contact  = this.tile?.physics?.contact;
 
 		// Return.
 		return this;
@@ -44,29 +56,37 @@ export default class WallSlide {
 	 * @returns {WallSlide} this
 	 */
 	reset = () => {
-		this.tile      = null;
-		this.velocity  = null;
-		this.contact   = null;
-		this.listening = true;
 
-		// Configurable slide factor: fraction of normal gravity applied while sliding.
-		// If future settings exposed, read from Settings.player.jumps.wall.slide?.factor
-		const slideCfg = Settings.player?.jumps?.wall?.slide || {};
-		this.factor = ( slideCfg.factor ?? 0.35 );
-		// Optional max slide speed (can be lower than normal terminal to feel sticky)
-		this.max    = ( slideCfg.max    ?? Settings.player.jumps.fall.speed * 0.75 );
+		// Clear properties.
+		this.tile = null;
+
+		// Load settings.
+		this.settings  = Settings.player?.jumps?.wall?.slide ?? WallSlide.defaults;
+		this.listening = true;
 
 		// Return.
 		return this;
 	}
 
-	/** Primary loop hook. */
+	/**
+	 * Primary loop hook.
+	 */
 	listen = () => {
-		if ( ! this.listening || ! this.tile ) return;
-		if ( this.can() ) this.do();
+
+		// Skip if disabled or unbound.
+		if ( ! this.listening || ! this.tile ) {
+			return;
+		}
+
+		// Check if we can perform a wall slide.
+		if ( this.can() ) {
+			this.do();
+		}
 	}
 
-	/** Are we currently performing a wall slide? */
+	/**
+	 * Are we currently performing a wall slide?
+	 */
 	doing = () => {
 		return this.can();
 	}
@@ -82,19 +102,23 @@ export default class WallSlide {
 	 */
 	can = () => {
 		if ( ! this.tile ) return false;
-		if ( ! this.contact ) return false;
-		if ( this.contact.bottom ) return false; // grounded
+
+		const contact = this.tile.physics?.contact;
+
+		if ( ! contact ) return false;
+		if ( contact.bottom ) return false; // grounded
 
 		const holdL = Game.History.hold( 'left' );
 		const holdR = Game.History.hold( 'right' );
 
-		const intoLeft  = this.contact.left  && holdL?.down;
-		const intoRight = this.contact.right && holdR?.down;
+		const intoLeft  = contact.left  && holdL?.down;
+		const intoRight = contact.right && holdR?.down;
 
 		if ( ! ( intoLeft || intoRight ) ) return false;
 
 		// Must be descending or neutral; if moving upward strongly (e.g., after jump) skip.
-		const vy = this.velocity?.y ?? 0;
+		const velocity = this.tile.physics?.velocity;
+		const vy = velocity?.y ?? 0;
 		return ( vy >= 0 );
 	}
 
@@ -102,14 +126,27 @@ export default class WallSlide {
 	 * Apply slide dampening (reduced gravity application).
 	 */
 	do = () => {
-		if ( ! this.velocity ) return;
+
+		// Get velocity reference.
+		const velocity = this.tile?.physics?.velocity;
+
+		// Skip if no velocity.
+		if ( ! velocity ) {
+			return;
+		}
+
 		const gravity = Game.Gravity.force;
-		const inc = gravity * this.factor * Time.scale;
-		if ( this.velocity.y < this.max ) {
-			this.velocity.y += inc;
-			if ( this.velocity.y > this.max ) this.velocity.y = this.max;
-		} else if ( this.velocity.y > this.max ) {
-			this.velocity.y = this.max;
+		const inc = gravity * this.settings.factor * Time.scale;
+
+		if ( velocity.y < this.settings.max ) {
+			velocity.y += inc;
+
+			if ( velocity.y > this.settings.max ) {
+				velocity.y = this.settings.max;
+			}
+
+		} else if ( velocity.y > this.settings.max ) {
+			velocity.y = this.settings.max;
 		}
 	}
 }

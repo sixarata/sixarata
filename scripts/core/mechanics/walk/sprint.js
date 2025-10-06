@@ -12,6 +12,16 @@ import Game from '../../game.js';
 export default class Sprint {
 
 	/**
+	 * Default sprint settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		run: 20,
+		runHold: 300,
+	}
+
+	/**
 	 * Construct the Sprint mechanic.
 	 *
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
@@ -38,6 +48,7 @@ export default class Sprint {
 	 */
 	reset = () => {
 		this.tile      = null;
+		this.settings  = Settings.player?.move ?? Sprint.defaults;
 		this.listening = true;
 	}
 
@@ -46,6 +57,8 @@ export default class Sprint {
 	 * Listen for sprint activation.
 	 */
 	listen = () => {
+
+		// Skip if disabled or unbound.
 		if ( ! this.listening || ! this.tile ) {
 			return;
 		}
@@ -55,17 +68,13 @@ export default class Sprint {
 			return;
 		}
 
-		const cfg     = Settings.player.move || {};
-		const runSpd  = ( cfg.run     ?? 20 );
-		const runHold = ( cfg.runHold ?? 300 );
-
 		const l = Game.History.hold( 'left' );
 		const r = Game.History.hold( 'right' );
 
-		if ( l?.down && ! r?.down && l.duration >= runHold ) {
-			v.x = -runSpd;
-		} else if ( r?.down && ! l?.down && r.duration >= runHold ) {
-			v.x = runSpd;
+		if ( l?.down && ! r?.down && l.duration >= this.settings.runHold ) {
+			v.x = -this.settings.run;
+		} else if ( r?.down && ! l?.down && r.duration >= this.settings.runHold ) {
+			v.x = this.settings.run;
 		}
 	}
 }

@@ -12,6 +12,17 @@ import Timer from '../../utilities/timer.js';
 export default class WallJump {
 
 	/**
+	 * Default wall jump settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		power: 18,
+		lateral: 18,
+		time: 100,
+	}
+
+	/**
 	 * Construct the WallJump mechanic.
 	 *
 	 * @param {Tile|null} tile Optional tile to bind immediately.
@@ -50,7 +61,7 @@ export default class WallJump {
 	 */
 	reset = () => {
 		this.tile      = null;
-		this.settings  = Settings.player.jumps.wall;
+		this.settings  = Settings.player?.jumps?.wall ?? WallJump.defaults;
 		this.listening = true;
 		this.impulse   = new Timer();
 
@@ -142,18 +153,16 @@ export default class WallJump {
 		// Various values, for maths.
 		const velocity = this.tile.physics.velocity;
 		const contact  = this.tile.physics.contact;
-		const power    = this.settings.power || 18;
-		const lateral  = this.settings.lateral || 18;
 
 		// Horizontal.
 		if ( contact.left ) {
-			velocity.x = lateral;
+			velocity.x = this.settings.lateral;
 		} else if ( contact.right ) {
-			velocity.x = -( lateral);
+			velocity.x = -this.settings.lateral;
 		}
 
 		// Vertical (slightly boosted for wall jump flair).
-		velocity.y = -( power );
+		velocity.y = -this.settings.power;
 
 		// Set the impulse timer.
 		this.impulse.set( this.settings.time );
@@ -187,10 +196,12 @@ export default class WallJump {
 	ignore = ( enable = true ) => {
 		const m = this.tile?.mechanics;
 
+		// Skip if no mechanics.
 		if ( ! m ) {
 			return;
 		}
 
+		// Enable/disable other mechanics.
 		if ( m.jump )     m.jump.listening     = enable;
 		if ( m.fall )     m.fall.listening     = enable;
 		if ( m.walljump ) m.walljump.listening = enable;
@@ -198,6 +209,7 @@ export default class WallJump {
 		if ( m.coyote )   m.coyote.listening   = enable;
 		if ( m.orient )   m.orient.listening   = enable;
 
+		// Disable walk sub-mechanics.
 		const walk = this.tile.mechanics?.walk;
 
 		if ( walk ) {

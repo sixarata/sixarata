@@ -10,6 +10,16 @@ import Game from '../../game.js';
 export default class MicroTap {
 
 	/**
+	 * Default microtap settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		duration: 120,
+		factor: 0.3,
+	}
+
+	/**
 	 * Construct the MicroTap mechanic.
 	 *
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
@@ -34,7 +44,8 @@ export default class MicroTap {
 	 * Reset the mechanic.
 	 */
 	reset = () => {
-		this.tile = null;
+		this.tile      = null;
+		this.settings  = Settings.player?.move ?? MicroTap.defaults;
 		this.listening = true;
 
 		return this;
@@ -44,6 +55,8 @@ export default class MicroTap {
 	 * Listen for micro tap releases.
 	 */
 	listen = () => {
+
+		// Skip if disabled or unbound.
 		if ( ! this.listening || ! this.tile ) {
 			return;
 		}
@@ -53,19 +66,15 @@ export default class MicroTap {
 			return;
 		}
 
-		const cfg    = Settings.player.move || {};
-		const tap    = ( cfg.tap   ?? 120 );
-		const factor = ( cfg.micro ?? 0.3 );
-
 		const hl = Game.History.hold( 'left' );
 		const hr = Game.History.hold( 'right' );
 
-		if ( Game.History.released( 'left' ) && hl && hl.duration < tap && v.x < 0 ) {
-			v.x *= factor;
+		if ( Game.History.released( 'left' ) && hl && hl.duration < this.settings.duration && v.x < 0 ) {
+			v.x *= this.settings.factor;
 		}
 
-		if ( Game.History.released( 'right' ) && hr && hr.duration < tap && v.x > 0 ) {
-			v.x *= factor;
+		if ( Game.History.released( 'right' ) && hr && hr.duration < this.settings.duration && v.x > 0 ) {
+			v.x *= this.settings.factor;
 		}
 	}
 }

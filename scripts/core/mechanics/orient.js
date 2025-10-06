@@ -10,6 +10,16 @@ import Settings from '../../custom/settings.js';
 export default class Orient {
 
 	/**
+	 * Default orient settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		debounce: 40,
+		flipGrace: 30,
+	}
+
+	/**
 	 * Construct the Orient mechanic.
 	 *
 	 * @param {Tile} tile A Tile with an `orientation` property.
@@ -43,6 +53,7 @@ export default class Orient {
 	 */
 	reset = () => {
 		this.tile      = null;
+		this.settings  = Settings.player?.orient ?? Orient.defaults;
 		this.listening = true;
 
 		return this;
@@ -64,9 +75,8 @@ export default class Orient {
 		}
 
 		const orientation = this.tile.physics?.orientation;
-		const cfg   = Settings.player.orient || {};
-		const deb   = cfg.debounce  ?? 40;
-		const grace = cfg.flipGrace ?? 30;
+		const deb   = this.settings.debounce;
+		const grace = this.settings.flipGrace;
 
 		const holdL = Game.History.hold( 'left' );
 		const holdR = Game.History.hold( 'right' );

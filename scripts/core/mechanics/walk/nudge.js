@@ -16,6 +16,15 @@ import Game from '../../game.js';
 export default class Nudge {
 
 	/**
+	 * Default nudge settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		base: 1,
+	}
+
+	/**
 	 * Construct the Nudge mechanic.
 	 *
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
@@ -42,6 +51,7 @@ export default class Nudge {
 	 */
 	reset = () => {
 		this.tile      = null;
+		this.settings  = Settings.player?.move ?? Nudge.defaults;
 		this.listening = true;
 
 		return this;
@@ -64,15 +74,11 @@ export default class Nudge {
 			return;
 		}
 
-		// Config.
-		const cfg  = Settings.player.move || {};
-		const base = ( cfg.base ?? 1 );
-
 		// Apply exactly on edge frame.
 		if ( Game.History.edge( 'left' ) ) {
-			v.x = -base;
+			v.x = -this.settings.base;
 		} else if ( Game.History.edge( 'right' ) ) {
-			v.x = base;
+			v.x = this.settings.base;
 		}
 	}
 }

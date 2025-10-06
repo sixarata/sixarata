@@ -10,6 +10,15 @@ import Game from '../../game.js';
 export default class Brake {
 
 	/**
+	 * Default brake settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		multiplier: 0.4,
+	}
+
+	/**
 	 * Construct the Brake mechanic.
 	 *
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
@@ -36,7 +45,8 @@ export default class Brake {
 	 * Reset the mechanic.
 	 */
 	reset = () => {
-		this.tile = null;
+		this.tile      = null;
+		this.settings  = Settings.player?.move ?? Brake.defaults;
 		this.listening = true;
 
 		return this;
@@ -46,6 +56,8 @@ export default class Brake {
 	 * Listen for braking edges.
 	 */
 	listen = () => {
+
+		// Skip if disabled or unbound.
 		if ( ! this.listening || ! this.tile ) {
 			return;
 		}
@@ -55,15 +67,13 @@ export default class Brake {
 			return;
 		}
 
-		const cfg   = Settings.player.move || {};
-		const brake = ( cfg.brake ?? 0.4 );
-
 		// Opposite-direction edges get immediate braking.
 		if ( Game.History.edge( 'left' ) && v.x > 0 ) {
-			v.x *= brake;
+			v.x *= this.settings.multiplier;
 		}
+
 		if ( Game.History.edge( 'right' ) && v.x < 0 ) {
-			v.x *= brake;
+			v.x *= this.settings.multiplier;
 		}
 	}
 }

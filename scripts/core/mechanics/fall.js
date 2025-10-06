@@ -10,6 +10,16 @@ import Time from '../utilities/time.js';
 export default class Fall {
 
 	/**
+	 * Default fall settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		speed: 20,
+		terminal: 20,
+	}
+
+	/**
 	 * Construct the Fall mechanic.
 	 *
 	 * @param {Tile} tile A Tile with `velocity`, `contact`, `jumps`.
@@ -33,8 +43,7 @@ export default class Fall {
 		this.reset();
 
 		// Set properties.
-		this.tile     = tile;
-		this.velocity = this.tile?.physics.velocity;
+		this.tile = tile;
 
 		// Return.
 		return this;
@@ -47,8 +56,7 @@ export default class Fall {
 	 */
 	reset = () => {
 		this.tile      = null;
-		this.settings  = Settings.player.jumps.fall;
-		this.max       = Settings.physics.terminal ?? this.settings.speed;
+		this.settings  = Settings.player.jumps?.fall ?? Fall.defaults;
 		this.listening = true;
 
 		// Return.
@@ -75,8 +83,9 @@ export default class Fall {
 		}
 
 		// Cap velocity at max.
-		if ( this.maxed() ) {
-			this.velocity.y = this.max;
+		const velocity = this.tile?.physics?.velocity;
+		if ( velocity && this.maxed() ) {
+			velocity.y = this.settings.terminal;
 		}
 	}
 
@@ -108,8 +117,16 @@ export default class Fall {
 			return;
 		}
 
+		// Get velocity reference.
+		const velocity = this.tile?.physics?.velocity;
+
+		// Skip if no velocity.
+		if ( ! velocity ) {
+			return;
+		}
+
 		// Apply gravity.
-		this.velocity.y += this.force();
+		velocity.y += this.force();
 	}
 
 	/**
@@ -118,7 +135,11 @@ export default class Fall {
 	 * @returns {Boolean} True if max fall speed is reached, false otherwise.
 	 */
 	maxed = () => {
-		return ( this.velocity.y >= this.max );
+		const velocity = this.tile?.physics?.velocity;
+
+		return velocity
+			? ( velocity.y >= this.settings.terminal )
+			: false;
 	}
 
 	/**
@@ -127,7 +148,14 @@ export default class Fall {
 	 * Apply base gravity force.
 	 */
 	idle = () => {
-		this.velocity.y = this.force();
+		const velocity = this.tile?.physics?.velocity;
+
+		// Skip if no velocity.
+		if ( ! velocity ) {
+			return;
+		}
+
+		velocity.y = this.force();
 	}
 
 	/**
