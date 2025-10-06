@@ -43,14 +43,14 @@ export default {
 	// Player.
 	player: {
 		move: {
-			base:    1,
-			walk:    10,
-			run:     16,
-			accel:   100,
-			runHold: 100,
-			brake:   0.4,
-			tap:     60,
-			micro:   0.3,
+			base:       1,
+			speed:      10,
+			run:        16,
+			accel:      100,
+			runHold:    100,
+			multiplier: 0.4,
+			duration:   60,
+			factor:     0.3,
 		},
 		orient: {
 			debounce:  40,
@@ -71,6 +71,7 @@ export default {
 			},
 			fall: {
 				speed: 16,
+				terminal: 16,
 			},
 			ground: {
 				power: {
