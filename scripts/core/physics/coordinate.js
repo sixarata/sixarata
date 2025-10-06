@@ -7,6 +7,15 @@
 export default class Coordinate extends Number {
 
 	/**
+	 * Default coordinate value.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		value: 0,
+	}
+
+	/**
 	 * The tolerance for calculations.
 	 */
 	#tolerance = 0.0001;
@@ -18,7 +27,7 @@ export default class Coordinate extends Number {
 	 * @returns {Coordinate}
 	 */
 	constructor(
-		value = 0
+		value = Coordinate.defaults.value
 	) {
 		super( value );
 
@@ -32,7 +41,7 @@ export default class Coordinate extends Number {
 	 * @returns {Coordinate} This Coordinate, with a new value.
 	 */
 	set = (
-		value = 0
+		value = Coordinate.defaults.value
 	) => {
 		this.value = value;
 
@@ -45,7 +54,7 @@ export default class Coordinate extends Number {
 	 * @returns {Coordinate} This Coordinate, with a 0 value.
 	 */
 	reset = () => {
-		return this.set( 0 );
+		return this.set( Coordinate.defaults.value );
 	}
 
 	/**
@@ -56,7 +65,7 @@ export default class Coordinate extends Number {
 	 */
 	add = (
 		c = {
-			value: 0,
+			value: Coordinate.defaults.value,
 		}
 	) => {
 		return this.set(
@@ -86,7 +95,7 @@ export default class Coordinate extends Number {
 	 */
 	sub = (
 		c = {
-			value: 0,
+			value: Coordinate.defaults.value,
 		}
 	) => {
 		return this.set(

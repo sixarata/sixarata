@@ -17,9 +17,9 @@ import Point from './point.js';
 	 * @param {Number} z
 	 */
 	constructor(
-		x = 0,
-		y = 0,
-		z = 0
+		x = Point.defaults.x,
+		y = Point.defaults.y,
+		z = Point.defaults.z
 	) {
 		super( x, y, z );
 

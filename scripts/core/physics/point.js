@@ -8,6 +8,17 @@ import Coordinate from './coordinate.js';
 export default class Point {
 
 	/**
+	 * Default point coordinates.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		x: 0,
+		y: 0,
+		z: 0,
+	}
+
+	/**
 	 * The tolerance for calculations.
 	 */
 	#tolerance = 0.0001;
@@ -20,9 +31,9 @@ export default class Point {
 	 * @param {Number} z Coordinate. Default 0.
 	 */
 	constructor(
-		x = 0,
-		y = 0,
-		z = 0
+		x = Point.defaults.x,
+		y = Point.defaults.y,
+		z = Point.defaults.z
 	) {
 		return this.set( x, y, z );
 	}
@@ -36,9 +47,9 @@ export default class Point {
 	 * @returns {Point}  This Point, with new values.
 	 */
 	set = (
-		x = 0,
-		y = 0,
-		z = 0
+		x = Point.defaults.x,
+		y = Point.defaults.y,
+		z = Point.defaults.z
 	) => {
 		this.x = new Coordinate( x );
 		this.y = new Coordinate( y );
@@ -54,7 +65,11 @@ export default class Point {
 	 * @returns {Point} The new Point.
 	 */
 	reset = () => {
-		return this.set( 0, 0, 0 );
+		return this.set(
+			Point.defaults.x,
+			Point.defaults.y,
+			Point.defaults.z
+		);
 	}
 
 	/**
@@ -65,9 +80,9 @@ export default class Point {
 	 */
 	add = (
 		p = {
-			x: 0,
-			y: 0,
-			z: 0,
+			x: Point.defaults.x,
+			y: Point.defaults.y,
+			z: Point.defaults.z,
 		}
 	) => {
 		return this.set(
@@ -101,9 +116,9 @@ export default class Point {
 	 */
 	sub = (
 		p = {
-			x: 0,
-			y: 0,
-			z: 0,
+			x: Point.defaults.x,
+			y: Point.defaults.y,
+			z: Point.defaults.z,
 		}
 	) => {
 		return this.set(
@@ -137,9 +152,9 @@ export default class Point {
 	 */
 	multiply = (
 		p = {
-			x: 0,
-			y: 0,
-			z: 0,
+			x: Point.defaults.x,
+			y: Point.defaults.y,
+			z: Point.defaults.z,
 		}
 	) => {
 		return this.set(
@@ -173,9 +188,9 @@ export default class Point {
 	 */
 	divide = (
 		p = {
-			x: 0,
-			y: 0,
-			z: 0,
+			x: Point.defaults.x,
+			y: Point.defaults.y,
+			z: Point.defaults.z,
 		}
 	) => {
 		return this.set(
@@ -213,9 +228,9 @@ export default class Point {
 	 */
 	import = (
 		p = {
-			x: 0,
-			y: 0,
-			z: 0,
+			x: Point.defaults.x,
+			y: Point.defaults.y,
+			z: Point.defaults.z,
 		}
 	) => {
 		return this.set(

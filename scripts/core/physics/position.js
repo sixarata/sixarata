@@ -9,6 +9,15 @@ import { Point, Scale } from './exports.js';
 export default class Position extends Point {
 
 	/**
+	 * Default position settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		scale: 'up',
+	}
+
+	/**
 	 * Construct the object.
 	 *
 	 * @param {Number} x Coordinate. Default 0.
@@ -17,10 +26,10 @@ export default class Position extends Point {
 	 * @param {String} scale
 	 */
 	constructor(
-		x     = 0,
-		y     = 0,
-		z     = 0,
-		scale = 'up'
+		x     = Point.defaults.x,
+		y     = Point.defaults.y,
+		z     = Point.defaults.z,
+		scale = Position.defaults.scale
 	) {
 		super( x, y, z );
 
@@ -35,7 +44,7 @@ export default class Position extends Point {
 	 * @returns {Position}
 	 */
 	set = (
-		scale = 'up'
+		scale = Position.defaults.scale
 	) => {
 
 		// Setup the Scale.
@@ -64,7 +73,7 @@ export default class Position extends Point {
 	 * @returns {Position}
 	 */
 	rescale = (
-		type = 'up'
+		type = Position.defaults.scale
 	) => {
 
 		// Scale UP.

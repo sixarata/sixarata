@@ -1,5 +1,4 @@
 import Settings from '../../custom/settings.js';
-import Scale from './scale.js';
 
 /**
  * The Friction object.
@@ -7,6 +6,15 @@ import Scale from './scale.js';
  * This object is responsible for scaling Friction to the Room.
  */
 export default class Friction {
+
+	/**
+	 * Default friction settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		force: 65,
+	}
 
 	/**
 	 * Construct the object.
@@ -34,9 +42,9 @@ export default class Friction {
 	reset = () => {
 
 		// Get from Settings, or default.
-		const f = Settings.physics.friction
-			?? 65;
+		const f = Settings.physics?.friction ?? Friction.defaults.force;
 
+		// Set properties.
 		this.base  = ( f / 100 );
 		this.force = this.base;
 

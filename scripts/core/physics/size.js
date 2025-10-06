@@ -10,6 +10,18 @@ import Coordinate from './coordinate.js';
 export default class Size {
 
 	/**
+	 * Default size settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		w: 0,
+		h: 0,
+		d: 0,
+		scale: 'up',
+	}
+
+	/**
 	 * Construct the object.
 	 *
 	 * @param {Number} w
@@ -18,10 +30,10 @@ export default class Size {
 	 * @param {String} scale
 	 */
 	constructor(
-		w     = 0,
-		h     = 0,
-		d     = 0,
-		scale = 'up'
+		w     = Size.defaults.w,
+		h     = Size.defaults.h,
+		d     = Size.defaults.d,
+		scale = Size.defaults.scale
 	) {
 		return this.set( w, h, d, scale );
 	}
@@ -35,10 +47,10 @@ export default class Size {
 	 * @param {String} scale
 	 */
 	set = (
-		w     = 0,
-		h     = 0,
-		d     = 0,
-		scale = 'up'
+		w     = Size.defaults.w,
+		h     = Size.defaults.h,
+		d     = Size.defaults.d,
+		scale = Size.defaults.scale
 	) => {
 
 		// Coordinates.
@@ -72,7 +84,7 @@ export default class Size {
 	 * @returns {Size}
 	 */
 	rescale = (
-		type = 'up'
+		type = Size.defaults.scale
 	) => {
 
 		if (
