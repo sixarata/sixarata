@@ -220,7 +220,7 @@ export default class Dash {
 
 		// Skip if no mid-air.
 		if (
-			! this.settings.air
+			! this.settings.can.air
 			&&
 			! this.tile.mechanics.jump.grounded()
 		) {
@@ -229,9 +229,18 @@ export default class Dash {
 
 		// Skip if no ground.
 		if (
-			! this.settings.ground
+			! this.settings.can.ground
 			&&
 			this.tile.mechanics.jump.grounded()
+		) {
+			return false;
+		}
+
+		// Skip if no ground.
+		if (
+			! this.settings.can.wall
+			&&
+			this.tile.mechanics.wall.walled()
 		) {
 			return false;
 		}
@@ -316,9 +325,9 @@ export default class Dash {
 		this.uses++;
 
 		// Update timers.
-		this.impulse.set( this.settings.duration );
-		this.hover.set( this.settings.duration + this.settings.hover );
-		this.cool.set( this.settings.cooldown );
+		this.impulse.set( this.settings.times.duration );
+		this.hover.set( this.settings.times.duration + this.settings.times.hover );
+		this.cool.set( this.settings.times.cooldown );
 
 		// Reset motion before impulse.
 		v.x = 0;

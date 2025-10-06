@@ -70,7 +70,7 @@ export default {
 				lift:     8,
 			},
 			fall: {
-				speed: 16,
+				speed:    16,
 				terminal: 16,
 			},
 			ground: {
@@ -94,20 +94,25 @@ export default {
 			},
 		},
 		dash: {
+			limit: 3,
+			times: {
+				duration: 80,
+				cooldown: 250,
+				hover:    250,
+			},
+			can: {
+				air:    true,
+				ground: false,
+				wall:   true,
+			},
 			power: {
 				x: 75,
 				y: 75,
 			},
-			duration: 80,
-			cooldown: 250,
-			hover:    250,
-			air:      true,
-			ground:   false,
-			limit:    3,
 			reset: {
 				ground: true,
 				wall:   true,
-			}
+			},
 		},
 		retries: {
 			max:     10,
