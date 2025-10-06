@@ -326,15 +326,15 @@ export default class Dash {
 
 		// Horizontal.
 		if ( dir === 'left' ) {
-			v.x = -( this.settings.xpower );
+			v.x = -( this.settings.power.x );
 		} else if ( dir === 'right' ) {
-			v.x = this.settings.xpower;
+			v.x = this.settings.power.x;
 
 		// Vertical.
 		} else if ( dir === 'up' ) {
-			v.y = -( this.settings.ypower );
+			v.y = -( this.settings.power.y );
 		} else if ( dir === 'down' ) {
-			v.y = this.settings.ypower;
+			v.y = this.settings.power.y;
 		}
 
 		// Avoid locomotion interference.

@@ -94,8 +94,10 @@ export default {
 			},
 		},
 		dash: {
-			xpower:   75,
-			ypower:   75,
+			power: {
+				x: 75,
+				y: 75,
+			},
 			duration: 80,
 			cooldown: 250,
 			hover:    250,
