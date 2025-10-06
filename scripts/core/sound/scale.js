@@ -6,6 +6,19 @@
 export default class Scale {
 
 	/**
+	 * Default scale settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		referenceFrequency: 440,
+		referenceSemitone: 'A',
+		referenceOctave: 4,
+		octaveRatio: 2,
+		semitones: ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
+	}
+
+	/**
 	 * Construct the Scale.
 	 *
 	 * @param {Number} referenceFrequency
@@ -15,11 +28,11 @@ export default class Scale {
 	 * @param {Array}  semitones
 	 */
 	constructor(
-		referenceFrequency = 440,
-		referenceSemitone  = 'A',
-		referenceOctave    = 4,
-		octaveRatio		   = 2,
-		semitones          = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+		referenceFrequency = Scale.defaults.referenceFrequency,
+		referenceSemitone  = Scale.defaults.referenceSemitone,
+		referenceOctave    = Scale.defaults.referenceOctave,
+		octaveRatio        = Scale.defaults.octaveRatio,
+		semitones          = Scale.defaults.semitones
 	) {
 		this.set(
 			referenceFrequency,
@@ -40,17 +53,17 @@ export default class Scale {
 	 * @param {Array}  semitones
 	 */
 	set = (
-		referenceFrequency = 440,
-		referenceSemitone  = 'A',
-	    referenceOctave    = 4,
-	    octaveRatio        = 2,
-	    semitones          = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+		referenceFrequency = Scale.defaults.referenceFrequency,
+		referenceSemitone  = Scale.defaults.referenceSemitone,
+		referenceOctave    = Scale.defaults.referenceOctave,
+		octaveRatio        = Scale.defaults.octaveRatio,
+		semitones          = Scale.defaults.semitones
 	) => {
-	    this.referenceFrequency = referenceFrequency ?? 440;
-		this.referenceSemitone  = referenceSemitone  ?? 'A';
-		this.referenceOctave    = referenceOctave    ?? '4';
-		this.octaveRatio        = octaveRatio        ?? 2;
-		this.semitones          = semitones          ?? ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+		this.referenceFrequency = referenceFrequency;
+		this.referenceSemitone  = referenceSemitone;
+		this.referenceOctave    = referenceOctave;
+		this.octaveRatio        = octaveRatio;
+		this.semitones          = semitones;
 		this.semitoneRatio      = Math.pow( this.octaveRatio, 1 / semitones.length );
 	}
 
@@ -59,11 +72,11 @@ export default class Scale {
 	 */
 	reset = () => {
 		this.set(
-			440,
-			'A',
-			4,
-			2,
-			['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+			Scale.defaults.referenceFrequency,
+			Scale.defaults.referenceSemitone,
+			Scale.defaults.referenceOctave,
+			Scale.defaults.octaveRatio,
+			Scale.defaults.semitones
 		);
 	}
 
