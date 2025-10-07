@@ -42,6 +42,7 @@ export default {
 
 	// Player.
 	player: {
+		invincible: false,
 		move: {
 			base:       1,
 			speed:      10,
@@ -56,7 +57,6 @@ export default {
 			debounce:  40,
 			flipGrace: 30,
 		},
-		invincible: false,
 		hits: {
 			max:     10,
 			current: 0,
