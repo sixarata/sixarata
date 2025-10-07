@@ -1,7 +1,10 @@
 // Default settings.
 export default {
 
-	// Interfaces
+	// Debug.
+	debug: false,
+
+	// Interfaces.
 	interfaces: {
 
 		// Inputs.
