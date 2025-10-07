@@ -68,8 +68,8 @@ export default class Fall {
 	 */
 	listen = () => {
 
-		// Skip if not listening.
-		if ( ! this.listening ) {
+		// Skip if disabled or unbound.
+		if ( ! this.listening || ! this.tile ) {
 			return;
 		}
 

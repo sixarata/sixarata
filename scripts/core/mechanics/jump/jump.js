@@ -57,7 +57,7 @@ export default class Jump {
 	 */
 	listen = () => {
 
-		// Skip if not listening.
+		// Skip if disabled or unbound.
 		if ( ! this.listening || ! this.tile ) {
 			return;
 		}

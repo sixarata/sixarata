@@ -73,16 +73,12 @@ export default class Dash {
 	 */
 	listen = () => {
 
-		// Skip if not listening.
-		if ( ! this.listening ) {
+		// Skip if disabled or unbound.
+		if ( ! this.listening || ! this.tile ) {
 			return;
 		}
 
-		// Skip if no tile.
-		if ( ! this.tile ) {
-			return;
-		}
-
+		// Maybe reset uses.
 		if (
 
 			// Maybe reset use counter when grounded.
@@ -153,8 +149,8 @@ export default class Dash {
 		data = {}
 	) => {
 
-		// Skip if not listening.
-		if ( ! this.listening ) {
+		// Skip if disabled or unbound.
+		if ( ! this.listening || ! this.tile ) {
 			return;
 		}
 
@@ -193,14 +189,9 @@ export default class Dash {
 		dir = ''
 	) => {
 
-		// Skip if not listening.
-		if ( ! this.listening ) {
-			return false;
-		}
-
-		// Skip if no tile.
-		if ( ! this.tile ) {
-			return false;
+		// Skip if disabled or unbound.
+		if ( ! this.listening || ! this.tile ) {
+			return;
 		}
 
 		// Skip if already dashing.

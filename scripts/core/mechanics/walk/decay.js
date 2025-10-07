@@ -44,7 +44,7 @@ export default class Decay {
 	 */
 	listen = () => {
 
-		// Skip if not listening or no tile.
+		// Skip if disabled or unbound.
 		if ( ! this.listening || ! this.tile ) {
 			return;
 		}

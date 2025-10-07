@@ -64,13 +64,8 @@ export default class Orient {
 	 */
 	listen = () => {
 
-		// Skip if not listening.
-		if ( ! this.listening ) {
-			return;
-		}
-
-		// Skip if no tile.
-		if ( ! this.tile ) {
+		// Skip if disabled or unbound.
+		if ( ! this.listening || ! this.tile ) {
 			return;
 		}
 
