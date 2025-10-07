@@ -27,7 +27,7 @@ export default class History {
 	/**
 	 * Initialize the history state.
 	 *
-	 * @return {History} this
+	 * @returns {History} this
 	 */
 	set = () => {
 		return this.reset();
@@ -36,7 +36,7 @@ export default class History {
 	/**
 	 * Reset the history state.
 	 *
-	 * @return {History} this
+	 * @returns {History} this
 	 */
 	reset = () => {
 

@@ -113,7 +113,7 @@ export default class Combos {
 	 *
 	 * @param {Array}  sequence Array of action names (strings).
 	 * @param {Number} window   Time window in ms (0 = all time).
-	 * @return {Boolean}        True if matched.
+	 * @returns {Boolean}       True if matched.
 	 */
 	matched = (
 		sequence = [],

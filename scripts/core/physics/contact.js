@@ -10,6 +10,18 @@ import Tile from '../tiles/tile.js';
 export default class Contact {
 
 	/**
+	 * Default contact states
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		top:    false,
+		right:  false,
+		bottom: false,
+		left:   false,
+	};
+
+	/**
 	 * Construct the object.
 	 *
 	 * @param {Boolean} top
@@ -19,10 +31,10 @@ export default class Contact {
 	 * @returns {Contact}
 	 */
 	constructor(
-		top    = false,
-		right  = false,
-		bottom = false,
-		left   = false
+		top    = Contact.defaults.top,
+		right  = Contact.defaults.right,
+		bottom = Contact.defaults.bottom,
+		left   = Contact.defaults.left
 	) {
 		return this.set( top, right, bottom, left );
 	}
@@ -37,10 +49,10 @@ export default class Contact {
 	 * @returns {Contact}
 	 */
 	set = (
-		top    = false,
-		right  = false,
-		bottom = false,
-		left   = false
+		top    = Contact.defaults.top,
+		right  = Contact.defaults.right,
+		bottom = Contact.defaults.bottom,
+		left   = Contact.defaults.left
 	) => {
 
 		// Attributes.
@@ -59,7 +71,12 @@ export default class Contact {
 	 * @returns {Contact}
 	 */
 	reset = () => {
-		return this.set( false, false, false, false );
+		return this.set(
+			Contact.defaults.top,
+			Contact.defaults.right,
+			Contact.defaults.bottom,
+			Contact.defaults.left
+		);
 	}
 
 	/**

@@ -54,7 +54,7 @@ export default class Tile {
 	 * @param {Number}   density
 	 * @param {Number}   mass
 	 * @param {Number}   opacity
-	 * @return {Tile}    this
+	 * @returns {Tile}   this
 	 */
 	set = (
 		group    = [],
@@ -89,7 +89,7 @@ export default class Tile {
 	 * @param {Number}   density
 	 * @param {Number}   mass
 	 * @param {Number}   opacity
-	 * @return {Tile}    this
+	 * @returns {Tile}    this
 	 */
 	reset = (
 		group    = [],

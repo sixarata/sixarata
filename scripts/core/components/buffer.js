@@ -34,7 +34,7 @@ export default class Buffer {
 	 * @param {Scale}  scale
 	 * @param {String} context
 	 * @param {Object} attr
-	 * @return {Buffer} this
+	 * @returns {Buffer} this
 	 */
 	set = (
 		size    = { w: 0, h: 0, d: 0 },
@@ -52,7 +52,7 @@ export default class Buffer {
 	 * @param {Scale}  scale
 	 * @param {String} context
 	 * @param {Object} attr
-	 * @return {Buffer} this
+	 * @returns {Buffer} this
 	 */
 	reset = (
 		size    = { w: 0, h: 0, d: 0 },
