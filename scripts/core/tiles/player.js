@@ -1,11 +1,10 @@
 import Game from '../game.js';
 import Settings from '../../custom/settings.js';
 import Time from '../utilities/time.js';
-import { Particle } from './exports.js';
 
 import { Tile } from './exports.js';
 import { Collision, Contact, Orientation, Position, Velocity } from '../physics/exports.js';
-import { Collide, Coyote, Dash, Fall, Jump, Orient, WallJump, WallSlide, Nudge, Walk, Sprint, Brake, MicroTap, Decay } from '../mechanics/exports.js';
+import { Collide, Coyote, Dash, Fall, Jump, Orient, WallGrab, WallJump, WallSlide, WallClimb, Nudge, Walk, Sprint, Brake, MicroTap, Decay } from '../mechanics/exports.js';
 
 /**
  * The Player object.
@@ -58,10 +57,17 @@ export default class Player extends Tile {
 			coyote:   new Coyote( this ),
 			dash:     new Dash( this ),
 			fall:     new Fall( this ),
-			slide:    new WallSlide( this ),
 			jump:     new Jump( this ),
 			orient:   new Orient( this ),
-			wall:     new WallJump( this ),
+
+			// Wall mechanics.
+			wall: {
+				grab:  new WallGrab( this ),
+				jump:  new WallJump( this ),
+				climb: new WallClimb( this ),
+				slide: new WallSlide( this ),
+			},
+
 			// Horizontal locomotion pipeline with keyed access + ordered array.
 			walk: {
 				nudge:  new Nudge( this ),
@@ -126,36 +132,54 @@ export default class Player extends Tile {
 	 */
 	respond = () => {
 
-		// Gravity / vertical: prefer wall slide reduced gravity when eligible, else normal fall.
-		if ( this.mechanics.slide.can?.() ) {
-			if ( this.mechanics.slide.can() ) {
-				this.mechanics.slide.listen();
-			} else {
-				this.mechanics.fall.listen();
+		// Get mechanics.
+		const mech = this.mechanics;
+
+		// Wall mechanics first (to establish grab state and check for climb/slide).
+		// Note: Both climb and slide require an active grab to function.
+		const wall = mech.wall;
+		if ( wall ) {
+			for ( const key of Object.keys( wall ) ) {
+				const stage = wall[ key ];
+
+				if ( stage?.listen && stage.listening ) {
+					stage.listen();
+				}
 			}
-		} else {
-			this.mechanics.fall.listen();
+		}
+
+		// Vertical mechanics: fall applies only if NOT climbing or sliding.
+		// Check if wall slide or climb is active before applying fall.
+		if ( ! ( wall.climb?.doing() || wall.slide?.doing() ) ) {
+			mech.fall.listen();
 		}
 
 		// Horizontal movement (intent) before ledge assist: iterate stage list.
-		const walk = this.mechanics.walk;
+		const walk = mech.walk;
 		if ( walk ) {
 			for ( const key of Object.keys( walk ) ) {
 				const stage = walk[ key ];
-				if ( stage?.listen && stage.listening ) stage.listen();
+
+				if ( stage?.listen && stage.listening ) {
+					stage.listen();
+				}
 			}
 		}
 
-		// Coyote window check (still before jump consumption).
-		this.mechanics.coyote.listen();
+		// Coyote window check (before jump).
+		mech.coyote.listen();
 
-		// Primary jump + modifiers.
-		this.mechanics.jump.listen();
-		this.mechanics.wall.listen();
-		this.mechanics.dash.listen();
+		// Jump.
+		mech.jump.listen();
+
+		// Dash.
+		mech.dash.listen();
 
 		// Orientation last.
-		this.mechanics.orient.listen();
+		mech.orient.listen();
+
+		// Respond hook.
+		Game.Hooks.do( 'Player.respond', this );
 	}
 
 	/**
@@ -171,8 +195,13 @@ export default class Player extends Tile {
 			this.color = Settings.player.colors.default;
 		}
 
+		// Wall grab.
+		if ( this.mechanics.wall.grab?.doing() ) {
+			this.color = Settings.player.colors.wallgrab;
+		}
+
 		// Wall jump.
-		if ( this.mechanics.wall.can() ) {
+		if ( this.mechanics.wall.jump?.can() ) {
 			this.color = Settings.player.colors.walljump;
 		}
 

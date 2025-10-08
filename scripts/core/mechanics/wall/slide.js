@@ -9,6 +9,10 @@ import Time from '../../utilities/time.js';
  * holding toward a wall they are currently in lateral contact with. This
  * creates a controllable descent (wall slide) prior to performing a wall jump
  * or releasing to free‑fall.
+ *
+ * NOTE: WallSlide requires an active WallGrab as its base state.
+ * Sliding occurs as a result of gravity/friction acting on the grab,
+ * potentially after stamina has expired or by default.
  */
 export default class WallSlide {
 
@@ -28,7 +32,9 @@ export default class WallSlide {
 	 * @param {Tile|null} tile
 	 * @returns {WallSlide} this
 	 */
-	constructor( tile = null ) {
+	constructor(
+		tile = null
+	) {
 		return this.set( tile );
 	}
 
@@ -38,7 +44,9 @@ export default class WallSlide {
 	 * @param {Tile|null} tile
 	 * @returns {WallSlide} this
 	 */
-	set = ( tile = null ) => {
+	set = (
+		tile = null
+	) => {
 
 		// Reset.
 		this.reset();
@@ -86,6 +94,8 @@ export default class WallSlide {
 
 	/**
 	 * Are we currently performing a wall slide?
+	 *
+	 * @returns {boolean} True if doing the wall slide.
 	 */
 	doing = () => {
 		return this.can();
@@ -94,31 +104,31 @@ export default class WallSlide {
 	/**
 	 * Eligibility check.
 	 * Conditions:
-	 * - Tile exists and has physics/contact.
-	 * - Tile is NOT grounded.
-	 * - Player is in contact with left OR right wall (exclusive or both).
-	 * - Player is holding the direction INTO the wall (e.g. holding 'left' while in left contact).
+	 * - Must have an active WallGrab (base requirement).
 	 * - Vertical velocity is downward (y > 0) OR zero (allow initial engage before falling).
+	 *
+	 * The wall contact and directional input checks are handled by WallGrab.
+	 *
+	 * @returns {boolean} True if conditions are met for wall slide.
 	 */
 	can = () => {
-		if ( ! this.tile ) return false;
 
-		const contact = this.tile.physics?.contact;
+		// Skip if no tile.
+		if ( ! this.tile ) {
+			return false;
+		}
 
-		if ( ! contact ) return false;
-		if ( contact.bottom ) return false; // grounded
-
-		const holdL = Game.History.hold( 'left' );
-		const holdR = Game.History.hold( 'right' );
-
-		const intoLeft  = contact.left  && holdL?.down;
-		const intoRight = contact.right && holdR?.down;
-
-		if ( ! ( intoLeft || intoRight ) ) return false;
+		// First check: Must be actively grabbing a wall.
+		const grab = this.tile.mechanics?.wall?.grab;
+		if ( ! grab || ! grab.doing() ) {
+			return false;
+		}
 
 		// Must be descending or neutral; if moving upward strongly (e.g., after jump) skip.
 		const velocity = this.tile.physics?.velocity;
 		const vy = velocity?.y ?? 0;
+
+		// Return true if descending or neutral.
 		return ( vy >= 0 );
 	}
 

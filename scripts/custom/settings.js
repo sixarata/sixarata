@@ -34,7 +34,7 @@ export default {
 
 		// Room.
 		room: {
-			start: 0,
+			start: 3,
 		},
 
 		// View.
@@ -90,10 +90,6 @@ export default {
 				lateral: 18,
 				max:     1,
 				time:    100,
-				slide: {
-					factor: 0.1,
-					max:    6,
-				},
 			},
 		},
 		dash: {
@@ -117,6 +113,17 @@ export default {
 				wall:   true,
 			},
 		},
+		wall: {
+			slide: {
+				factor: 0.1,
+				max:    6,
+			},
+			climb: {
+				speed: 10,
+				accel: 0.25,
+				max:   10,
+			},
+		},
 		retries: {
 			max:     10,
 			current: 0,
@@ -128,7 +135,9 @@ export default {
 		colors: {
 			default:  '#ffbb00',
 			falling:  '#ff9900',
+			wallgrab: '#ff8800',
 			walljump: '#ff6600',
+			climb:    '#ff6600',
 			coyote:   '#ff6600',
 			dash:     '#ff3300',
 		},

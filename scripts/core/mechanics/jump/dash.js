@@ -94,7 +94,7 @@ export default class Dash {
 			(
 				this.settings.reset.wall
 				&&
-				this.tile.mechanics.wall.walled()
+				this.tile.mechanics.wall.grab.doing()
 			)
 		) {
 			this.uses = 0;
@@ -227,11 +227,11 @@ export default class Dash {
 			return false;
 		}
 
-		// Skip if no ground.
+		// Skip if wall grab is not active.
 		if (
 			! this.settings.can.wall
 			&&
-			this.tile.mechanics.wall.walled()
+			this.tile.mechanics.wall.grab?.doing()
 		) {
 			return false;
 		}
@@ -357,13 +357,24 @@ export default class Dash {
 			return;
 		}
 
-		if ( m.jump )     m.jump.listening     = enable;
-		if ( m.fall )     m.fall.listening     = enable;
-		if ( m.walljump ) m.walljump.listening = enable;
-		if ( m.slide )    m.slide.listening    = enable;
-		if ( m.coyote )   m.coyote.listening   = enable;
-		if ( m.orient )   m.orient.listening   = enable;
+		if ( m.jump )   m.jump.listening   = enable;
+		if ( m.fall )   m.fall.listening   = enable;
+		if ( m.coyote ) m.coyote.listening = enable;
+		if ( m.orient ) m.orient.listening = enable;
 
+		// Enable/disable wall mechanics.
+		const wall = this.tile.mechanics?.wall;
+		if ( wall ) {
+			for ( const key of Object.keys( wall ) ) {
+				const s = wall[ key ];
+
+				if ( s && s.listening !== undefined ) {
+					s.listening = enable;
+				}
+			}
+		}
+
+		// Enable/disable walk mechanics.
 		const walk = this.tile.mechanics?.walk;
 		if ( walk ) {
 			for ( const key of Object.keys( walk ) ) {

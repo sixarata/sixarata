@@ -8,6 +8,9 @@ import Timer from '../../utilities/timer.js';
  * Responsible for determining whether a tile is eligible to perform a wall jump
  * and, when invoked, applying BOTH the vertical and horizontal impulses
  * required for the maneuver (making this mechanic self‑sufficient).
+ *
+ * NOTE: WallJump can be performed from a WallGrab state, launching the player
+ * away from the wall.
  */
 export default class WallJump {
 
@@ -120,7 +123,7 @@ export default class WallJump {
 
 		// Conditions.
 		const set      = this.settings.power;
-		const walled   = this.walled();
+		const walled   = this.tile?.mechanics?.grab?.doing() || false;
 		const grounded = this.tile?.mechanics?.jump?.grounded() || false;
 
 		// Return eligibility.
@@ -170,25 +173,6 @@ export default class WallJump {
 	}
 
 	/**
-	 * Check if the tile is touching a wall.
-	 *
-	 * @returns {Boolean} True if the tile is walled, false otherwise.
-	 */
-	walled = () => {
-
-		// Check for contact information.
-		const contact = this.tile.physics?.contact;
-
-		// Skip if no contact information.
-		if ( ! contact ) {
-			return false;
-		}
-
-		// Return wall contact status.
-		return ( contact.left || contact.right );
-	}
-
-	/**
 	 * Enable / disable overlapping locomotion mechanics while walljumping.
 	 *
 	 * @param {Boolean} enable True to restore, false to suspend.
@@ -202,12 +186,18 @@ export default class WallJump {
 		}
 
 		// Enable/disable other mechanics.
-		if ( m.jump )     m.jump.listening     = enable;
-		if ( m.fall )     m.fall.listening     = enable;
-		if ( m.walljump ) m.walljump.listening = enable;
-		if ( m.slide )    m.slide.listening    = enable;
-		if ( m.coyote )   m.coyote.listening   = enable;
-		if ( m.orient )   m.orient.listening   = enable;
+		if ( m.jump )   m.jump.listening   = enable;
+		if ( m.fall )   m.fall.listening   = enable;
+		if ( m.coyote ) m.coyote.listening = enable;
+		if ( m.orient ) m.orient.listening = enable;
+
+		// Enable/disable wall mechanics.
+		if ( m.wall ) {
+			if ( m.wall.grab )  m.wall.grab.listening  = enable;
+			// Note: wall.jump is NOT disabled here so it can re-enable others when impulse expires
+			if ( m.wall.slide ) m.wall.slide.listening = enable;
+			if ( m.wall.climb ) m.wall.climb.listening = enable;
+		}
 
 		// Disable walk sub-mechanics.
 		const walk = this.tile.mechanics?.walk;

@@ -9,8 +9,10 @@ export { default as Coyote }    from './jump/coyote.js';
 export { default as Dash }      from './jump/dash.js';
 
 // Wall.
+export { default as WallGrab }  from './wall/grab.js';
 export { default as WallJump }  from './wall/jump.js';
 export { default as WallSlide } from './wall/slide.js';
+export { default as WallClimb } from './wall/climb.js';
 
 // Walk.
 export { default as Nudge }     from './walk/nudge.js';
