@@ -34,7 +34,7 @@ export default {
 
 		// Room.
 		room: {
-			start: 3,
+			start: 0,
 		},
 
 		// View.
@@ -154,6 +154,13 @@ export default {
 	// Combos.
 	combos: {
 		cooldown: 30,
+	},
+
+	// Controls.
+	controls: {
+		history: {
+			max: 256,
+		},
 	},
 
 	// Physics.

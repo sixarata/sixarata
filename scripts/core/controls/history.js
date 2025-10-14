@@ -1,5 +1,6 @@
-import Game from '../game.js';
-import Time from '../utilities/time.js';
+import Game     from '../game.js';
+import Settings from '../../custom/settings.js';
+import Time     from '../utilities/time.js';
 
 /**
  * Controls - History.
@@ -14,6 +15,17 @@ import Time from '../utilities/time.js';
  * - buffering
  */
 export default class History {
+
+	/**
+	 * Default History settings.
+	 *
+	 * These are overridden by Settings.controls.history.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		max: 256,
+	};
 
 	/**
 	 * Constructor.
@@ -47,7 +59,7 @@ export default class History {
 		this.events = [];
 
 		// Cap to avoid unbounded growth
-		this.maxEvents = 256;
+		this.settings = Settings?.controls?.history ?? History.defaults;
 
 		// Return.
 		return this;
@@ -163,8 +175,8 @@ export default class History {
 	) => {
 		this.events.push( e );
 
-		if ( this.events.length > this.maxEvents ) {
-			this.events.splice( 0, this.events.length - this.maxEvents );
+		if ( this.events.length > this.settings.max ) {
+			this.events.splice( 0, this.events.length - this.settings.max );
 		}
 	}
 
