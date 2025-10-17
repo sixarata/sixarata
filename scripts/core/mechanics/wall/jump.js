@@ -123,7 +123,7 @@ export default class WallJump {
 
 		// Conditions.
 		const set      = this.settings.power;
-		const walled   = this.tile?.mechanics?.grab?.doing() || false;
+		const walled   = this.tile?.mechanics?.wall?.grab?.doing() || false;
 		const grounded = this.tile?.mechanics?.jump?.grounded() || false;
 
 		// Return eligibility.
