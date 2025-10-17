@@ -1,4 +1,5 @@
 import Timer from '../utilities/timer.js';
+import Time from '../utilities/time.js';
 
 /**
  * The Stamina mechanic.
@@ -7,8 +8,9 @@ import Timer from '../utilities/timer.js';
  * instantiated for any mechanic that needs resource depletion/regeneration.
  *
  * Features:
- * - Configurable max capacity
- * - Drain rate per frame or instant costs
+ * - Time-based (not frame-based) for consistent behavior across frame rates
+ * - Configurable max capacity (milliseconds)
+ * - Drain rate (ms per ms) or instant costs
  * - Delayed regeneration with configurable rate
  * - Instant refill conditions (e.g., on ground)
  * - Percentage queries for UI/debugging
@@ -17,6 +19,12 @@ import Timer from '../utilities/timer.js';
  * - Can be used per-mechanic (wall stamina, combat stamina)
  * - Can be shared across mechanics (global stamina pool)
  * - Configurable via settings or defaults
+ *
+ * All time values are in milliseconds:
+ * - max: Total stamina capacity (e.g., 2000 = 2 seconds)
+ * - drain: Depletion rate (e.g., 1 = drains at 1x realtime, 2 = drains 2x faster)
+ * - delay: Cooldown before recharge starts (e.g., 500 = 0.5 seconds)
+ * - rate: Recharge rate per millisecond (e.g., 2 = refills 2ms per 1ms)
  */
 export default class Stamina {
 
@@ -29,7 +37,7 @@ export default class Stamina {
 		max:   1000,
 		drain: 1,
 		delay: 500,
-		rate:  10,
+		rate:  2,
 	}
 
 	/**
@@ -99,9 +107,9 @@ export default class Stamina {
 			return;
 		}
 
-		// Gradually refill stamina.
+		// Gradually refill stamina based on time elapsed.
 		this.current = Math.min(
-			this.current + this.settings.rate,
+			this.current + ( this.settings.rate * Time.delta ),
 			this.settings.max
 		);
 	}
@@ -121,15 +129,19 @@ export default class Stamina {
 	/**
 	 * Drain stamina by a specified amount.
 	 *
-	 * @param {Number} amount Amount to drain (default: drain from settings).
+	 * If no amount is specified, drains based on time elapsed and drain rate.
+	 * The drain rate acts as a multiplier: 1 = drains at realtime, 2 = drains 2x faster.
+	 *
+	 * @param {Number|null} amount Optional fixed amount to drain (ignores time/rate).
 	 * @returns {Stamina} this
 	 */
 	drain = (
 		amount = null
 	) => {
 
-		// Default to settings drain if no amount specified.
-		const drainAmount = amount ?? this.settings.drain;
+		// If specific amount provided, drain that exact amount (instant cost).
+		// Otherwise, drain based on time elapsed * drain rate.
+		const drainAmount = amount ?? ( this.settings.drain * Time.delta );
 
 		// Reduce current stamina (clamp to 0).
 		this.current = Math.max( 0, this.current - drainAmount );
