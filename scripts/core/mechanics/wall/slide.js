@@ -78,6 +78,8 @@ export default class WallSlide {
 
 	/**
 	 * Primary loop hook.
+	 *
+	 * @returns {void}
 	 */
 	listen = () => {
 
@@ -105,6 +107,7 @@ export default class WallSlide {
 	 * Eligibility check.
 	 * Conditions:
 	 * - Must have an active WallGrab (base requirement).
+	 * - Grip timer must have expired (gripping() returns false).
 	 * - Vertical velocity is downward (y > 0) OR zero (allow initial engage before falling).
 	 *
 	 * The wall contact and directional input checks are handled by WallGrab.
@@ -124,6 +127,11 @@ export default class WallSlide {
 			return false;
 		}
 
+		// Second check: Grip timer must have expired before sliding
+		if ( grab.gripping() ) {
+			return false;
+		}
+
 		// Must be descending or neutral; if moving upward strongly (e.g., after jump) skip.
 		const velocity = this.tile.physics?.velocity;
 		const vy = velocity?.y ?? 0;
@@ -134,6 +142,8 @@ export default class WallSlide {
 
 	/**
 	 * Apply slide dampening (reduced gravity application).
+	 *
+	 * @returns {void}
 	 */
 	do = () => {
 

@@ -114,8 +114,16 @@ export default {
 			},
 		},
 		wall: {
+			grab: {
+				stamina: {
+					max:   2000,
+					drain: 1,
+					delay: 500,
+					rate:  2,
+				},
+			},
 			slide: {
-				factor: 0.1,
+				factor: 0.5,
 				max:    6,
 			},
 			climb: {

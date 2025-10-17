@@ -1,5 +1,6 @@
 import Game from '../../game.js';
 import Settings from '../../../custom/settings.js';
+import Stamina from '../stamina.js';
 
 /**
  * The WallGrab mechanic.
@@ -24,12 +25,12 @@ export default class WallGrab {
 	 */
 	static defaults = {
 		enabled: true,
-		// Optional: stamina drain rate, max hold time, etc.
-		// stamina: {
-		//   enabled: false,
-		//   drainRate: 0.1,
-		//   maxDuration: Infinity,
-		// }
+		stamina: {
+			max:   2000,
+			drain: 1,
+			delay: 500,
+			rate:  2,
+		}
 	}
 
 	/**
@@ -38,7 +39,9 @@ export default class WallGrab {
 	 * @param {Tile|null} tile
 	 * @returns {WallGrab} this
 	 */
-	constructor( tile = null ) {
+	constructor(
+		tile = null
+	) {
 		return this.set( tile );
 	}
 
@@ -48,7 +51,9 @@ export default class WallGrab {
 	 * @param {Tile|null} tile
 	 * @returns {WallGrab} this
 	 */
-	set = ( tile = null ) => {
+	set = (
+		tile = null
+	) => {
 
 		// Reset.
 		this.reset();
@@ -74,9 +79,11 @@ export default class WallGrab {
 		this.settings  = Settings.player?.wall?.grab ?? WallGrab.defaults;
 		this.listening = true;
 
-		// Internal state for tracking grab duration, stamina, etc.
+		// Internal state for tracking grab.
 		this.grabbing = false;
-		this.duration = 0;
+
+		// Initialize stamina with settings from player.wall.grab.stamina
+		this.stamina = new Stamina( this.settings.stamina );
 
 		// Return.
 		return this;
@@ -92,14 +99,22 @@ export default class WallGrab {
 			return;
 		}
 
+		// Handle stamina recharge (instant refill on ground).
+		if ( this.tile?.physics?.contact?.bottom ) {
+			this.stamina.refill();
+
+		// Auto-recharge in air when not grabbing.
+		} else if ( ! this.grabbing ) {
+			this.stamina.listen();
+		}
+
 		// Check if we can/should be grabbing the wall.
 		if ( this.can() ) {
 			this.do();
-		} else {
-			// Not eligible to grab, reset state.
-			if ( this.grabbing ) {
-				this.release();
-			}
+
+		// Not eligible to grab, reset state.
+		} else if ( this.grabbing ) {
+			this.release();
 		}
 	}
 
@@ -120,16 +135,33 @@ export default class WallGrab {
 	 * - Tile is NOT grounded (airborne).
 	 * - Player is in contact with left OR right wall.
 	 * - Player is holding the direction INTO the wall.
+	 * - Player has grip stamina available.
 	 *
 	 * @returns {boolean} True if conditions are met for wall grab.
 	 */
 	can = () => {
-		if ( ! this.tile ) return false;
+
+		// Skip if no tile.
+		if ( ! this.tile ) {
+			return false;
+		}
 
 		const contact = this.tile.physics?.contact;
 
-		if ( ! contact ) return false;
-		if ( contact.bottom ) return false; // Can't grab while grounded.
+		// Skip if no contact info.
+		if ( ! contact ) {
+			return false;
+		}
+
+		// Can't grab while grounded.
+		if ( contact.bottom ) {
+			return false;
+		}
+
+		// Can't grab without stamina.
+		if ( ! this.stamina.has() ) {
+			return false;
+		}
 
 		const holdL = Game.History.hold( 'left' );
 		const holdR = Game.History.hold( 'right' );
@@ -138,6 +170,7 @@ export default class WallGrab {
 		const intoLeft  = contact.left  && holdL?.down;
 		const intoRight = contact.right && holdR?.down;
 
+		// Return true if pressing into either side.
 		return ( intoLeft || intoRight );
 	}
 
@@ -150,19 +183,45 @@ export default class WallGrab {
 	 */
 	do = () => {
 
+		// Get velocity reference
+		const velocity = this.tile?.physics?.velocity;
+
 		// Mark as grabbing.
 		if ( ! this.grabbing ) {
 			this.grabbing = true;
-			this.duration = 0;
+
+			// INITIAL GRAB: Stop all momentum immediately (only if we have stamina)
+			if ( this.stamina.has() && velocity ) {
+				velocity.y = 0;
+			}
 		}
 
-		// Increment duration (could be used for stamina/fatigue systems).
-		this.duration++;
+		// Drain stamina while grabbing
+		this.stamina.drain();
 
-		// Optional: Apply stamina drain, grip fatigue, etc.
-		// if ( this.settings.stamina?.enabled ) {
-		//   this.drainStamina();
-		// }
+		// Only apply sticky grip if we have strength left
+		if ( this.stamina.has() ) {
+
+			// Check if actively climbing
+			const climbing = this.tile?.mechanics?.wall?.climb?.doing();
+
+			if ( velocity ) {
+				if ( climbing ) {
+
+					// CLIMBING: Allow upward movement, stop falling
+					if ( velocity.y > 0 ) {
+						velocity.y = 0;
+					}
+				} else {
+
+					// SUSTAINED GRIP (not climbing): Stop all movement
+					velocity.y = 0;
+				}
+			}
+		} else {
+			// Grip depleted - allow normal falling or sliding
+			// The slide mechanic will handle reduced fall speed if active
+		}
 	}
 
 	/**
@@ -172,34 +231,14 @@ export default class WallGrab {
 	 */
 	release = () => {
 		this.grabbing = false;
-		this.duration = 0;
 	}
 
 	/**
-	 * Get which side of the wall is being grabbed.
+	 * Check if the grip is still active (player is grabbing AND has stamina).
 	 *
-	 * @returns {'left'|'right'|null} The side being grabbed, or null if not grabbing.
+	 * @returns {boolean} True if actively gripping with stamina, false otherwise.
 	 */
-	getSide = () => {
-		if ( ! this.doing() ) return null;
-
-		const contact = this.tile.physics?.contact;
-		if ( ! contact ) return null;
-
-		if ( contact.left ) return 'left';
-		if ( contact.right ) return 'right';
-
-		return null;
-	}
-
-	/**
-	 * Check if enough stamina/duration remains for the grab.
-	 *
-	 * @returns {boolean} True if the grab can continue.
-	 */
-	hasStamina = () => {
-		// For now, infinite stamina. Could implement:
-		// return this.duration < ( this.settings.stamina?.maxDuration ?? Infinity );
-		return true;
+	gripping = () => {
+		return this.grabbing && this.stamina.has();
 	}
 }

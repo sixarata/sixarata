@@ -148,9 +148,9 @@ export default class Player extends Tile {
 			}
 		}
 
-		// Vertical mechanics: fall applies only if NOT climbing or sliding.
-		// Check if wall slide or climb is active before applying fall.
-		if ( ! ( wall.climb?.doing() || wall.slide?.doing() ) ) {
+		// Vertical mechanics: fall applies only if NOT climbing, sliding, or gripping.
+		// Check if wall slide, climb, or active grip before applying fall.
+		if ( ! ( wall.climb?.doing() || wall.slide?.doing() || wall.grab?.gripping() ) ) {
 			mech.fall.listen();
 		}
 
