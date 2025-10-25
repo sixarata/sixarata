@@ -77,7 +77,7 @@ export default class Stamina {
 		settings = null
 	) => {
 
-		// Load settings (merge with defaults).
+		// Load settings.
 		this.settings = { ...Stamina.defaults, ...settings };
 
 		// Current stamina (start at max).

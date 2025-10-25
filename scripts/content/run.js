@@ -1,6 +1,6 @@
 // Imports.
 import Sixarata from '../core/game.js';
-import * as Rooms from '../custom/rooms/exports.js';
+import * as Rooms from '../content/rooms/exports.js';
 
 //import './sunset.js';
 
@@ -24,8 +24,8 @@ Sixarata.Hooks.do( 'Run.init' );
 // Start.
 Sixarata.Hooks.do( 'Run.start' );
 
-// Custom.
-Sixarata.Hooks.do( 'Run.custom' );
+// Content.
+Sixarata.Hooks.do( 'Run.content' );
 
 // End.
 Sixarata.Hooks.do( 'Run.end' );

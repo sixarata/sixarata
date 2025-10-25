@@ -1,5 +1,5 @@
 import Game from '../../game.js';
-import Settings from '../../../custom/settings.js';
+import Settings from '../../../content/settings.js';
 import Stamina from '../stamina.js';
 
 /**

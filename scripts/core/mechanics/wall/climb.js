@@ -1,4 +1,4 @@
-import Settings from '../../../custom/settings.js';
+import Settings from '../../../content/settings.js';
 import Game from '../../game.js';
 import Time from '../../utilities/time.js';
 
@@ -67,7 +67,7 @@ export default class WallClimb {
         // Clear properties.
         this.tile = null;
 
-        // Load settings (fallback to defaults if custom tree not present).
+        // Load settings.
         this.settings  = Settings.player?.wall?.climb ?? WallClimb.defaults;
         this.listening = true;
 

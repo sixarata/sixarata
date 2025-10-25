@@ -1,6 +1,6 @@
 import Game from '../game.js';
 import Time from '../utilities/time.js';
-import Settings from '../../custom/settings.js';
+import Settings from '../../content/settings.js';
 
 /**
  * The Frame object.

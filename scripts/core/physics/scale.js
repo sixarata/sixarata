@@ -1,4 +1,4 @@
-import Settings   from '../../custom/settings.js';
+import Settings   from '../../content/settings.js';
 import Point      from './point.js';
 import Coordinate from './coordinate.js';
 
