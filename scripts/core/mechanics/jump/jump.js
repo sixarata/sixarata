@@ -10,6 +10,21 @@ import Settings from '../../../content/settings.js';
 export default class Jump {
 
 	/**
+	 * Default jump settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		power: {
+			min: 16,
+			max: 32,
+		},
+		count: {
+			max: 2,
+		},
+	}
+
+	/**
 	 * Construct the Jump mechanic.
 	 *
 	 * @param {Tile} tile A Tile with `velocity`, `contact`, `jumps`, etc.
@@ -46,7 +61,7 @@ export default class Jump {
 		this.tile      = null;
 		this.count     = 0;
 		this.listening = true;
-		this.settings  = Settings.player.jumps.ground;
+		this.settings  = Settings.player.jumps?.ground ?? Jump.defaults;
 
 		// Return.
 		return this;

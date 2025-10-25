@@ -12,6 +12,15 @@ import Game from '../../game.js';
 export default class Coyote {
 
 	/**
+	 * Default coyote settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		time: 300,
+	}
+
+	/**
 	 * Construct the Coyote mechanic.
 	 *
 	 * @param {Tile} tile A Tile with a `physics` property.
@@ -51,7 +60,7 @@ export default class Coyote {
 	reset = () => {
 		this.tile        = null;
 		this.listening   = true;
-		this.settings    = Settings.player.jumps.coyote;
+		this.settings    = Settings.player.jumps?.coyote ?? Coyote.defaults;
 		this.freefall    = new Timer();
 		this.wasOnGround = false;
 

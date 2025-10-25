@@ -19,6 +19,33 @@ import Timer from '../../utilities/timer.js';
 export default class Dash {
 
 	/**
+	 * Default dash settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		limit: 3,
+		times: {
+			duration: 80,
+			cooldown: 250,
+			hover: 250,
+		},
+		can: {
+			air: true,
+			ground: false,
+			wall: true,
+		},
+		power: {
+			x: 75,
+			y: 75,
+		},
+		reset: {
+			ground: true,
+			wall: true,
+		},
+	}
+
+	/**
 	 * Construct the Dash mechanic.
 	 *
 	 * @param {Tile|null} tile Optional tile to bind immediately.
@@ -51,7 +78,7 @@ export default class Dash {
 
 		// Attributes.
 		this.tile      = null;
-		this.settings  = Settings.player.dash;
+		this.settings  = Settings.player?.dash ?? Dash.defaults;
 		this.listening = true;
 		this.uses      = 0;
 

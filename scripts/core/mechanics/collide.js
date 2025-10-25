@@ -10,6 +10,16 @@ import { Collision } from '../physics/exports.js';
 export default class Collide {
 
 	/**
+	 * Default collide settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		debug: false,
+		distance: 1,
+	}
+
+	/**
 	 * Construct the Collide mechanic.
 	 *
 	 * @param {Tile} tile The moving tile.
@@ -45,8 +55,8 @@ export default class Collide {
 	reset = () => {
 		this.tile      = null;
 		this.listening = true;
-		this.debug     = Settings.debug || false;
-		this.distance  = 1;
+		this.debug     = Settings?.debug ?? Collide.defaults.debug;
+		this.distance  = Collide.defaults.distance;
 
 		// Hook into tile render for debug visualization.
 		Game.Hooks.add( 'Tile.render', this.render );
