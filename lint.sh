@@ -36,6 +36,11 @@ for arg in "$@"; do
   esac
 done
 
+# If explicit files were passed, don't mix in staged detection
+if [ ${#FILES[@]} -gt 0 ]; then
+  STAGED=0
+fi
+
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 # Gather JS files.
@@ -46,6 +51,8 @@ gather_files() {
       [ -f "$f" ] || { echo "Skipping missing file $f" >&2; continue; }
       case "$f" in *.js) gathered+=("$f") ;; *) ;; esac
     done
+    echo "${gathered[@]}"
+    return 0
   elif [ $STAGED -eq 1 ]; then
     if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       while IFS= read -r f; do
@@ -74,16 +81,56 @@ fi
 missing=()
 
 # --- Performance helpers (avoid spawning external processes in hot loop) ---
-count_char() { # $1 string, $2 single-char pattern
-  local _s=$1 _c=$2
-  # Remove every char except target, length of remainder = count
-  local _only=${_s//[^$_c]/}
-  printf '%d' "${#_only}"
+
+# Literal-safe counter (Bash 3.2 friendly)
+count_char_lit() { # $1 string, $2 single literal char
+  local s=$1 c=$2 cnt=0 i
+  for ((i=0; i<${#s}; i++)); do
+    [[ "${s:i:1}" == "$c" ]] && ((cnt++))
+  done
+  printf '%d' "$cnt"
 }
 
 starts_return_paren() { # line starts with 'return (' (allow spaces after return)
   local _l=$1
   [[ $_l =~ ^return[[:space:]]*\( ]]
+}
+
+# --- Inline comment support -----------------------------------------------
+# Strip a trailing inline '//' from a line, but *not* URL schemes like 'http://', 'https://', 'file://'.
+# Returns the code portion with trailing whitespace trimmed.
+strip_trailing_inline_comment() {
+  local s="$1"
+  if [[ $s =~ ^(.*[^:/])([[:space:]]*//.*)$ ]]; then
+    local code="${BASH_REMATCH[1]}"
+    # Trim trailing whitespace from code
+    code="${code%"${code##*[![:space:]]}"}"
+    printf '%s' "$code"
+    return
+  fi
+  printf '%s' "$s"
+}
+
+# Split line into {code}{comment} where comment is a trailing '//' section (avoiding '://').
+# If no trailing comment, code = whole line and comment = empty.
+split_code_and_comment() {
+  local s="$1"
+  if [[ $s =~ ^(.*[^:/])([[:space:]]*//.*)$ ]]; then
+    printf '%s\n' "${BASH_REMATCH[1]}"
+    printf '%s\n' "${BASH_REMATCH[2]}"
+  else
+    printf '%s\n' "$s"
+    printf '\n'
+  fi
+}
+
+# Quick per-line delta counts for (), [], {} on code-only (comments removed)
+depth_deltas() {
+  local s="$1"
+  local p_open; p_open=$(count_char_lit "$s" '('); local p_close; p_close=$(count_char_lit "$s" ')')
+  local b_open; b_open=$(count_char_lit "$s" '['); local b_close; b_close=$(count_char_lit "$s" ']')
+  local c_open; c_open=$(count_char_lit "$s" '{'); local c_close; c_close=$(count_char_lit "$s" '}')
+  printf '%d %d %d\n' $((p_open-p_close)) $((b_open-b_close)) $((c_open-c_close))
 }
 
 is_ignorable_line() {
@@ -92,31 +139,38 @@ is_ignorable_line() {
   line="${line%%$'\r'}"
   # Trim leading spaces (portable)
   local trimmed="${line#"${line%%[![:space:]]*}"}"
-  # Blank line
-  if [ -z "${trimmed//[[:space:]]/}" ]; then return 0; fi
+
+  # If the line becomes empty after removing a trailing inline comment, it's ignorable.
+  local code_only
+  code_only="$(strip_trailing_inline_comment "$trimmed")"
+  # Blank (after comment removal)
+  if [ -z "${code_only//[[:space:]]/}" ]; then return 0; fi
+
   # JSDoc / block comment continuation
   [ "${trimmed#* }" != "$trimmed" ] # noop just for readability
   case "$trimmed" in
-  const|let|var) return 0 ;;
+    const|let|var) return 0 ;;
     \*) return 0 ;;
     \*\ *) return 0 ;;
     //*) return 0 ;;
     /**) return 0 ;;
   esac
+
   # Leading keywords / constructs that don't need a semicolon.
-  case "$trimmed" in
+  case "$code_only" in
     if\ *|for\ *|while\ *|switch\ *|else|else\ *|try|try\ *|catch\ *|finally\ * ) return 0 ;;
     class\ *|export\ *|import\ * ) return 0 ;;
     function\ *|async\ function\ * ) return 0 ;;
     return\ *|throw\ *|break\ *|continue\ *|yield\ *|await\ * ) return 0 ;;
   esac
-  # Trailing chars meaning structure/continuation.
-  case "$trimmed" in
+
+  # Trailing chars meaning structure/continuation (evaluate on code_only).
+  case "$code_only" in
     *';') return 0 ;;
     *'{') return 0 ;;
     *'}') return 0 ;;
     *':') return 0 ;;
-    *',') return 0 ;;
+    *',') return 0 ;;   # handles "value, // comment"
     *'(') return 0 ;;
     *'=>') return 0 ;;
   esac
@@ -126,15 +180,21 @@ is_ignorable_line() {
 needs_semicolon() {
   local line="$1"
   line="${line%%$'\r'}"
-  case "$line" in *';') return 1 ;; esac
-  local last_two="${line: -2}"
-  local last="${line: -1}"
+
+  # Evaluate only the code portion (ignore trailing inline comments).
+  local code_only
+  code_only="$(strip_trailing_inline_comment "$line")"
+
+  case "$code_only" in *';') return 1 ;; esac
+  local last_two="${code_only: -2}"
+  local last="${code_only: -1}"
   [ "$last_two" = '++' ] && return 0
   [ "$last_two" = '--' ] && return 0
   case "$last" in
     [A-Za-z0-9_]) return 0 ;;
     ')'|']'|'"'|"'") return 0 ;;
     \`) return 0 ;;
+    ,) return 1 ;;     # comma lines never need a semicolon
   esac
   return 1
 }
@@ -145,8 +205,18 @@ autofix_line() {
     printf '%s\n' "$line"
     return
   fi
+
+  # Preserve trailing inline comments by inserting ';' before the comment when needed.
+  local code comment
+  code="$(split_code_and_comment "$line" | sed -n '1p')"
+  comment="$(split_code_and_comment "$line" | sed -n '2p')"
+
   if needs_semicolon "$line"; then
-    printf '%s;\n' "$line"
+    if [ -n "$comment" ]; then
+      printf '%s;%s\n' "$code" "$comment"
+    else
+      printf '%s;\n' "$code"
+    fi
   else
     printf '%s\n' "$line"
   fi
@@ -167,17 +237,46 @@ for f in "${JS_FILES[@]}"; do
   cond_paren_depth=0
   in_return_block=0
   return_paren_depth=0
+
+  # Generic running depths across lines
+  paren_depth=0
+  bracket_depth=0
+  brace_depth=0
+
   for idx in $(seq 0 $((total-1))); do
     raw="${lines[$idx]}"
     next="${lines[$((idx+1))]:-}"
     lineno=$((lineno+1))
     line="$raw"
 
-    # Lookahead: line where next trimmed starts with ')' (likely end of multiline params)
+    # Lookahead and structure tracking
     suppress=0
     next_trimmed="${next#"${next%%[![:space:]]*}"}"
-    if [ "${next_trimmed:0:1}" = ')' ]; then
-      # Current line is part of params if it lacks trailing , ; and not blank
+
+    # Compute code-only then update generic depths
+    code_only_line="$(strip_trailing_inline_comment "$line")"
+    read dp db dc < <(depth_deltas "$code_only_line")
+    paren_depth=$((paren_depth + dp))
+    bracket_depth=$((bracket_depth + db))
+    brace_depth=$((brace_depth + dc))
+
+    # If inside any open ()/[]/{}, treat as continuation
+    if [ $paren_depth -gt 0 ] || [ $bracket_depth -gt 0 ] || [ $brace_depth -gt 0 ]; then
+      suppress=1
+    fi
+
+    # If the code-only ends with a comma, it's a continuation
+    if [[ "$code_only_line" =~ ,[[:space:]]*$ ]]; then
+      suppress=1
+    fi
+
+    # If next line starts with a closer, treat as continuation
+    case "${next_trimmed:0:1}" in
+      ')'|']'|'}') suppress=1 ;;
+    esac
+
+    # Legacy: line where next trimmed starts with ')' (likely end of multiline params)
+    if [ $suppress -eq 0 ] && [ "${next_trimmed:0:1}" = ')' ]; then
       if [ -n "${line//[[:space:]]/}" ] && [ "${line: -1}" != ',' ] && [ "${line: -1}" != ';' ]; then
         suppress=1
       fi
@@ -208,8 +307,8 @@ for f in "${JS_FILES[@]}"; do
       # Trim leading whitespace after removing braces.
       check_line="${check_line#"${check_line%%[![:space:]]*}"}"
       if [[ $check_line =~ ^(if|while|for|else[[:space:]]+if)[[:space:]]*\( ]]; then
-        opens=$(count_char "$trimmed_line" '(')
-        closes=$(count_char "$trimmed_line" ')')
+        opens=$(count_char_lit "$trimmed_line" '(')
+        closes=$(count_char_lit "$trimmed_line" ')')
         cond_paren_depth=$((opens - closes))
         if [ $cond_paren_depth -gt 0 ]; then
           in_cond_block=1
@@ -217,8 +316,8 @@ for f in "${JS_FILES[@]}"; do
         fi
       fi
     else
-      opens=$(count_char "$trimmed_line" '(')
-      closes=$(count_char "$trimmed_line" ')')
+      opens=$(count_char_lit "$trimmed_line" '(')
+      closes=$(count_char_lit "$trimmed_line" ')')
       cond_paren_depth=$((cond_paren_depth + opens - closes))
       suppress=1
       if [ $cond_paren_depth -le 0 ]; then
@@ -230,8 +329,8 @@ for f in "${JS_FILES[@]}"; do
     if [ $in_return_block -eq 0 ]; then
       # Start if line begins with 'return' and has unmatched '('
       if starts_return_paren "$trimmed_line"; then
-        ropens=$(count_char "$trimmed_line" '(')
-        rcloses=$(count_char "$trimmed_line" ')')
+        ropens=$(count_char_lit "$trimmed_line" '(')
+        rcloses=$(count_char_lit "$trimmed_line" ')')
         return_paren_depth=$((ropens - rcloses))
         if [ $return_paren_depth -gt 0 ]; then
           in_return_block=1
@@ -239,8 +338,8 @@ for f in "${JS_FILES[@]}"; do
       fi
     else
       # Continue tracking inside return block.
-      ro=$(count_char "$trimmed_line" '(')
-      rc=$(count_char "$trimmed_line" ')')
+      ro=$(count_char_lit "$trimmed_line" '(')
+      rc=$(count_char_lit "$trimmed_line" ')')
       return_paren_depth=$((return_paren_depth + ro - rc))
       suppress=1
       if [ $return_paren_depth -le 0 ]; then
@@ -257,8 +356,7 @@ for f in "${JS_FILES[@]}"; do
       *'||'|*'&&') suppress=1 ;;
     esac
 
-    # Multi-line ternary operator suppression: any line whose next line starts with
-    # '?' or ':' (continuation of ternary), or lines beginning with '?' / ':' themselves.
+    # Multi-line ternary operator suppression
     if [ "${next_trimmed:0:1}" = '?' ] || [ "${next_trimmed:0:1}" = ':' ]; then
       suppress=1
     fi
