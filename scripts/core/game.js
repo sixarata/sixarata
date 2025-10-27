@@ -30,6 +30,8 @@ const Game = {
 	Colors:     new Core.Utilities.Colors(),
 	Hooks:      new Core.Utilities.Hooks(),
 	Jobs:       new Core.Utilities.Jobs(),
+	Fluid:      new Core.Utilities.Fluid(),
+	Smoke:      new Core.Utilities.Smoke,
 };
 
 // Export the Game.

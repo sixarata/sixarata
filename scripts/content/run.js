@@ -4,6 +4,8 @@ import * as Rooms from '../content/rooms/exports.js';
 
 //import './sunset.js';
 
+import './fluids.js';
+
 // Sunrise.
 Sixarata.Hooks.add( 'Run.init', Sixarata.Inputs.hooks,  4  );
 Sixarata.Hooks.add( 'Run.init', Sixarata.Clock.hooks,   6  );
