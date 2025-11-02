@@ -1,5 +1,5 @@
 ```
-  ■  □  ■   ■    ■    ■ ■      ■    ■ ■ ■    ■  
+  ■  □  ■   ■    ■    ■ ■      ■    ■ ■ ■    ■
 ■    ■    ■    ■   ■  ■   ■  ■   ■    ■    ■   ■
   ■  ■    ■    ■ ■ ■  ■ ■    ■ ■ ■    ■    ■ ■ ■
 ■    ■  ■   ■  ■   ■  ■   ■  ■   ■    ■    ■   ■
@@ -13,12 +13,13 @@ Fork it as a head-start for your own ideas, to educate others, or just to boop a
 
 ## run it
 
-```
+```bash
 git clone git@github.com:sixarata/sixarata.git
 cd sixarata
 npm install -g http-server
 http-server -c-1
 ```
+
 Visit: http://127.0.0.1:8080
 
 ## contribute
