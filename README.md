@@ -1,5 +1,5 @@
 ```
-  ■  □  ■   ■    ■    ■ ■      ■    ■ ■ ■    ■  
+  ■  □  ■   ■    ■    ■ ■      ■    ■ ■ ■    ■
 ■    ■    ■    ■   ■  ■   ■  ■   ■    ■    ■   ■
   ■  ■    ■    ■ ■ ■  ■ ■    ■ ■ ■    ■    ■ ■ ■
 ■    ■  ■   ■  ■   ■  ■   ■  ■   ■    ■    ■   ■
@@ -13,12 +13,13 @@ Fork it as a head-start for your own ideas, to educate others, or just to boop a
 
 ## run it
 
-```
+```bash
 git clone git@github.com:sixarata/sixarata.git
 cd sixarata
 npm install -g http-server
 http-server -c-1
 ```
+
 Visit: http://127.0.0.1:8080
 
 ## contribute
@@ -29,7 +30,7 @@ All are welcome. Intolerance is not tolerated.
 
 ## inspiration
 
-Roguelikes. Metroidvanias. Megas. Contras. Guacs. Plumbers. Dragons. Fighters. Fantasies.
+Roguelikes. Metroidvanias. Megas. Contras. Guacs. Plumbers. Knights. Dragons. Fighters. Fantasies.
 
 Double jumps. Wall jumps. Speed boosters. Frying pans. Portals. Time control. Grappling hooks. Whips. Turkey dinners. Boss fights. Doors. Keys. Health. Lives. Dungeons. Biomes.
 
