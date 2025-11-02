@@ -412,10 +412,12 @@ export default class Fluid {
 				const tx = 1 - sx;
 				const ty = 1 - sy;
 
-				target[ idx ] =
-					tx * ty * source[ this.index( x0, y0 ) ] +
-					sx * ty * source[ this.index( x1, y0 ) ] +
-					tx * sy * source[ this.index( x0, y1 ) ] +
+				target[ idx ] = tx * ty * source[ this.index( x0, y0 ) ]
+					+
+					sx * ty * source[ this.index( x1, y0 ) ]
+					+
+					tx * sy * source[ this.index( x0, y1 ) ]
+					+
 					sx * sy * source[ this.index( x1, y1 ) ];
 			}
 		}
