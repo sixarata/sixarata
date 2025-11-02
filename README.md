@@ -29,7 +29,7 @@ All are welcome. Intolerance is not tolerated.
 
 ## inspiration
 
-Roguelikes. Metroidvanias. Megas. Contras. Guacs. Plumbers. Dragons. Fighters. Fantasies.
+Roguelikes. Metroidvanias. Megas. Contras. Guacs. Plumbers. Knights. Dragons. Fighters. Fantasies.
 
 Double jumps. Wall jumps. Speed boosters. Frying pans. Portals. Time control. Grappling hooks. Whips. Turkey dinners. Boss fights. Doors. Keys. Health. Lives. Dungeons. Biomes.
 
