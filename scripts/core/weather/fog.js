@@ -1,5 +1,5 @@
 import Game from '../game.js';
-import { Smoke } from '../utilities/exports.js';
+import { Smoke } from '../physics/exports.js';
 
 /**
  * The Fog class.
@@ -33,9 +33,9 @@ export default class Fog {
 	 * @param {Object} options Configuration options.
 	 */
 	constructor(
-        options = {}
-    ) {
-		Object.assign( this, options );
+		options = {}
+	) {
+		Object.assign(this, options);
 		this.set();
 	}
 
@@ -54,16 +54,16 @@ export default class Fog {
 
 		// Create fluid simulation for fog.
 		// Use lower resolution for performance.
-		this.simulation = new Smoke( 32, 32, 1, {
+		this.simulation = new Smoke(32, 32, 1, {
 			viscosity: 0.000001,
 			diffusion: 0.0005,
 			buoyancy: 0.0,  // Fog doesn't rise.
 			cooling: 1.0,   // No temperature decay.
 			iterations: 2,
-		} );
+		});
 
 		// Set cell size based on screen dimensions.
-		if ( Game.Screen?.width ) {
+		if (Game.Screen?.width) {
 			this.simulation.cellSize = Game.Screen.width / 32;
 		}
 
@@ -74,8 +74,8 @@ export default class Fog {
 	 * Register hooks with global Hooks system.
 	 */
 	hooks = () => {
-		Game.Hooks.add( 'Frame.tick', this.tick, 9 );
-		Game.Hooks.add( 'Frame.render', this.render, 5 );
+		Game.Hooks.add('Frame.tick', this.tick, 9);
+		Game.Hooks.add('Frame.render', this.render, 5);
 	}
 
 	/**
@@ -99,13 +99,13 @@ export default class Fog {
 	 */
 	tick = () => {
 
-        // Skip update if fog is disabled.
-		if ( ! this.enabled ) {
-            return;
-        }
+		// Skip update if fog is disabled.
+		if (!this.enabled) {
+			return;
+		}
 
 		// Add ambient fog drift.
-		if ( Math.random() < this.spawnRate ) {
+		if (Math.random() < this.spawnRate) {
 			const x = Math.random() * Game.Screen.width;
 			const y = Math.random() * Game.Screen.height;
 
@@ -121,16 +121,16 @@ export default class Fog {
 		}
 
 		// Add continuous drift velocity.
-		for ( let y = 0; y < this.simulation.height; y++ ) {
-			for ( let x = 0; x < this.simulation.width; x++ ) {
-				const idx = this.simulation.index( x, y );
-				this.simulation.velocityX[ idx ] += this.driftSpeed.x * 0.1;
-				this.simulation.velocityY[ idx ] += this.driftSpeed.y * 0.1;
+		for (let y = 0; y < this.simulation.height; y++) {
+			for (let x = 0; x < this.simulation.width; x++) {
+				const idx = this.simulation.index(x, y);
+				this.simulation.velocityX[idx] += this.driftSpeed.x * 0.1;
+				this.simulation.velocityY[idx] += this.driftSpeed.y * 0.1;
 			}
 		}
 
 		// Step simulation.
-		this.simulation.step( 0.016 );
+		this.simulation.step(0.016);
 	}
 
 	/**
@@ -138,19 +138,19 @@ export default class Fog {
 	 */
 	render = () => {
 
-        // Skip render if fog is disabled.
-		if ( ! this.enabled ) {
-            return;
-        }
+		// Skip render if fog is disabled.
+		if (!this.enabled) {
+			return;
+		}
 
-        // Skip if no context.
+		// Skip if no context.
 		const ctx = Game.View.buffer.context;
-		if ( ! ctx ) {
-            return;
-        }
+		if (!ctx) {
+			return;
+		}
 
 		// Render fog with additive blending for ethereal effect.
-		this.simulation.renderBlended( ctx, 1, 'source-over' );
+		this.simulation.renderBlended(ctx, 1, 'source-over');
 	}
 
 	/**
@@ -171,18 +171,18 @@ export default class Fog {
 	 * @param {Number} radius   Radius of influence.
 	 */
 	disturb = (
-        x,
-        y,
-        velocity,
-        radius = 3
-    ) => {
+		x,
+		y,
+		velocity,
+		radius = 3
+	) => {
 
-        // Skip if fog is disabled.
-		if ( ! this.enabled ) {
-            return;
-        }
+		// Skip if fog is disabled.
+		if (!this.enabled) {
+			return;
+		}
 
-        // Add velocity disturbance.
+		// Add velocity disturbance.
 		this.simulation.addVelocity(
 			x,
 			y,

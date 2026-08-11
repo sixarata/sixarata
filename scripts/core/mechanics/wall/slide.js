@@ -23,7 +23,7 @@ export default class WallSlide {
 	 */
 	static defaults = {
 		factor: 0.35,
-		max: 15,
+		max: 450,
 	}
 
 	/**
@@ -69,7 +69,7 @@ export default class WallSlide {
 		this.tile = null;
 
 		// Load settings.
-		this.settings  = Settings.player?.jumps?.wall?.slide ?? WallSlide.defaults;
+		this.settings  = Settings.player?.wall?.slide ?? WallSlide.defaults;
 		this.listening = true;
 
 		// Return.
@@ -155,8 +155,10 @@ export default class WallSlide {
 			return;
 		}
 
-		const gravity = Game.Gravity.force;
-		const inc = gravity * this.settings.factor * Time.scale;
+		const inc = Game.Kinematics.displacement(
+			Game.Gravity.acceleration * this.settings.factor,
+			Game.Kinematics.seconds( Time.delta )
+		);
 
 		if ( velocity.y < this.settings.max ) {
 			velocity.y += inc;

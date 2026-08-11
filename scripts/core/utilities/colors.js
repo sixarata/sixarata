@@ -18,7 +18,7 @@ export default class Colors {
 	}
 
 	reset = () => {
-
+		return this;
 	}
 
 	random = () => {
@@ -32,7 +32,7 @@ export default class Colors {
 			b = Math.floor( Math.random() * 256 );
 		}
 
-		return "rgb(" + r + "," + g + ","  + b + ")";
+		return `rgb(${r},${g},${b})`;
 	}
 
 	cloud = () => {

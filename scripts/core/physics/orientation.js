@@ -1,12 +1,12 @@
-import Point from './point.js';
+import Vector from './vector.js';
 
 /**
  * The Orientation object.
  *
  * This object is responsible for storing & manipulating the direction
- * that a Tile is facing.
+	 * that a Tile is facing as Euler angles in degrees.
  */
-export default class Orientation extends Point {
+export default class Orientation extends Vector {
 
 	/**
 	 * Construct the object.
@@ -17,9 +17,9 @@ export default class Orientation extends Point {
 	 * @returns {Orientation} this
 	 */
 	constructor(
-		x = Point.defaults.x,
-		y = Point.defaults.y,
-		z = Point.defaults.z,
+		x = Vector.defaults.x,
+		y = Vector.defaults.y,
+		z = Vector.defaults.z,
 	) {
 		super( x, y, z );
 

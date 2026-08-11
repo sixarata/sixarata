@@ -1,5 +1,5 @@
 import Sixarata from '../core/game.js';
-import { Smoke } from '../core/utilities/exports.js';
+import { Smoke } from '../core/physics/exports.js';
 import { FluidParticle } from '../core/tiles/exports.js';
 import { Fog } from '../core/weather/exports.js';
 
@@ -29,8 +29,8 @@ import { Fog } from '../core/weather/exports.js';
  *    Sixarata.Hooks.add('Frame.render', () => smoke.render(ctx));
  *
  * Classes:
- * - FluidGrid: Base fluid simulation (utilities/fluid.js)
- * - Smoke: Buoyancy + color support (utilities/smoke.js)
+ * - Fluid: Base fluid simulation (physics/fluid.js)
+ * - Smoke: Buoyancy + color support (physics/smoke.js)
  * - FluidParticle: Particles that interact with fluids (tiles/fluid-particle.js)
  * - Fog: Atmospheric weather effect (weather/fog.js)
  *
@@ -55,7 +55,7 @@ let smoke = null;
 let fog = null;
 
 // Initialize fluid simulations after room is loaded.
-Sixarata.Hooks.add( 'Room.loaded', () => {
+Sixarata.Hooks.add('Room.loaded', () => {
 
 	// Get room dimensions (in world units/tiles)
 	const room = Sixarata.Room;
@@ -74,33 +74,31 @@ Sixarata.Hooks.add( 'Room.loaded', () => {
 	const gridWidth = Math.min(Math.ceil(roomWidth / cellSize), maxGridSize);
 	const gridHeight = Math.min(Math.ceil(roomHeight / cellSize), maxGridSize);
 
-	console.log('Fluid grid:', { roomWidth, roomHeight, cellSize, gridWidth, gridHeight });
-
 	// Create smoke simulation sized to match the entire room
-	smoke = new Smoke( gridWidth, gridHeight, 1, {
-		buoyancy:   0.05,     // Less buoyancy (dust settles more)
-		viscosity:  0.00001,  // Low viscosity (thin)
-		diffusion:  0.00005,  // Less spreading (dust stays more concentrated)
+	smoke = new Smoke(gridWidth, gridHeight, 1, {
+		buoyancy: 0.05,     // Less buoyancy (dust settles more)
+		viscosity: 0.00001,  // Low viscosity (thin)
+		diffusion: 0.00005,  // Less spreading (dust stays more concentrated)
 		iterations: 4,        // Good balance
-		cooling:    0.98,     // Temperature decay (for smoke/buoyancy)
-		cellSize:   cellSize, // Calculated to cover room efficiently
-		fade:       0.97,     // Density fade rate (faster fade to prevent ghosts)
-	} );
+		cooling: 0.98,     // Temperature decay (for smoke/buoyancy)
+		cellSize: cellSize, // Calculated to cover room efficiently
+		fade: 0.97,     // Density fade rate (faster fade to prevent ghosts)
+	});
 
 	// Grid positioned at world origin (covers entire room)
 	smoke.gridOffsetX = 0;
 	smoke.gridOffsetY = 0;
 
 	// Only create fog once (not on every room load)
-	if ( !fog ) {
+	if (!fog) {
 		// Optional: Create atmospheric fog weather effect.
-		fog = new Fog( {
-			enabled:    false,    // Start disabled
-			density:    0.5,
-			color:      { r: 0.9, g: 0.9, b: 0.95 },
+		fog = new Fog({
+			enabled: false,    // Start disabled
+			density: 0.5,
+			color: { r: 0.9, g: 0.9, b: 0.95 },
 			driftSpeed: { x: 0.02, y: -0.01 },
-			spawnRate:  0.1,
-		} );
+			spawnRate: 0.1,
+		});
 
 		// Register fog hooks (if you want to use fog).
 		// Uncomment to enable:
@@ -110,14 +108,12 @@ Sixarata.Hooks.add( 'Room.loaded', () => {
 	// Export smoke and fog for use in other modules.
 	Sixarata.Fluids = { smoke, fog };
 
-	// DEBUG: Add test smoke to verify rendering works
-	//console.log( 'Fluid simulation initialized', { smoke, fog, cellSize, roomWidth, roomHeight } );
-}, 22 );
+}, 22);
 
 // Update smoke simulation each frame.
-Sixarata.Hooks.add( 'Frame.tick', () => {
-	if ( smoke && Sixarata.Room.tiles.players[ 0 ] ) {
-		const player = Sixarata.Room.tiles.players[ 0 ];
+Sixarata.Hooks.add('Frame.tick', () => {
+	if (smoke && Sixarata.Room.tiles.players[0]) {
+		const player = Sixarata.Room.tiles.players[0];
 		const pos = player.physics.position;
 		const vel = player.physics.velocity;
 
@@ -145,19 +141,19 @@ Sixarata.Hooks.add( 'Frame.tick', () => {
 		}
 	}
 
-	if ( smoke ) {
+	if (smoke) {
 		// Step the simulation
-		smoke.step( 0.016 );  // ~60 FPS
+		smoke.step(0.016);  // ~60 FPS
 	}
-}, 8 );
+}, 8);
 
 // Render smoke after room but before HUD.
-Sixarata.Hooks.add( 'Frame.render', () => {
-	if ( smoke ) {
+Sixarata.Hooks.add('Frame.render', () => {
+	if (smoke) {
 		const ctx = Sixarata.View.buffer.context;
 		const camera = Sixarata.Camera.position;
 
-		if ( ctx && camera ) {
+		if (ctx && camera) {
 
 			// Extract camera values
 			const cameraX = typeof camera.x.valueOf === 'function' ? camera.x.valueOf() : Number(camera.x);
@@ -173,7 +169,7 @@ Sixarata.Hooks.add( 'Frame.render', () => {
 			);
 		}
 	}
-}, 7 );
+}, 7);
 
 /**
  * Player Jump - Dust Cloud
@@ -182,11 +178,11 @@ Sixarata.Hooks.add( 'Frame.render', () => {
  * Dust has brownish color and settles slowly.
  * The dust stays at the jump location and can be disturbed by movement.
  */
-Sixarata.Hooks.add( 'Player.jump', () => {
-	if ( !smoke ) return;
+Sixarata.Hooks.add('Player.jump', () => {
+	if (!smoke) return;
 
-	const player = Sixarata.Room.tiles.players[ 0 ];
-	if ( !player ) return;
+	const player = Sixarata.Room.tiles.players[0];
+	if (!player) return;
 
 	const pos = player.physics.position;
 	const vel = player.physics.velocity;
@@ -211,7 +207,7 @@ Sixarata.Hooks.add( 'Player.jump', () => {
 		},
 		4                    // Larger radius
 	);
-} );
+});
 
 /**
  * Player Dash - Colored Smoke Trail
@@ -223,11 +219,11 @@ Sixarata.Hooks.add( 'Player.jump', () => {
  * Add this to your dash code:
  *   Sixarata.Hooks.do('Player.dash', player);
  */
-Sixarata.Hooks.add( 'Player.dash', () => {
-	if ( !smoke ) return;
+Sixarata.Hooks.add('Player.dash', () => {
+	if (!smoke) return;
 
-	const player = Sixarata.Room.tiles.players[ 0 ];
-	if ( !player ) return;
+	const player = Sixarata.Room.tiles.players[0];
+	if (!player) return;
 
 	const pos = player.physics.position;
 	const vel = player.physics.velocity;
@@ -245,7 +241,7 @@ Sixarata.Hooks.add( 'Player.dash', () => {
 		},
 		2                                 // Radius
 	);
-} );
+});
 
 /**
  * Player Land - Impact Burst
@@ -253,26 +249,26 @@ Sixarata.Hooks.add( 'Player.dash', () => {
  * Creates a radial dust burst when landing hard.
  * Stronger impacts create bigger bursts.
  */
-Sixarata.Hooks.add( 'Player.land', () => {
-	if ( !smoke ) return;
+Sixarata.Hooks.add('Player.land', () => {
+	if (!smoke) return;
 
-	const player = Sixarata.Room.tiles.players[ 0 ];
-	if ( !player ) return;
+	const player = Sixarata.Room.tiles.players[0];
+	if (!player) return;
 
 	const pos = player.physics.position;
 	const vel = player.physics.velocity;
 
 	// Calculate impact strength from fall speed.
-	const impactStrength = Math.abs( vel.y );
+	const impactStrength = Math.abs(vel.y);
 
 	// Only create burst for significant impacts.
-	if ( impactStrength > 5 ) {
+	if (impactStrength > 5) {
 		// Create radial dust pattern.
 		const numRays = 8;
-		for ( let i = 0; i < numRays; i++ ) {
-			const angle = ( i / numRays ) * Math.PI * 2;
-			const vx = Math.cos( angle ) * impactStrength * 0.5;
-			const vy = Math.sin( angle ) * impactStrength * 0.5;
+		for (let i = 0; i < numRays; i++) {
+			const angle = (i / numRays) * Math.PI * 2;
+			const vx = Math.cos(angle) * impactStrength * 0.5;
+			const vy = Math.sin(angle) * impactStrength * 0.5;
 
 			smoke.addDust(
 				pos.x,
@@ -283,7 +279,7 @@ Sixarata.Hooks.add( 'Player.land', () => {
 			);
 		}
 	}
-} );
+});
 
 /**
  * Wall Slide - Continuous Particles
@@ -293,17 +289,17 @@ Sixarata.Hooks.add( 'Player.land', () => {
  * Note: Requires a 'Player.wallSlide' hook or check wall slide state.
  * Example implementation:
  */
-Sixarata.Hooks.add( 'Frame.tick', () => {
-	if ( !smoke ) return;
+Sixarata.Hooks.add('Frame.tick', () => {
+	if (!smoke) return;
 
-	const player = Sixarata.Room.tiles.players[ 0 ];
-	if ( !player ) return;
+	const player = Sixarata.Room.tiles.players[0];
+	if (!player) return;
 
 	// Check if player is wall sliding (adjust based on your mechanics).
 	const isWallSliding = false; // Replace with actual check
 	// Example: isWallSliding = player.state?.wallSliding || false;
 
-	if ( isWallSliding && Math.random() < 0.3 ) {
+	if (isWallSliding && Math.random() < 0.3) {
 		const pos = player.physics.position;
 		const vel = player.physics.velocity;
 
@@ -318,7 +314,7 @@ Sixarata.Hooks.add( 'Frame.tick', () => {
 			1.5
 		);
 	}
-}, 10 );
+}, 10);
 
 /**
  * Example: Fluid Particles
@@ -343,8 +339,8 @@ Sixarata.Hooks.add( 'Player.jump', () => {
 			'Orange',
 			{ w: 0.1, h: 0.1, d: 0.1 },
 			{
-				x: ( Math.random() - 0.5 ) * 2,
-				y: -Math.random() * 2,
+				x: ( Math.random() - 0.5 ) * 60,
+				y: -Math.random() * 60,
 				z: 0
 			},
 			2000,  // Life (2 seconds)
@@ -372,18 +368,18 @@ Sixarata.Hooks.add( 'Player.jump', () => {
  * Make player movement disturb atmospheric fog.
  * Only active if fog is enabled.
  */
-Sixarata.Hooks.add( 'Frame.tick', () => {
-	if ( !fog || !fog.enabled ) return;
+Sixarata.Hooks.add('Frame.tick', () => {
+	if (!fog || !fog.enabled) return;
 
-	const player = Sixarata.Room.tiles.players[ 0 ];
-	if ( !player ) return;
+	const player = Sixarata.Room.tiles.players[0];
+	if (!player) return;
 
 	const pos = player.physics.position;
 	const vel = player.physics.velocity;
 
 	// Only disturb if moving fast enough.
-	const speed = Math.sqrt( vel.x * vel.x + vel.y * vel.y );
-	if ( speed > 1.0 ) {
+	const speed = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
+	if (speed > 1.0) {
 		fog.disturb(
 			pos.x,
 			pos.y,
@@ -391,7 +387,7 @@ Sixarata.Hooks.add( 'Frame.tick', () => {
 			4  // Radius of disturbance
 		);
 	}
-}, 10 );
+}, 10);
 
 /**
  * Advanced Examples

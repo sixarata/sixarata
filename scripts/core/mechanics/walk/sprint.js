@@ -17,7 +17,7 @@ export default class Sprint {
 	 * @type {Object}
 	 */
 	static defaults = {
-		run: 20,
+		run: 600,
 		runHold: 300,
 	}
 

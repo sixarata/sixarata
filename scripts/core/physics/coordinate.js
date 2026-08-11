@@ -1,323 +1,95 @@
 /**
- * The Coordinate object.
+ * A mutable scalar coordinate value.
  *
- * This object represents a single Coordinate, reprented as a Number,
- * and provides methods to help with interacting with other Coordinates.
+ * This intentionally uses composition instead of extending Number. Native
+ * Number objects have an immutable internal value, which caused arithmetic to
+ * disagree with the public `value` property after mutation.
  */
-export default class Coordinate extends Number {
+export default class Coordinate {
 
-	/**
-	 * Default coordinate value.
-	 *
-	 * @type {Object}
-	 */
 	static defaults = {
 		value: 0,
 	}
 
-	/**
-	 * The tolerance for calculations.
-	 */
-	#tolerance = 0.0001;
-
-	/**
-	 * Construct the Coordinate.
-	 *
-	 * @param {Number} value Default 0.
-	 * @returns {Coordinate}
-	 */
-	constructor(
-		value = Coordinate.defaults.value
-	) {
-		super( value );
-
+	constructor( value = Coordinate.defaults.value ) {
 		return this.set( value );
 	}
 
-	/**
-	 * Set the value of this Coordinate.
-	 *
-	 * @param   {Number}     value Default 0.
-	 * @returns {Coordinate} This Coordinate, with a new value.
-	 */
-	set = (
-		value = Coordinate.defaults.value
-	) => {
-		this.value = value;
+	static number = ( value = 0 ) => Number( value?.value ?? value );
+
+	set = ( value = Coordinate.defaults.value ) => {
+		this.value = Coordinate.number( value );
 
 		return this;
 	}
 
-	/**
-	 * Reset the value of this Coordinate to 0.
-	 *
-	 * @returns {Coordinate} This Coordinate, with a 0 value.
-	 */
-	reset = () => {
-		return this.set( Coordinate.defaults.value );
+	reset = () => this.set();
+
+	valueOf = () => this.value;
+
+	toJSON = () => this.value;
+
+	[ Symbol.toPrimitive ] = () => this.value;
+
+	add = ( coordinate = 0 ) => this.set(
+		this.value + Coordinate.number( coordinate )
+	);
+
+	addLinear = ( scalar = 1 ) => this.add( scalar );
+
+	sub = ( coordinate = 0 ) => this.set(
+		this.value - Coordinate.number( coordinate )
+	);
+
+	subLinear = ( scalar = 1 ) => this.sub( scalar );
+
+	multiply = ( coordinate = 0 ) => this.set(
+		this.value * Coordinate.number( coordinate )
+	);
+
+	multiplyLinear = ( scalar = 1 ) => this.multiply( scalar );
+
+	divide = ( coordinate = 0 ) => {
+		const divisor = Coordinate.number( coordinate );
+
+		return divisor ? this.set( this.value / divisor ) : this.reset();
 	}
 
-	/**
-	 * Add a Coordinate to this one.
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @returns {Coordinate} This Coordinate, with a new value.
-	 */
-	add = (
-		c = {
-			value: Coordinate.defaults.value,
-		}
-	) => {
-		return this.set(
-			( this.value + c.value )
-		);
+	divideLinear = ( scalar = 1 ) => this.divide( scalar );
+
+	import = ( coordinate = 0 ) => this.set( coordinate );
+
+	export = () => new Coordinate( this.value );
+
+	square = ( coordinate = 0 ) => {
+		const other = Coordinate.number( coordinate );
+
+		return ( this.value * this.value ) + ( other * other );
 	}
 
-	/**
-	 * Add to this Coordinate linearly.
-	 *
-	 * @param   {Number}     l Lineal. Default 1.
-	 * @returns {Coordinate} This Coordinate, with a new value.
-	 */
-	addLinear = (
-		l = 1
-	) => {
-		return this.add( {
-			value: l,
-		} );
+	length = ( coordinate = 0 ) => Math.sqrt( this.square( coordinate ) );
+
+	squareDistance = ( coordinate = 0 ) => {
+		const difference = this.value - Coordinate.number( coordinate );
+
+		return difference * difference;
 	}
 
-	/**
-	 * Subtract a Coordinate from this one.
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @returns {Coordinate} This Coordinate, with a new value.
-	 */
-	sub = (
-		c = {
-			value: Coordinate.defaults.value,
-		}
-	) => {
-		return this.set(
-			( this.value - c.value )
-		);
-	}
+	distance = ( coordinate = 0 ) => Math.sqrt( this.squareDistance( coordinate ) );
 
-	/**
-	 * Subtract from this Coordinate linearly.
-	 *
-	 * @param   {Number}     l Lineal. Default 1.
-	 * @returns {Coordinate} This Coordinate, with a new value.
-	 */
-	subLinear = (
-		l = 1
-	) => {
-		return this.sub( {
-			value: l,
-		} );
-	}
-
-	/**
-	 * Multiply this Coordinate by another one.
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @returns {Coordinate} This Coordinate, with a new value.
-	 */
-	multiply = (
-		c = {
-			value: 0,
-		}
-	) => {
-		return this.set(
-			( this.value * c.value )
-		);
-	}
-
-	/**
-	 * Multiply this Coordinate linearly.
-	 *
-	 * @param   {Number}     l Lineal. Default 1.
-	 * @returns {Coordinate} This Coordinate, with a new value.
-	 */
-	multiplyLinear = (
-		l = 1
-	) => {
-		return this.multiply( {
-			value: l,
-		} );
-	}
-
-	/**
-	 * Divide this Coordinate by another one.
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @returns {Coordinate} This Coordinate, with a new value.
-	 */
-	divide = (
-		c = {
-			value: 0,
-		}
-	) => {
-		return this.set(
-			( this.value / c.value )
-		);
-	}
-
-	/**
-	 * Divide this Coordinate linearly.
-	 *
-	 * @param   {Number}     l Lineal. Default 1.
-	 * @returns {Coordinate} This Coordinate, with a new value.
-	 */
-	divideLinear = (
-		l = 1
-	) => {
-		if ( l ) {
-			return this.divide( {
-				value: l,
-			} );
-		} else {
-			return this.reset();
-		}
-	}
-
-	/**
-	 * Import a Coordinate into this one.
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @returns {Coordinate} This Coordinate, with a new value.
-	 */
-	import = (
-		c = {
-			value: 0,
-		}
-	) => {
-		return this.set( c.value );
-	}
-
-	/**
-	 * Export this Coordinate into a new Coordinate.
-	 *
-	 * @returns {Coordinate} A new Coordinate.
-	 */
-	export = () => {
-		return new Coordinate( this.value );
-	}
-
-	/**
-	 * Calculate a two-dimensional square using a Coordinate and this one.
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @returns {Number}     The square.
-	 */
-	square = (
-		c = {
-			value: 0,
-		}
-	) => {
-		return (
-			( this.value * this.value )
-			+
-			( c.value * c.value )
-		);
-	}
-
-	/**
-	 * Get the length between a Coordinate and this one.
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @returns {Number}     The length.
-	 */
-	length = (
-		c = {
-			value: 0,
-		}
-	) => {
-		return Math.sqrt( this.square( c ) );
-	}
-
-	/**
-	 * Get the square distance between a Coordinate and this one.
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @returns {Number}     The square distance.
-	 */
-	squareDistance = (
-		c = {
-			value: 0,
-		}
-	) => {
-		let d = ( this.value - c.value );
-
-		return ( d * d );
-	}
-
-	/**
-	 * Get the normal distance between a Coordinate and this one.
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @returns {Number}     The distance.
-	 */
-	distance = (
-		c = {
-			value: 0,
-		}
-	) => {
-		return Math.sqrt( this.squareDistance( c ) );
-	}
-
-	/**
-	 * Does a Coordinate equal this Coordinate?
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @returns {Boolean}    True if equal.
-	 */
 	equals = (
-		c = {
-			value: 0,
-		}
-	) => {
-		return ( this.distance( c ) < this.#tolerance );
-	}
+		coordinate = 0,
+		tolerance  = 0.0001
+	) => this.distance( coordinate ) < tolerance;
 
-	/**
-	 * Is this Coordinate empty?
-	 *
-	 * @returns {Boolean} True if empty.
-	 */
-	empty = () => {
-		return ( this.length() < this.#tolerance );
-	}
+	empty = ( tolerance = 0.0001 ) => Math.abs( this.value ) < tolerance;
 
-	/**
-	 * Get the dot product of a Coordinate and this one.
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @returns {Number}     The dot product.
-	 */
-	dot = (
-		c = {
-			value: 0,
-		}
-	) => {
-		return ( this.value * c.value );
-	}
+	dot = ( coordinate = 0 ) => this.value * Coordinate.number( coordinate );
 
-	/**
-	 * Linearly progress this Coordinate to another one.
-	 *
-	 * @param   {Coordinate} c Coordinate. Default { value: 0 }.
-	 * @param   {Number}     l Lineal. Default 1.
-	 * @returns {Coordinate} This Coordinate, with a new value.
-	 */
 	lerp = (
-		c = {
-			value: 0,
-		},
-		l = 1
-	) => {
-		let x = ( ( c.value - this.value ) * l ) + this.value;
-
-		return this.set( x );
-	}
+		coordinate = 0,
+		amount     = 1
+	) => this.set(
+		this.value + ( Coordinate.number( coordinate ) - this.value ) * amount
+	);
 }

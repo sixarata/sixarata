@@ -1,6 +1,4 @@
 import Fluid from './fluid.js';
-import { Velocity } from '../physics/exports.js';
-
 /**
  * The Smoke class.
  *
@@ -64,16 +62,18 @@ export default class Smoke extends Fluid {
 			vorticity: 1.0,
 		}
 
-		super( width, height, depth, { ...smokeDefaults, ...options } );
+		super(width, height, depth, { ...smokeDefaults, ...options });
+
 
 		// Initialize smoke-specific arrays after parent construction.
 		const size = this.width * this.height * this.depth;
-		this.temperature = new Float32Array( size );
-		this.temperature0 = new Float32Array( size );
+		this.temperature = new Float32Array(size);
+		this.temperature0 = new Float32Array(size);
 
-		this.colorR = new Float32Array( size );
-		this.colorG = new Float32Array( size );
-		this.colorB = new Float32Array( size );
+		this.colorR = new Float32Array(size);
+		this.colorG = new Float32Array(size);
+		this.colorB = new Float32Array(size);
+
 	}
 
 	/**
@@ -89,12 +89,13 @@ export default class Smoke extends Fluid {
 		// Allocate smoke-specific arrays.
 		const size = this.width * this.height * this.depth;
 
-		this.temperature = new Float32Array( size );
-		this.temperature0 = new Float32Array( size );
+		this.temperature = new Float32Array(size);
+		this.temperature0 = new Float32Array(size);
 
-		this.colorR = new Float32Array( size );
-		this.colorG = new Float32Array( size );
-		this.colorB = new Float32Array( size );
+		this.colorR = new Float32Array(size);
+		this.colorG = new Float32Array(size);
+		this.colorB = new Float32Array(size);
+
 
 		return this;
 	}
@@ -121,34 +122,42 @@ export default class Smoke extends Fluid {
 		radius = 2
 	) => {
 
+		density = Number( density );
+		temperature = Number( temperature );
+		velocity = {
+			x: Number( velocity?.x ?? 0 ),
+			y: Number( velocity?.y ?? 0 ),
+		};
+
 		// Convert world to grid coordinates.
-		const gx = Math.floor( x / this.cellSize );
-		const gy = Math.floor( y / this.cellSize );
+		const gx = Math.floor(x / this.cellSize);
+		const gy = Math.floor(y / this.cellSize);
+
 
 		// Add in a radius.
-		const r = Math.ceil( radius );
-		for ( let dy = -r; dy <= r; dy++ ) {
-			for ( let dx = -r; dx <= r; dx++ ) {
-				const dist = Math.sqrt( dx * dx + dy * dy );
-				if ( dist <= radius ) {
-					const idx = this.index( gx + dx, gy + dy );
-					const falloff = 1.0 - ( dist / radius );
+		const r = Math.ceil(radius);
+		for (let dy = -r; dy <= r; dy++) {
+			for (let dx = -r; dx <= r; dx++) {
+				const dist = Math.sqrt(dx * dx + dy * dy);
+				if (dist <= radius) {
+					const idx = this.index(gx + dx, gy + dy);
+					const falloff = 1.0 - (dist / radius);
 
 					// Add density and temperature.
-					this.density[ idx ] += density * falloff;
-					this.temperature[ idx ] += temperature * falloff;
+					this.density[idx] += density * falloff;
+					this.temperature[idx] += temperature * falloff;
 
 					// Add velocity.
-					this.velocityX[ idx ] += velocity.x * falloff;
-					this.velocityY[ idx ] += velocity.y * falloff;
+					this.velocityX[idx] += velocity.x * falloff;
+					this.velocityY[idx] += velocity.y * falloff;
 
 					// Blend colors.
-					const existing = this.density[ idx ] - density * falloff;
-					const total = this.density[ idx ];
-					if ( total > 0 ) {
-						this.colorR[ idx ] = ( this.colorR[ idx ] * existing + color.r * density * falloff ) / total;
-						this.colorG[ idx ] = ( this.colorG[ idx ] * existing + color.g * density * falloff ) / total;
-						this.colorB[ idx ] = ( this.colorB[ idx ] * existing + color.b * density * falloff ) / total;
+					const existing = this.density[idx] - density * falloff;
+					const total = this.density[idx];
+					if (total > 0) {
+						this.colorR[idx] = (this.colorR[idx] * existing + color.r * density * falloff) / total;
+						this.colorG[idx] = (this.colorG[idx] * existing + color.g * density * falloff) / total;
+						this.colorB[idx] = (this.colorB[idx] * existing + color.b * density * falloff) / total;
 					}
 				}
 			}
@@ -178,7 +187,7 @@ export default class Smoke extends Fluid {
 		// Dust is brownish and settles downward.
 		const dustColor = { r: 0.6, g: 0.5, b: 0.4 };
 
-        // Return this smoke.
+		// Return this smoke.
 		return this.addSmoke(
 			x,
 			y,
@@ -188,6 +197,7 @@ export default class Smoke extends Fluid {
 			velocity,
 			radius
 		);
+
 	}
 
 	/**
@@ -197,19 +207,20 @@ export default class Smoke extends Fluid {
 	 * @returns {Smoke}
 	 */
 	step = (
-        dt = this.dt
-    ) => {
+		dt = this.dt
+	) => {
 		this.dt = dt;
 
 		// Apply buoyancy force based on temperature.
 		this.applyBuoyancy();
 
 		// Diffuse and advect temperature.
-		this.diffuse( this.temperature0, this.temperature, this.diffusion );
-		[ this.temperature, this.temperature0 ] = [ this.temperature0, this.temperature ];
+		this.diffuse(this.temperature0, this.temperature, this.diffusion);
+		[this.temperature, this.temperature0] = [this.temperature0, this.temperature];
 
-		this.advect( this.temperature0, this.temperature, this.velocityX, this.velocityY );
-		[ this.temperature, this.temperature0 ] = [ this.temperature0, this.temperature ];
+		this.advect(this.temperature0, this.temperature, this.velocityX, this.velocityY);
+		[this.temperature, this.temperature0] = [this.temperature0, this.temperature];
+
 
 		// Cool temperature over time.
 		this.coolTemperature();
@@ -229,9 +240,10 @@ export default class Smoke extends Fluid {
 		this.advectDensity();
 
 		// Apply fade/decay to density using configured fade rate.
-		this.fadeDensity( this.fade );
+		this.fadeDensity(this.fade);
 
-        // Return this for chaining.
+
+		// Return this for chaining.
 		return this;
 	}
 
@@ -241,20 +253,20 @@ export default class Smoke extends Fluid {
 	 * @returns {Smoke}
 	 */
 	applyBuoyancy = () => {
-		for ( let y = 1; y < this.height - 1; y++ ) {
-			for ( let x = 1; x < this.width - 1; x++ ) {
-				const idx = this.index( x, y );
-				const temp = this.temperature[ idx ];
-				const d = this.density[ idx ];
+		for (let y = 1; y < this.height - 1; y++) {
+			for (let x = 1; x < this.width - 1; x++) {
+				const idx = this.index(x, y);
+				const temp = this.temperature[idx];
+				const d = this.density[idx];
 
-				// Buoyancy proportional to temperature and density.
-				if ( d > 0.01 && temp > this.ambientTemp ) {
-					this.velocityY[ idx ] -= this.buoyancy * ( temp - this.ambientTemp ) * d * this.dt;
+					// Buoyant acceleration proportional to temperature and density.
+					if (d > 0.01 && temp > this.ambientTemp) {
+						this.velocityY[idx] -= this.buoyancy * (temp - this.ambientTemp) * d * this.dt;
 				}
 			}
 		}
 
-        // Return this for chaining.
+		// Return this for chaining.
 		return this;
 	}
 
@@ -264,11 +276,12 @@ export default class Smoke extends Fluid {
 	 * @returns {Smoke}
 	 */
 	coolTemperature = () => {
-		for ( let i = 0; i < this.temperature.length; i++ ) {
-			this.temperature[ i ] = this.ambientTemp + ( this.temperature[ i ] - this.ambientTemp ) * this.cooling;
+		for (let i = 0; i < this.temperature.length; i++) {
+			this.temperature[i] = this.ambientTemp + (this.temperature[i] - this.ambientTemp) * this.cooling;
 		}
 
-        // Return this for chaining.
+
+		// Return this for chaining.
 		return this;
 	}
 
@@ -278,15 +291,16 @@ export default class Smoke extends Fluid {
 	 * @returns {Smoke}
 	 */
 	advectColors = () => {
-		const colorR0 = new Float32Array( this.colorR );
-		const colorG0 = new Float32Array( this.colorG );
-		const colorB0 = new Float32Array( this.colorB );
+		const colorR0 = new Float32Array(this.colorR);
+		const colorG0 = new Float32Array(this.colorG);
+		const colorB0 = new Float32Array(this.colorB);
 
-		this.advect( colorR0, this.colorR, this.velocityX, this.velocityY );
-		this.advect( colorG0, this.colorG, this.velocityX, this.velocityY );
-		this.advect( colorB0, this.colorB, this.velocityX, this.velocityY );
+		this.advect(colorR0, this.colorR, this.velocityX, this.velocityY);
+		this.advect(colorG0, this.colorG, this.velocityX, this.velocityY);
+		this.advect(colorB0, this.colorB, this.velocityX, this.velocityY);
 
-        // Return this for chaining.
+
+		// Return this for chaining.
 		return this;
 	}
 
@@ -299,26 +313,26 @@ export default class Smoke extends Fluid {
 	 * @returns {Smoke}
 	 */
 	fadeDensity = (
-        factor = 0.99,
-        threshold = 0.001
-    ) => {
+		factor = 0.99,
+		threshold = 0.001
+	) => {
 
-        // Apply fade factor and clear values below threshold.
-		for ( let i = 0; i < this.density.length; i++ ) {
-			this.density[ i ] *= factor;
+		// Apply fade factor and clear values below threshold.
+		for (let i = 0; i < this.density.length; i++) {
+			this.density[i] *= factor;
 
 			// Clear very low density values AND associated data to prevent ghost images.
-			if ( this.density[ i ] < threshold ) {
-				this.density[ i ] = 0;
-				this.temperature[ i ] = this.ambientTemp;
-				this.colorR[ i ] = 0;
-				this.colorG[ i ] = 0;
-				this.colorB[ i ] = 0;
+			if (this.density[i] < threshold) {
+				this.density[i] = 0;
+				this.temperature[i] = this.ambientTemp;
+				this.colorR[i] = 0;
+				this.colorG[i] = 0;
+				this.colorB[i] = 0;
 			}
 		}
 
-        // Return this for chaining.
-        return this;
+		// Return this for chaining.
+		return this;
 	}
 
 	/**
@@ -329,14 +343,15 @@ export default class Smoke extends Fluid {
 	clear = () => {
 		super.clear();
 
-        // Clear smoke-specific arrays.
-		this.temperature.fill( 0 );
-		this.temperature0.fill( 0 );
-		this.colorR.fill( 1 );
-		this.colorG.fill( 1 );
-		this.colorB.fill( 1 );
+		// Clear smoke-specific arrays.
+		this.temperature.fill(0);
+		this.temperature0.fill(0);
+		this.colorR.fill(1);
+		this.colorG.fill(1);
+		this.colorB.fill(1);
 
-        // Return this for chaining.
+
+		// Return this for chaining.
 		return this;
 	}
 
@@ -350,39 +365,40 @@ export default class Smoke extends Fluid {
 	 * @returns {Smoke}
 	 */
 	render = (
-        ctx,
-        scale = 1,
-        cameraPos = { x: 0, y: 0 },
-        gridOffset = { x: 0, y: 0 }
-    ) => {
+		ctx,
+		scale = 1,
+		cameraPos = { x: 0, y: 0 },
+		gridOffset = { x: 0, y: 0 }
+	) => {
 		const cellW = this.cellSize * scale;
 		const cellH = this.cellSize * scale;
 
-		for ( let y = 0; y < this.height; y++ ) {
-			for ( let x = 0; x < this.width; x++ ) {
-				const idx = this.index( x, y );
-				const d = this.density[ idx ];
+		for (let y = 0; y < this.height; y++) {
+			for (let x = 0; x < this.width; x++) {
+				const idx = this.index(x, y);
+				const d = this.density[idx];
 
-				if ( d > 0.01 ) {
-					const alpha = Math.min( 1, d );
-					const r = Math.floor( this.colorR[ idx ] * 255 );
-					const g = Math.floor( this.colorG[ idx ] * 255 );
-					const b = Math.floor( this.colorB[ idx ] * 255 );
+				if (d > 0.01) {
+					const alpha = Math.min(1, d);
+					const r = Math.floor(this.colorR[idx] * 255);
+					const g = Math.floor(this.colorG[idx] * 255);
+					const b = Math.floor(this.colorB[idx] * 255);
 
 					// Convert grid coordinates to world coordinates (add grid offset)
 					// Then subtract camera position to get screen coordinates
 					const worldX = (x * this.cellSize) + gridOffset.x;
 					const worldY = (y * this.cellSize) + gridOffset.y;
-					const screenX = ( worldX - cameraPos.x ) * scale;
-					const screenY = ( worldY - cameraPos.y ) * scale;
+					const screenX = (worldX - cameraPos.x) * scale;
+					const screenY = (worldY - cameraPos.y) * scale;
 
 					ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-					ctx.fillRect( screenX, screenY, cellW, cellH );
+					ctx.fillRect(screenX, screenY, cellW, cellH);
 				}
 			}
 		}
 
-        // Return this for chaining.
+
+		// Return this for chaining.
 		return this;
 	}
 
@@ -397,19 +413,20 @@ export default class Smoke extends Fluid {
 	 * @returns {Smoke}
 	 */
 	renderBlended = (
-        ctx,
-        scale = 1,
-        blendMode = 'lighter',
-        cameraPos = { x: 0, y: 0 },
-        gridOffset = { x: 0, y: 0 }
-    ) => {
+		ctx,
+		scale = 1,
+		blendMode = 'lighter',
+		cameraPos = { x: 0, y: 0 },
+		gridOffset = { x: 0, y: 0 }
+	) => {
 		const oldBlend = ctx.globalCompositeOperation;
 
 		ctx.globalCompositeOperation = blendMode;
-		this.render( ctx, scale, cameraPos, gridOffset );
+		this.render(ctx, scale, cameraPos, gridOffset);
 		ctx.globalCompositeOperation = oldBlend;
 
-        // Return this for chaining.
+
+		// Return this for chaining.
 		return this;
 	}
 }

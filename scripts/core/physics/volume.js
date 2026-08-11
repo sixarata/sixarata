@@ -1,49 +1,42 @@
-import Scale from './scale.js';
-
 /**
- * The Volume object.
- *
- * This object is responsible for storing & manipulating the height, width, and depth
- * coordinates of an object. See also: Position.
+ * Volume of a rectangular solid in cubic game-world units.
  */
 export default class Volume {
 
 	/**
 	 * Construct the object.
 	 *
-	 * @param {Number} w
-	 * @param {Number} h
-	 * @param {Number} d
+	 * @param {Number} width
+	 * @param {Number} height
+	 * @param {Number} depth
 	 * @returns {Volume}
 	 */
 	constructor(
-		w = 0,
-		h = 0,
-		d = 0
+		width  = 0,
+		height = 0,
+		depth  = 0
 	) {
-		return this.set( w, h, d );
+		return this.set( width, height, depth );
 	}
 
 	/**
-	 * Set the object.
+	 * Set the dimensions and calculate the volume.
 	 *
-	 * @param {Number} w
-	 * @param {Number} h
-	 * @param {Number} d
+	 * @param {Number} width
+	 * @param {Number} height
+	 * @param {Number} depth
 	 * @returns {Volume}
 	 */
 	set = (
-		w = 0,
-		h = 0,
-		d = 0
+		width  = 0,
+		height = 0,
+		depth  = 0
 	) => {
+		this.width  = Math.max( 0, Number( width ) || 0 );
+		this.height = Math.max( 0, Number( height ) || 0 );
+		this.depth  = Math.max( 0, Number( depth ) || 0 );
+		this.value  = this.width * this.height * this.depth;
 
-		// Attributes.
-		this.w = w;
-		this.h = h;
-		this.d = d;
-
-		// Return.
 		return this;
 	}
 
@@ -52,7 +45,11 @@ export default class Volume {
 	 *
 	 * @returns {Volume}
 	 */
-	reset = () => {
-		return this.set( 0, 0, 0 );
-	}
+	reset = () => this.set();
+
+	valueOf = () => this.value;
+
+	toJSON = () => this.value;
+
+	[ Symbol.toPrimitive ] = () => this.value;
 }

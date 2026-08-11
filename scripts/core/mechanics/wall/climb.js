@@ -20,9 +20,9 @@ export default class WallClimb {
      * @type {Object}
      */
     static defaults = {
-        speed: 10,
+        speed: 300,
         accel: 0.25,
-        max: 10,
+        max: 300,
     }
 
     /**
@@ -145,8 +145,12 @@ export default class WallClimb {
         if ( this.settings.accel <= 0 ) {
             velocity.y = target;
         } else {
-            const diff = target - velocity.y;
-            velocity.y += diff * this.settings.accel * Time.scale;
+            velocity.y = Game.Kinematics.approach(
+                velocity.y,
+                target,
+                this.settings.accel,
+                Game.Kinematics.seconds( Time.delta )
+            );
         }
 
         // Clamp (ensure we don't exceed max upward magnitude negatively).

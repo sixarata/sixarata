@@ -66,6 +66,11 @@ export default class Collide {
 	}
 
 	/**
+	 * Remove global hooks owned by this mechanic.
+	 */
+	unhooks = () => Game.Hooks.remove( 'Tile.render', this.render );
+
+	/**
 	 * Perform collision resolution for the current frame.
 	 *
 	 * @param {Object} velocity Partial velocity {x?, y?, z?} for axis resolution context.
@@ -111,14 +116,14 @@ export default class Collide {
 	}
 
 	/**
-	 * Get all solid tiles that have density.
+	 * Get all solid, collidable tiles.
 	 *
 	 * @returns {Array} Array of solid tiles with density.
 	 */
 	solids = () => {
 		return Game.Room.tiles.platforms.concat(
 			Game.Room.tiles.walls
-		).filter( tile => tile.density );
+		).filter( tile => tile.solid );
 	}
 
 	/**

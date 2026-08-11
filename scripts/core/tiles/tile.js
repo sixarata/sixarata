@@ -117,9 +117,18 @@ export default class Tile {
 		this.color   = color;
 		this.opacity = opacity;
 		this.type    = type;
-		this.density = density;
+		this.solid   = Boolean( density );
 		this.visible = true;
 		this.state   = 'static';
+
+		// Compatibility with room content that predates the clearer `solid` name.
+		Object.defineProperty( this, 'density', {
+			configurable: true,
+			get: () => this.solid,
+			set: value => {
+				this.solid = Boolean( value );
+			},
+		} );
 
 		// Add to group.
 		this.add( this );
@@ -261,7 +270,7 @@ export default class Tile {
 	 *
 	 * @returns {Boolean}
 	 */
-	destroy = () => {
+	destroy() {
 
 		// Get the group array.
 		const arr = this.group;

@@ -1,4 +1,5 @@
 import Game from '../game.js';
+import Settings from '../../content/settings.js';
 
 import { Position } from '../physics/exports.js';
 
@@ -112,24 +113,45 @@ export default class Camera {
 			return;
 		}
 
-		// No negative X.
-		if ( this.position.x < 0 ) {
-			this.position.x = 0;
+		const alignment = Settings.components.camera ?? {};
+
+		this.position.x = this.limitAxis(
+			this.position.x,
+			this.room.size.w,
+			this.view.size.w,
+			alignment.horizontal ?? 'left'
+		);
+		this.position.y = this.limitAxis(
+			this.position.y,
+			this.room.size.h,
+			this.view.size.h,
+			alignment.vertical ?? 'bottom'
+		);
+	}
+
+	/**
+	 * Clamp scrolling rooms, or explicitly align rooms smaller than the view.
+	 */
+	limitAxis = (
+		position  = 0,
+		roomSize  = 0,
+		viewSize  = 0,
+		alignment = 'start'
+	) => {
+		const extent = Math.round( roomSize - viewSize );
+
+		if ( extent >= 0 ) {
+			return Math.min( extent, Math.max( 0, position ) );
 		}
 
-		// No overscroll X.
-		if ( this.position.x > Math.round( this.room.size.w - this.view.size.w ) ) {
-			this.position.x = Math.round( this.room.size.w - this.view.size.w );
+		if ( [ 'center', 'middle' ].includes( alignment ) ) {
+			return Math.round( extent / 2 );
 		}
 
-		// No negative Y.
-		if ( this.position.y < 0 ) {
-			this.position.y = 0;
+		if ( [ 'right', 'bottom', 'end' ].includes( alignment ) ) {
+			return extent;
 		}
 
-		// No overscroll Y.
-		if ( this.position.y > Math.round( this.room.size.h - this.view.size.h ) ) {
-			this.position.y = Math.round( this.room.size.h - this.view.size.h );
-		}
+		return 0;
 	}
 }

@@ -2,7 +2,7 @@ import Game from '../game.js';
 import Settings from '../../content/settings.js';
 import Time from '../utilities/time.js';
 
-import { Tile } from './exports.js';
+import Tile from './tile.js';
 import { Size, Position } from '../physics/exports.js';
 
 /**
@@ -87,12 +87,12 @@ export default class Projectile extends Tile {
 			this.setTrajectory();
 		}
 
-		const scale = Time.scale;
+		const seconds = Game.Kinematics.seconds( Time.delta );
 
 		// Bump position.
-		this.physics.position.x += ( this.sin * scale );
-		this.physics.position.y += ( this.cos * scale );
-		this.physics.position.z += ( this.cos * scale );
+		this.physics.position.x += Game.Kinematics.displacement( this.sin, seconds );
+		this.physics.position.y += Game.Kinematics.displacement( this.cos, seconds );
+		this.physics.position.z += Game.Kinematics.displacement( this.cos, seconds );
 	}
 
 	/**

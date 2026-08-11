@@ -23,15 +23,14 @@ const Game = {
 	History:    new Core.Controls.History(),
 
 	// Physics.
-	Friction:   new Core.Physics.Friction(),
+	Damping:    new Core.Physics.Damping(),
 	Gravity:    new Core.Physics.Gravity(),
+	Kinematics: new Core.Physics.Kinematics(),
 
 	// Utilities.
 	Colors:     new Core.Utilities.Colors(),
 	Hooks:      new Core.Utilities.Hooks(),
 	Jobs:       new Core.Utilities.Jobs(),
-	Fluid:      new Core.Utilities.Fluid(),
-	Smoke:      new Core.Utilities.Smoke,
 };
 
 // Export the Game.

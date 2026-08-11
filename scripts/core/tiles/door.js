@@ -1,4 +1,4 @@
-import { Trigger } from './exports.js';
+import Trigger from './trigger.js';
 
 /**
  * The Door object.

@@ -3,7 +3,7 @@
  *
  * This object is responsible for determining if a Tile object is
  * occupying the space of another Tile object along the
- * horizontal or vertical plains.
+ * horizontal or vertical planes.
  */
 export default class Collision {
 

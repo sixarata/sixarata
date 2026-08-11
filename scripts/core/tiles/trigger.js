@@ -1,4 +1,4 @@
-import { Tile } from './exports.js';
+import Tile from './tile.js';
 
 /**
  * The Trigger object.
@@ -7,7 +7,7 @@ import { Tile } from './exports.js';
  *
  * By default, colliding with a trigger will increase the Room by one.
  */
- export default class Trigger extends Tile {
+export default class Trigger extends Tile {
 
 	/**
 	 * Construct the Trigger.

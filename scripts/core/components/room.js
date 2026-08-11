@@ -110,7 +110,7 @@ export default class Room {
 
 		// Size.
 		this.size = new Size(
-			this.grid[ 0 ].split( '' ).length,
+			Math.max( ...this.grid.map( row => row.length ) ),
 			this.grid.length,
 			1
 		);
@@ -126,6 +126,15 @@ export default class Room {
 	 * Clear the Room.
 	 */
 	clear = () => {
+
+		// Let existing tiles release hooks and references before replacing groups.
+		const existing = this.tiles
+			? Object.values( this.tiles ).flat()
+			: [];
+
+		for ( const tile of existing ) {
+			tile?.destroy?.();
+		}
 
 		// Player.
 		this.playerGrid = false;

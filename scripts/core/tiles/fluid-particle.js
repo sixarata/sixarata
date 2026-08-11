@@ -1,7 +1,7 @@
 import Game from '../game.js';
 import Time from '../utilities/time.js';
 
-import { Tile } from './exports.js';
+import Tile from './tile.js';
 import { Size, Velocity } from '../physics/exports.js';
 
 /**
@@ -142,8 +142,14 @@ export default class FluidParticle extends Tile {
 	 */
 	tick = () => {
 
-		// Parent tick (handle lifetime, physics, etc).
+		// Parent tick (global tile hooks).
 		super.tick?.();
+
+		Game.Kinematics.integrate(
+			this.physics.position,
+			this.physics.velocity,
+			Game.Kinematics.seconds( Time.delta )
+		);
 
 		// Interact with fluid grid if available.
 		if ( this.fluidGrid ) {
@@ -255,13 +261,6 @@ export default class FluidParticle extends Tile {
 	 */
 	destroy = () => {
 
-		// Remove from group if exists.
-		if ( this.group && Array.isArray( this.group ) ) {
-			const index = this.group.indexOf( this );
-
-			if ( index > -1 ) {
-				this.group.splice( index, 1 );
-			}
-		}
+		return super.destroy();
 	}
 }
