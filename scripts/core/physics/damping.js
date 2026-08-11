@@ -6,6 +6,9 @@ import Settings from '../../content/settings.js';
  * This is a dimensionless decay coefficient, not a friction force. Values
  * closer to 1 preserve more velocity per nominal 60 Hz simulation step. The
  * Kinematics integrator converts it into a refresh-rate-independent decay.
+ *
+ * This currently provides the global movement default. Material mechanics may
+ * later supply local coefficients for effects such as ice or quicksand.
  */
 export default class Damping {
 

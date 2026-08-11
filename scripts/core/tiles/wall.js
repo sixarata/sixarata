@@ -14,7 +14,7 @@ export default class Wall extends Tile {
 	 * @param {Position} position
 	 * @param {Size}     size
 	 * @param {String}   type
-	 * @param {Boolean}  solid
+	 * @param {Number}   density
 	 */
 	constructor(
 		group    = [],

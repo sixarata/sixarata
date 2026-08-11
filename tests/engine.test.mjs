@@ -319,14 +319,15 @@ test( 'Idle velocity damping is equivalent at 30, 60, and 120 Hz', () => {
 	Time.delta = originalDelta;
 } );
 
-test( 'Tile solidity uses a backwards-compatible density alias', () => {
+test( 'Tile preserves numeric density for future material behavior', () => {
 	const player = Game.Room.tiles.players[ 0 ];
+	const originalDensity = player.density;
 
-	assert.equal( player.solid, true );
+	player.density = 0.35;
+	assert.equal( player.density, 0.35 );
 	player.density = 0;
-	assert.equal( player.solid, false );
-	player.solid = true;
-	assert.equal( player.density, true );
+	assert.equal( player.density, 0 );
+	player.density = originalDensity;
 } );
 
 test( 'Camera bottom-aligns a room smaller than the view', () => {

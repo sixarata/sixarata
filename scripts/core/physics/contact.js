@@ -1,8 +1,12 @@
 /**
  * The Contact object.
  *
- * This object is responsible for storing & manipulating whether or not
- * contact between Tiles has been made on any side of the calling Tile.
+ * Stores which side of a moving Tile touched another Tile. After Collision
+ * detects an overlap, Contact uses the incoming velocity to identify the side,
+ * move the Tile back to that boundary, and stop velocity on the affected axis.
+ *
+ * Top, right, bottom, and left describe the current two-dimensional plane.
+ * Depth-facing sides can be added if collision detection expands to the Z axis.
  */
 export default class Contact {
 
@@ -63,7 +67,7 @@ export default class Contact {
 	}
 
 	/**
-	 * Reset the Position.
+	 * Reset all contact states.
 	 *
 	 * @returns {Contact}
 	 */
@@ -77,7 +81,7 @@ export default class Contact {
 	}
 
 	/**
-	 * Check if a Tile has made contact with another Tile.
+	 * Resolve an overlap and record the side that made contact.
 	 *
 	 * @param {Velocity} velocity
 	 * @param {Tile}     tile1
