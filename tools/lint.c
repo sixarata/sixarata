@@ -63,7 +63,7 @@ static bool ends_with(const char *s, const char *suffix){
     return n>=m && memcmp(s+n-m, suffix, m)==0;
 }
 static bool file_exists(const char *p){ struct stat st; return stat(p,&st)==0 && S_ISREG(st.st_mode); }
-static bool has_js_ext(const char *p){ return ends_with(p,".js"); }
+static bool has_javascript_ext(const char *p){ return ends_with(p,".js") || ends_with(p,".mjs"); }
 
 static char *dirname_of_exe(const char *argv0){
     char buf[PATH_MAX];
@@ -446,7 +446,7 @@ static void add_js_recursive(const char *root, strvec *out){
         if (S_ISDIR(st.st_mode)){
             add_js_recursive(path, out);
         } else if (S_ISREG(st.st_mode)){
-            if (has_js_ext(path)) strvec_push(out, path);
+            if (has_javascript_ext(path)) strvec_push(out, path);
         }
     }
     closedir(d);
@@ -459,7 +459,7 @@ static void gather_staged_js(strvec *out){
         size_t n=strlen(line);
         while (n>0 && (line[n-1]=='\n' || line[n-1]=='\r')) line[--n]='\0';
         if (n==0) continue;
-        if (!has_js_ext(line)) continue;
+        if (!has_javascript_ext(line)) continue;
         if (!file_exists(line)) continue;
         strvec_push(out, line);
     }
@@ -482,7 +482,7 @@ int main(int argc, char **argv){
 "Usage:\n"
 "  ./lint [check]                # run check (non-zero exit on violations)\n"
 "  ./lint fix                    # attempt auto-fix (adds missing trailing semicolons heuristically)\n"
-"  ./lint --staged               # only lint staged *.js files (auto-detect mode=check)\n"
+"  ./lint --staged               # only lint staged *.js and *.mjs files\n"
 "  ./lint fix --staged           # auto-fix only staged *.js files\n"
 "  ./lint check file1.js file2.js  # limit to specific files\n"
 "Options:\n"
@@ -501,15 +501,16 @@ int main(int argc, char **argv){
     /* If explicit files were provided, ignore staged (match Bash) */
     if (files.len>0) staged=false;
 
-    /* Resolve default or staged lists when files not given */
+    /* Resolve default or staged lists when files not given. */
     if (files.len==0){
         if (staged){
             gather_staged_js(&files);
-        }
-        if (files.len==0){
+        } else {
             char *exe_dir = dirname_of_exe(argv[0]);
             char scripts[PATH_MAX]; snprintf(scripts,sizeof(scripts), "%s/../scripts", exe_dir);
+            char tests[PATH_MAX]; snprintf(tests,sizeof(tests), "%s/../tests", exe_dir);
             add_js_recursive(scripts, &files);
+            add_js_recursive(tests, &files);
             free(exe_dir);
         }
     }
@@ -519,11 +520,11 @@ int main(int argc, char **argv){
         return 0;
     }
 
-    /* Filter to *.js and existing files */
+    /* Filter to JavaScript modules and existing files. */
     strvec js; strvec_init(&js);
     for (size_t i=0;i<files.len;i++){
         const char *f = files.data[i];
-        if (!has_js_ext(f)) continue;
+        if (!has_javascript_ext(f)) continue;
         if (!file_exists(f)) { fprintf(stderr, "Skipping missing file %s\n", f); continue; }
         strvec_push(&js, f);
     }

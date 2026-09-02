@@ -13,6 +13,7 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Changed
 
+- Limited the pre-commit semicolon check to staged JavaScript modules, included `.mjs` tests, and made the lint wrapper honor command-line arguments.
 - Centralized simulation timing on the shared `Time` source and made movement independent of refresh rate and device pixel ratio.
 - Documented physics units, value objects, mechanics, hooks, audio, drawing, and weather lifecycle contracts.
 - Grouped camera defaults under `components.camera.alignment`.

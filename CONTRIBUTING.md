@@ -20,6 +20,12 @@ Then visit `http://127.0.0.1:8080`.
 
 ## Verify a change
 
+Enable the repository's pre-commit hook once per clone. It checks only staged `.js` and `.mjs` files for the project's semicolon policy:
+
+```sh
+git config core.hooksPath .githooks
+```
+
 ```sh
 sh tools/test.sh
 sh tools/lint.sh
