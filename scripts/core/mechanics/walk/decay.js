@@ -1,4 +1,6 @@
 import Game from '../../game.js';
+import Settings from '../../../content/settings.js';
+import Time from '../../utilities/time.js';
 
 /**
  * The Decay mechanic.
@@ -9,9 +11,19 @@ import Game from '../../game.js';
 export default class Decay {
 
 	/**
+	 * Default decay settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		base: 30,
+	}
+
+	/**
 	 * Construct the Decay mechanic.
 	 *
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
+	 * @returns {Decay} this
 	 */
 	constructor( tile = null ) {
 		return this.set( tile );
@@ -21,6 +33,7 @@ export default class Decay {
 	 * Set the mechanic.
 	 *
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
+	 * @returns {Decay} this
 	 */
 	set = ( tile = null ) => {
 		this.reset();
@@ -30,9 +43,12 @@ export default class Decay {
 
 	/**
 	 * Reset the mechanic.
+	 *
+	 * @returns {Decay} this
 	 */
 	reset = () => {
 		this.tile      = null;
+		this.settings  = Settings.player?.move ?? Decay.defaults;
 		this.listening = true;
 
 		return this;
@@ -41,6 +57,8 @@ export default class Decay {
 
 	/**
 	 * Listen for idle decay.
+	 *
+	 * @returns {void}
 	 */
 	listen = () => {
 
@@ -58,9 +76,12 @@ export default class Decay {
 		const r = Game.History.hold( 'right' );
 
 		if ( ! l?.down && ! r?.down ) {
-			v.x *= Game.Friction.force;
+			v.x = Game.Damping.apply(
+				v.x,
+				Time.seconds()
+			);
 
-			if ( Math.abs( v.x ) < Game.Friction.force ) {
+			if ( Math.abs( v.x ) < this.settings.base ) {
 				v.x = 0;
 			}
 		}

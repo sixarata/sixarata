@@ -21,7 +21,7 @@ export default class Nudge {
 	 * @type {Object}
 	 */
 	static defaults = {
-		base: 1,
+		base: 30,
 	}
 
 	/**

@@ -4,6 +4,12 @@
  *
  * Provides a monotonic high‑resolution timestamp (now) updated once per rAF
  * by Frame.animate, so all systems share an identical per‑frame time.
+ *
+ * `delta` is the raw elapsed wall-clock duration. Timers and input history use
+ * it indirectly through `now`. `step` is the bounded gameplay duration used by
+ * motion and other stateful mechanics, preventing a stalled frame from causing
+ * a large jump. `diff` and `scale` describe the current frame relative to the
+ * configured frame goal.
  */
 class Time {
 
@@ -39,6 +45,7 @@ class Time {
 		this.now   = t;
 		this.prev  = t;
 		this.delta = 0;
+		this.step  = 0;
 		this.diff  = 1;
 		this.scale = 1;
 
@@ -64,6 +71,19 @@ class Time {
 		// Return.
 		return this;
 	}
+
+	/**
+	 * Convert a millisecond duration to seconds.
+	 *
+	 * With no argument, this returns the current bounded physics timestep in
+	 * seconds. Pass an explicit duration when converting some other clock value.
+	 *
+	 * @param {Number} milliseconds Milliseconds to convert. Defaults to step.
+	 * @returns {Number} A non-negative duration in seconds.
+	 */
+	seconds = (
+		milliseconds = this.step
+	) => Math.max( 0, Number( milliseconds ) || 0 ) / 1000;
 
 	/**
 	 * Get a wall‑clock epoch ms if ever needed.

@@ -1,28 +1,44 @@
+import Game from '../game.js';
+
+/**
+ * Rain weather effect lifecycle.
+ *
+ * The effect is intentionally visual-state neutral until particle rendering
+ * is implemented, while still exposing the standard engine lifecycle.
+ */
 export default class Rain {
 
 	/**
-	 * Construct the Jobs utility.
+	 * Construct the rain effect.
+	 *
+	 * @returns {Rain} this
 	 */
 	constructor() {
-		this.set();
+		return this.set();
 	}
 
 	/**
 	 * Set / initialize.
+	 *
+	 * @returns {Rain} this
 	 */
 	set = () => {
-		this.reset();
+		return this.reset();
 	}
 
 	/**
 	 * Reset internal state.
+	 *
+	 * @returns {Rain} this
 	 */
 	reset = () => {
-
+		return this;
 	}
 
 	/**
 	 * Register hooks with global Hooks system.
+	 *
+	 * @returns {void}
 	 */
 	hooks = () => {
 		Game.Hooks.add( 'Frame.tick', this.tick, 9 );
@@ -30,6 +46,8 @@ export default class Rain {
 
 	/**
 	 * Tick event handler.
+	 *
+	 * @returns {void}
 	 */
 	tick = () => {
 
@@ -37,6 +55,8 @@ export default class Rain {
 
 	/**
 	 * Render event handler.
+	 *
+	 * @returns {void}
 	 */
 	render = () => {
 

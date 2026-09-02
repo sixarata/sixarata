@@ -1,365 +1,268 @@
 import Time from './time.js';
 
 /**
- * The Hooks object.
+ * Priority-ordered synchronous event hooks.
  *
- * This object is responsible for adding, removing, and doing the hooks that have
- * been queued up by other parts of the application.
+ * Named hooks contain callbacks grouped by numeric priority. Lower priorities
+ * run first. Callbacks can be temporarily suspended by elapsed milliseconds or
+ * processed frames without losing their original name and priority.
  */
 export default class Hooks {
 
-	/**
-	 * Private name of the current hook.
-	 *
-	 * @private {String} current
-	 */
+	/** @type {String} Name of the hook currently executing. */
 	#current = '';
 
-	/**
-	 * Private array of queued hooks.
-	 *
-	 * @private {Array} queued
-	 */
-	#queued = [];
+	/** @type {Map<String, Map<Number, Array<Function>>>} Active callbacks. */
+	#queued = new Map();
 
-	/**
-	 * Private array of completed hooks.
-	 *
-	 * @private {Array} done
-	 */
+	/** @type {Array<Object>} Bounded callback execution history. */
 	#done = [];
 
-	/**
-	 * Private array of suspended hooks.
-	 *
-	 * @private {Array} suspended
-	 */
+	/** @type {Array<Object>} Callbacks awaiting automatic or manual resumption. */
 	#suspended = [];
 
-	/**
-	 * Construct the object.
-	 */
+	/** @returns {Hooks} A reset hook registry. */
 	constructor() {
-		return this.set();
-	}
-
-	/**
-	 * Set the object.
-	 */
-	set = () => {
 		return this.reset();
 	}
 
-	/**
-	 * Reset the Hooks.
-	 */
+	/** @returns {Hooks} this, reset for compatibility with other services. */
+	set = () => this.reset();
+
+	/** @returns {Hooks} this, with all queued and historical state cleared. */
 	reset = () => {
-
-		// Reset attributes.
-		this.#current   = '';
-		this.#done      = [];
+		this.#current = '';
+		this.#queued.clear();
+		this.#done = [];
 		this.#suspended = [];
-		this.#queued    = [];
 
-		// Return.
 		return this;
 	}
 
 	/**
-	 * Add a callback hook.
+	 * Register a callback at a numeric priority.
 	 *
-	 * @param   {String} name
-	 * @param   {String} callback
-	 * @param   {Number} priority
-	 * @returns {Mixed}  The index of the callback.
+	 * @param {String} name Hook name.
+	 * @param {Function} callback Callback to register.
+	 * @param {Number} priority Execution priority; lower values run first.
+	 * @returns {Number|Boolean} One-based position, or false for invalid input.
 	 */
 	add = (
 		name     = '',
-		callback = '',
+		callback = null,
 		priority = 10
 	) => {
-
-		// Skip if empty.
-		if ( ! name || ! callback ) {
+		if ( ! name || typeof callback !== 'function' ) {
 			return false;
 		}
 
-		// Setup array if empty.
-		if ( ! this.#queued[ name ] ) {
-			this.#queued[ name ] = [];
+		if ( ! this.#queued.has( name ) ) {
+			this.#queued.set( name, new Map() );
 		}
 
-		// Setup array if empty.
-		if ( ! this.#queued[ name ][ priority ] ) {
-			this.#queued[ name ][ priority ] = [];
+		const priorities = this.#queued.get( name );
+
+		if ( ! priorities.has( priority ) ) {
+			priorities.set( priority, [] );
 		}
 
-		// Look for existing callback.
-		let index = this.#queued[ name ][ priority ].indexOf( callback );
+		const callbacks = priorities.get( priority );
+		const existing = callbacks.indexOf( callback );
 
-		// Avoid multiples.
-		if ( -1 === index ) {
-			index = this.#queued[ name ][ priority ].push( callback );
+		if ( existing >= 0 ) {
+			return existing + 1;
 		}
 
-		// Return the index.
-		return index;
+		return callbacks.push( callback );
 	}
 
 	/**
-	 * Remove a callback from the hook queue.
+	 * Remove one exact callback registration.
 	 *
-	 * @param   {String} name
-	 * @param   {String} callback
-	 * @param   {Number} priority
-	 * @returns {Mixed}  True if removed, false if not found.
+	 * @param {String} name Hook name.
+	 * @param {Function} callback Callback to remove.
+	 * @param {Number} priority Registered priority.
+	 * @returns {Boolean} Whether the exact callback was removed.
 	 */
 	remove = (
 		name     = '',
-		callback = '',
+		callback = null,
 		priority = 10
 	) => {
+		const callbacks = this.#callbacks( name, priority );
 
-		// Skip if does not exist.
-		if ( ! this.exists( name, callback, priority ) ) {
+		if ( ! callbacks || typeof callback !== 'function' ) {
 			return false;
 		}
 
-		// Get the callback position.
-		let index = this.#queued[ name ][ priority ].indexOf( callback );
+		const index = callbacks.indexOf( callback );
 
-		// Remove the callback from the array.
-		return this.#queued[ name ][ priority ].splice( index, 1 );
-	}
-
-	/**
-	 * Completely clear a hook of all callbacks at all priorities.
-	 *
-	 * @param   {String} name
-	 * @returns {Mixed}  True if cleared, false if not found.
-	 */
-	clear = (
-		name = ''
-	) => {
-
-		// Skip if empty.
-		if ( ! name || ! this.#queued[ name ] ) {
+		if ( index < 0 ) {
 			return false;
 		}
 
-		// Remove hook name.
-		return this.#queued[ name ].remove;
+		callbacks.splice( index, 1 );
+		this.#prune( name, priority );
+
+		return true;
 	}
 
 	/**
-	 * Get the current hook name.
+	 * Remove every callback registered to one hook name.
 	 *
-	 * @returns {String} The current hook name.
+	 * @param {String} name Hook name.
+	 * @returns {Boolean} Whether a named hook queue existed and was cleared.
 	 */
-	current = () => {
-		return this.#current;
-	}
+	clear = ( name = '' ) => name
+		? this.#queued.delete( name )
+		: false;
+
+	/** @returns {String} The hook currently executing, or an empty string. */
+	current = () => this.#current;
+
+	/** @returns {Array} Copies of callback execution records. */
+	done = () => [ ...this.#done ];
+
+	/** @returns {Array} Copies of callbacks waiting to resume. */
+	suspended = () => [ ...this.#suspended ];
+
+	/** @returns {Array<String>} Names with registered callbacks. */
+	queued = () => [ ...this.#queued.keys() ];
 
 	/**
-	 * Get a shallow copy of completed hook names.
+	 * Run a named hook synchronously in ascending priority order.
 	 *
-	 * @returns {Array} The completed hook names.
-	 */
-	done = () => {
-		return [ ...this.#done ];
-	}
-
-	/**
-	 * Get a shallow copy of suspended entries (for debugging / introspection).
+	 * Every callback receives the original arguments. The return value is the
+	 * final callback result, or the first argument when no callback runs.
 	 *
-	 * @returns {Array} The suspended entries.
-	 */
-	suspended = () => {
-		return [ ...this.#suspended ];
-	}
-
-	/**
-	 * Get a shallow copy of queued hook names.
-	 *
-	 * @returns {Array} The queued hook names.
-	 */
-	queued = () => {
-		return [ ...this.#queued ];
-	}
-
-	/**
-	 * Run all of the callbacks of a hook name.
-	 *
-	 * @param   {String} name
-	 * @param   {...any} args
-	 * @returns {Mixed}  The return value of the last callback.
+	 * @param {String} name Hook name.
+	 * @param {...*} args Arguments forwarded to every callback.
+	 * @returns {*} Final callback result or initial value.
 	 */
 	do = (
 		name = '',
 		...args
 	) => {
+		let retval = args.length ? args[ 0 ] : false;
+		const priorities = this.#queued.get( name );
 
-		// Default return value.
-		let retval = args[ 0 ]
-			? args[ 0 ]
-			: false;
-
-		// Doing...
 		this.#current = name;
 
-		// Do it.
-		if ( name && this.#queued[ name ] ) {
+		try {
+			if ( priorities ) {
+				const ordered = [ ...priorities.keys() ].sort( ( a, b ) => a - b );
 
-			// Loop through priorities.
-			for ( let priority in this.#queued[ name ] ) {
-
-				// Loop through callbacks.
-				for ( let callback in this.#queued[ name ][ priority ] ) {
-
-					// Get the return value.
-					retval = this.#queued[ name ][ priority ][ callback ]( ...args );
+				for ( const priority of ordered ) {
+					for ( const callback of [ ...priorities.get( priority ) ] ) {
+						retval = callback( ...args );
+						this.#done.push( {
+							name,
+							callback,
+							priority,
+						} );
+					}
 				}
 			}
+		} finally {
+			this.#current = '';
 		}
 
-		// Done.
-		this.#done.push( name );
-		this.#current = '';
-
-		// Limit the done array to the last 1000.
 		if ( this.#done.length > 1000 ) {
-			this.#done.shift();
+			this.#done.splice( 0, this.#done.length - 1000 );
 		}
 
-		// Return.
 		return retval;
 	}
 
 	/**
-	 * Suspend a hook, and schedule automatic re‑addition.
+	 * Temporarily remove a callback until either delay condition is satisfied.
 	 *
-	 * Supply:
-	 * - millisecond duration (ms)
-	 * - frame count (frames)
-	 *
-	 * If both are used, the first condition that is met triggers the restore.
-	 *
-	 * @param {String}    name     Hook name.
-	 * @param {Function}  callback Callback reference originally added.
-	 * @param {Number}    priority Priority level (defaults to 10 like add/remove).
-	 * @param {Object}    options  { ms: Number, frames: Number }
-	 * @returns {Boolean} True if suspended, false if not found or invalid.
+	 * @param {String} name Hook name.
+	 * @param {Function} callback Exact registered callback.
+	 * @param {Number} priority Registered priority.
+	 * @param {Object} options Millisecond (`ms`) and/or frame delay.
+	 * @returns {Boolean} Whether the callback was suspended.
 	 */
 	suspend = (
 		name     = '',
-		callback = '',
+		callback = null,
 		priority = 10,
 		options  = {}
 	) => {
+		const milliseconds = Math.max( 0, Number( options.ms ) || 0 );
+		const frames = Math.max( 0, Math.floor( Number( options.frames ) || 0 ) );
 
-		// Must exist to suspend.
-		if ( ! this.exists( name, callback, priority ) ) {
+		if (
+			! this.exists( name, callback, priority )
+			||
+			( milliseconds === 0 && frames === 0 )
+		) {
 			return false;
 		}
 
-		// Get the suspension options.
-		const ms     = options.ms     ?? 0;
-		const frames = options.frames ?? 0;
-		const now    = Time.now;
-
-		// Skip if no suspension options.
-		if ( ! ms && ! frames ) {
-			return false;
-		}
-
-		// Remove it from active queue.
 		this.remove( name, callback, priority );
-
-		// Record suspension.
 		this.#suspended.push( {
 			name,
 			callback,
 			priority,
-			expires: ( ms > 0 ) ? ( now + ms ) : 0,
-			frames: ( frames > 0 ) ? frames : 0,
+			expiresAt: milliseconds ? Time.now + milliseconds : 0,
+			framesLeft: frames,
+			usesFrames: frames > 0,
 		} );
 
 		return true;
 	}
 
 	/**
-	 * Manually resume a suspended hook immediately.
+	 * Restore one suspended callback immediately.
 	 *
-	 * @param {String}    name
-	 * @param {Function}  callback
-	 * @param {Number}    priority
-	 * @returns {Boolean} True if resumed, false if not found.
+	 * @param {String} name Hook name.
+	 * @param {Function} callback Exact suspended callback.
+	 * @param {Number} priority Registered priority.
+	 * @returns {Boolean} Whether the exact suspended callback was restored.
 	 */
 	resume = (
 		name     = '',
-		callback = '',
+		callback = null,
 		priority = 10
 	) => {
-		let found = false;
+		const index = this.#suspended.findIndex( entry => (
+			entry.name === name
+			&&
+			entry.callback === callback
+			&&
+			entry.priority === priority
+		) );
 
-		this.#suspended = this.#suspended.filter( entry => {
-			if (
-				! found
-				&&
-				entry.name === name
-				&&
-				entry.callback === callback
-				&&
-				entry.priority === priority
-			) {
-				this.add( name, callback, priority );
-				found = true;
+		if ( index < 0 ) {
+			return false;
+		}
 
-				// Remove from suspended
-				return false;
-			}
+		const [ entry ] = this.#suspended.splice( index, 1 );
+		this.add( entry.name, entry.callback, entry.priority );
 
-			// Keep others
-			return true;
-		} );
-
-		return found;
+		return true;
 	}
 
 	/**
-	 * Process suspended hooks.
+	 * Restore suspended callbacks whose time or frame delay has elapsed.
 	 *
-	 * Re‑adds hooks with elapsed timers / frame-counts.
-	 *
-	 * @param {Boolean} advanceFrames Whether to decrement frame counters this pass.
-	 * @returns {Void}
+	 * @param {Boolean} advanceFrames Whether this processing pass counts a frame.
+	 * @returns {void}
 	 */
-	process = (
-		advanceFrames = false
-	) => {
-
-		// Skip if no suspended hooks.
-		if ( ! this.#suspended.length ) {
-			return;
-		}
-
-		const now = Time.now;
+	process = ( advanceFrames = false ) => {
 		const remaining = [];
 
 		for ( const entry of this.#suspended ) {
-
-			// Decrement frame counter only when appropriate.
 			if ( advanceFrames && entry.framesLeft > 0 ) {
 				entry.framesLeft--;
 			}
 
-			const timeReady  = entry.expires && entry.expires > 0 && now >= entry.expires;
-			const frameReady = entry.frames === 0 && ( entry.expires === 0 || ! entry.expires );
-			const dualReady  = ( entry.frames === 0 && entry.expires > 0 && now >= entry.expires );
+			const timeReady = entry.expiresAt > 0 && Time.now >= entry.expiresAt;
+			const frameReady = entry.usesFrames && entry.framesLeft === 0;
 
-			if ( timeReady || frameReady || dualReady ) {
+			if ( timeReady || frameReady ) {
 				this.add( entry.name, entry.callback, entry.priority );
-
 			} else {
 				remaining.push( entry );
 			}
@@ -369,68 +272,92 @@ export default class Hooks {
 	}
 
 	/**
-	 * Return whether a hook name is being done.
-	 *
-	 * @param   {String}  name
-	 * @returns {Boolean} True if hook is currently being done.
+	 * @param {String} name Hook name.
+	 * @returns {Boolean} Whether the named hook is currently executing.
 	 */
-	doing = (
-		name = ''
-	) => {
-		return ( name === this.#current );
-	}
+	doing = ( name = '' ) => name === this.#current;
 
 	/**
-	 * Return whether a hook callback has been done.
+	 * Check the bounded execution history.
 	 *
-	 * @param   {String}  name
-	 * @param   {String}  callback
-	 * @param   {Number}  priority
-	 * @returns {Boolean} True if hook callback has been done.
+	 * Omitting `callback` matches any execution of the named hook.
+	 *
+	 * @param {String} name Hook name.
+	 * @param {Function|null} callback Optional exact callback.
+	 * @param {Number} priority Registered priority when callback is supplied.
+	 * @returns {Boolean} Whether a matching callback execution was recorded.
 	 */
 	did = (
 		name     = '',
-		callback = '',
+		callback = null,
 		priority = 10
-	) => {
-
-		if ( name && callback ) {
-			if ( this.#done[ name ] ) {
-				if ( this.#done[ name ][ priority ] ) {
-					return callback.length
-						? ( -1 !== this.#done[ name ][ priority ].indexOf( callback ) )
-						: true;
-				}
-			}
-		}
-
-		return false;
-	}
+	) => this.#done.some( entry => (
+		entry.name === name
+		&&
+		( typeof callback !== 'function' || entry.callback === callback )
+		&&
+		( typeof callback !== 'function' || entry.priority === priority )
+	) );
 
 	/**
-	 * Return whether a hook callback has been queued.
+	 * Check the active callback registry.
 	 *
-	 * @param {String}    name
-	 * @param {String}    callback
-	 * @param {Number}    priority
-	 * @returns {Boolean} True if hook callback has been queued.
+	 * @param {String} name Hook name.
+	 * @param {Function|null} callback Optional exact callback.
+	 * @param {Number} priority Registered priority.
+	 * @returns {Boolean} Whether a matching callback is currently registered.
 	 */
 	exists = (
 		name     = '',
-		callback = '',
+		callback = null,
 		priority = 10
 	) => {
+		const callbacks = this.#callbacks( name, priority );
 
-		if ( name && callback ) {
-			if ( this.#queued[ name ] ) {
-				if ( this.#queued[ name ][ priority ] ) {
-					return callback.length
-						? ( -1 !== this.#queued[ name ][ priority ].indexOf( callback ) )
-						: true;
-				}
-			}
+		if ( ! callbacks ) {
+			return false;
 		}
 
-		return false;
+		return typeof callback === 'function'
+			? callbacks.includes( callback )
+			: callbacks.length > 0;
+	}
+
+	/**
+	 * Get the callback list at one name and priority.
+	 *
+	 * @param {String} name Hook name.
+	 * @param {Number} priority Registered priority.
+	 * @returns {Array<Function>|undefined} Internal callback list.
+	 */
+	#callbacks = (
+		name,
+		priority
+	) => this.#queued.get( name )?.get( priority );
+
+	/**
+	 * Remove empty priority and hook containers after a callback is removed.
+	 *
+	 * @param {String} name Hook name.
+	 * @param {Number} priority Registered priority.
+	 * @returns {void}
+	 */
+	#prune = (
+		name,
+		priority
+	) => {
+		const priorities = this.#queued.get( name );
+
+		if ( ! priorities ) {
+			return;
+		}
+
+		if ( priorities.get( priority )?.length === 0 ) {
+			priorities.delete( priority );
+		}
+
+		if ( priorities.size === 0 ) {
+			this.#queued.delete( name );
+		}
 	}
 }

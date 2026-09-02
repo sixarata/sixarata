@@ -41,7 +41,7 @@ export default class Jobs {
 	 * Register hooks with global Hooks system.
 	 */
 	hooks = () => {
-		Game.Hooks.add( 'Frame.tick', this.tick, 9 );
+		Game.Hooks.add( 'Frame.tick', this.tick, 20 );
 	}
 
 	/**
@@ -77,6 +77,8 @@ export default class Jobs {
 			// scheduling
 			expiresAt: ms > 0 ? ( nowElapsed + ms ) : 0,
 			framesLeft: frames > 0 ? frames : 0,
+			usesTime: ms > 0,
+			usesFrames: frames > 0,
 			// repetition
 			repeat,
 			intervalMs: intervalMs || ms,
@@ -140,6 +142,7 @@ export default class Jobs {
 
 		for ( const job of this._pending ) {
 			if ( job.cancelled ) {
+				this.cleanupKey( job );
 				continue;
 			}
 
@@ -148,13 +151,11 @@ export default class Jobs {
 				job.framesLeft--;
 			}
 
-			const timeReady  = job.expiresAt > 0 && nowElapsed >= job.expiresAt;
-			const frameReady = job.framesLeft === 0 && job.intervalFrames !== 0;
-			const ready = (
-				( job.expiresAt > 0 && job.framesLeft > 0 )
-				? ( timeReady || ( job.framesLeft === 0 ) )
-				: ( timeReady || job.framesLeft === 0 )
-			);
+			const timeReady = job.usesTime && nowElapsed >= job.expiresAt;
+			const frameReady = job.usesFrames && job.framesLeft === 0;
+			const ready = timeReady
+				|| frameReady
+				|| ( ! job.usesTime && ! job.usesFrames );
 
 			if ( ready ) {
 				try {
@@ -167,21 +168,22 @@ export default class Jobs {
 					// Re-schedule by resetting timers.
 					if ( job.intervalMs > 0 ) {
 						job.expiresAt = nowElapsed + job.intervalMs;
+						job.usesTime = true;
 					} else {
 						job.expiresAt = 0;
+						job.usesTime = false;
 					}
 					if ( job.intervalFrames > 0 ) {
 						job.framesLeft = job.intervalFrames;
+						job.usesFrames = true;
 					} else {
 						job.framesLeft = 0;
+						job.usesFrames = false;
 					}
 					keep.push( job );
 				} else {
 					// One-shot: drop it; cleanup key index afterwards.
-					if ( job.key && this._indexKey[ job.key ] ) {
-						this._indexKey[ job.key ] = this._indexKey[ job.key ].filter( id => id !== job.id );
-						if ( ! this._indexKey[ job.key ].length ) delete this._indexKey[ job.key ];
-					}
+					this.cleanupKey( job );
 				}
 			} else {
 				keep.push( job );
@@ -189,5 +191,22 @@ export default class Jobs {
 		}
 
 		this._pending = keep;
+	}
+
+	/**
+	 * Remove a completed or cancelled job from its key index.
+	 */
+	cleanupKey = ( job = {} ) => {
+		if ( ! job.key || ! this._indexKey[ job.key ] ) {
+			return;
+		}
+
+		this._indexKey[ job.key ] = this._indexKey[ job.key ].filter(
+			id => id !== job.id
+		);
+
+		if ( ! this._indexKey[ job.key ].length ) {
+			delete this._indexKey[ job.key ];
+		}
 	}
 }

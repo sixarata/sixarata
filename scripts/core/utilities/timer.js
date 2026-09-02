@@ -335,7 +335,7 @@ export default class Timer {
 	) => {
 
 		// Skip if no time.
-		if ( ms <= 0 ) {
+		if ( ms === 0 ) {
 			return this;
 		}
 

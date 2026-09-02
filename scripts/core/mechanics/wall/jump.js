@@ -20,8 +20,8 @@ export default class WallJump {
 	 * @type {Object}
 	 */
 	static defaults = {
-		power: 18,
-		lateral: 18,
+		power: 540,
+		lateral: 540,
 		time: 100,
 	}
 

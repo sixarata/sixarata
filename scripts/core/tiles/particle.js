@@ -1,7 +1,7 @@
 import Game from '../game.js';
 import Time from '../utilities/time.js';
 
-import { Tile } from './exports.js';
+import Tile from './tile.js';
 import { Size, Velocity } from '../physics/exports.js';
 
 /**
@@ -117,11 +117,10 @@ export default class Particle extends Tile {
 			return this.destroy();
 		}
 
-		const scale = ( Time.scale / Game.Screen.dpr );
-
-		// Update position.
-		this.physics.position.x += ( this.physics.velocity.x * scale );
-		this.physics.position.y += ( this.physics.velocity.y * scale );
-		this.physics.position.z += ( this.physics.velocity.z * scale );
+		Game.Kinematics.integrate(
+			this.physics.position,
+			this.physics.velocity,
+			Time.seconds()
+		);
 	}
 }

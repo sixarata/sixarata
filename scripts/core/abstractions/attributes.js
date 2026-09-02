@@ -23,12 +23,18 @@ export default class Attributes {
 	constructor(
 		entries = {}
 	) {
-		this.defaults = new Map( entries );
-		this.reset( entries );
+		const normalized = entries instanceof Map
+			? entries
+			: Object.entries( entries );
+
+		this.defaults = new Map( normalized );
+		this.reset();
 	}
 
 	reset = () => {
-		return this.modified = this.defaults;
+		this.modified = new Map( this.defaults );
+
+		return this;
 	}
 
 	clear = () => {
@@ -44,5 +50,17 @@ export default class Attributes {
 
 	get = ( key = '' ) => {
 		return this.modified.get( key );
+	}
+
+	merge = ( entries = {} ) => {
+		const normalized = entries instanceof Map
+			? entries
+			: Object.entries( entries );
+
+		for ( const [ key, value ] of normalized ) {
+			this.modified.set( key, value );
+		}
+
+		return this;
 	}
 }

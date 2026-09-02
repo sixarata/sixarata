@@ -1,105 +1,110 @@
 import { Scale, Sound } from '../sound/exports.js';
 
 /**
- * The Audio class.
+ * The Audio interface.
  *
- * This class is a collection of methods used to generate a sound.
+ * Owns the browser audio pipeline and the currently selected musical scale and
+ * sound. Browsers commonly create an AudioContext in a suspended state until a
+ * user gesture occurs, so play() resumes that context before producing sound.
  */
 export default class Audio {
 
 	/**
-	 * Construct the Audio component.
+	 * Construct the Audio interface.
+	 *
+	 * @param {Function|Object|null} pipeline AudioContext constructor or instance.
+	 * @returns {Audio} this
 	 */
-	constructor() {
-		return this.set();
+	constructor( pipeline = null ) {
+		return this.set( pipeline );
 	}
 
 	/**
-	 * Set the pipeline for the Audio component.
+	 * Configure the audio pipeline and reset the selected scale and sound.
 	 *
-	 * @param   {Object} pipeline Default AudioContext. The pipeline to send sounds through.
-	 * @returns {Audio}  The Audio component.
+	 * Passing a constructor creates an instance. Passing an existing pipeline
+	 * preserves that instance, which makes the interface testable without browser
+	 * audio support.
+	 *
+	 * @param {Function|Object|null} pipeline AudioContext constructor or instance.
+	 * @returns {Audio} this
 	 */
-	set = (
-		pipeline = AudioContext
-	) => {
+	set = ( pipeline = null ) => {
+		const Pipeline = pipeline
+			?? globalThis.AudioContext
+			?? globalThis.webkitAudioContext
+			?? null;
 
-		// Pipeline.
-		this.pipeline = new pipeline
-			?? new AudioContext;
-
-		// Maybe resume.
-		if ( this.canPlay() ) {
-			this.pipeline.resume();
-		}
-
-		// Scale.
+		this.pipeline = typeof Pipeline === 'function'
+			? new Pipeline()
+			: Pipeline;
 		this.scale = new Scale();
-
-		// Sound.
 		this.sound = new Sound();
 
-		// Return.
 		return this;
 	}
 
 	/**
-	 * Reset the Audio component.
+	 * Reset to the environment's default pipeline, scale, and sound.
+	 *
+	 * @returns {Audio} this
 	 */
-	reset = () => {
-		return this.set();
-	}
+	reset = () => this.set();
 
 	/**
-	 * Return the pipeline when getting the Audio component.
+	 * Return the underlying pipeline during numeric or primitive coercion.
 	 *
-	 * @returns {Object}
+	 * @returns {Object|null} The active audio pipeline.
 	 */
-	valueOf = () => {
-		return this.pipeline;
-	}
+	valueOf = () => this.pipeline;
 
 	/**
-	 * Set the sound.
+	 * Select the sound that play() will produce.
 	 *
-	 * @param   {Sound} sound Default new Sound(). The sound to set.
-	 * @returns {Audio} The Audio component.
+	 * @param {Sound} sound Sound definition to select.
+	 * @returns {Sound} The selected sound.
 	 */
-	setSound = (
-		sound = new Sound()
-	) => {
+	setSound = ( sound = new Sound() ) => {
 		this.sound = sound;
 
 		return this.sound;
 	}
 
 	/**
-	 * Set the scale.
+	 * Select the musical scale used to derive note frequencies.
 	 *
-	 * @param   {Scale} scale Default new Scale(). The scale to set.
-	 * @returns {Audio} The Audio component.
+	 * @param {Scale} scale Scale definition to select.
+	 * @returns {Scale} The selected scale.
 	 */
-	setScale = (
-		scale = new Scale()
-	) => {
+	setScale = ( scale = new Scale() ) => {
 		this.scale = scale;
 
 		return this.scale;
 	}
 
 	/**
-	 * Check if sound can be played.
+	 * Determine whether the browser pipeline can currently emit audio.
 	 *
-	 * @returns {Boolean}
+	 * @returns {Boolean} True when the pipeline exists and is running.
 	 */
-	canPlay = () => {
-		return ( this.pipeline.state === 'running' );
-	}
+	canPlay = () => this.pipeline?.state === 'running';
 
 	/**
-	 * Play the sound.
+	 * Resume the browser pipeline if necessary, then play the selected sound.
+	 *
+	 * @returns {Promise<Boolean>} Whether playback was handed to a pipeline.
 	 */
-	play = () => {
+	play = async () => {
+		if ( ! this.pipeline ) {
+			return false;
+		}
+
+		if ( this.pipeline.state === 'suspended' ) {
+			await this.pipeline.resume();
+		}
+
 		this.sound.play( this.pipeline );
+
+		return true;
 	}
 }

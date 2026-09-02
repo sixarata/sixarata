@@ -5,7 +5,8 @@ import { Collision } from '../physics/exports.js';
 /**
  * The Collide mechanic.
  *
- * Handles collision detection with solid tiles (platforms, walls) and updates contact.
+ * Detects overlap with nonzero-density Tiles, then asks Contact to identify and
+ * resolve the side that was touched.
  */
 export default class Collide {
 
@@ -66,6 +67,11 @@ export default class Collide {
 	}
 
 	/**
+	 * Remove global hooks owned by this mechanic.
+	 */
+	unhooks = () => Game.Hooks.remove( 'Tile.render', this.render );
+
+	/**
 	 * Perform collision resolution for the current frame.
 	 *
 	 * @param {Object} velocity Partial velocity {x?, y?, z?} for axis resolution context.
@@ -80,7 +86,7 @@ export default class Collide {
 			return;
 		}
 
-		// Check solid tiles for collisions.
+		// Check nonzero-density tiles for collisions.
 		this.check( velocity );
 	}
 
@@ -111,9 +117,12 @@ export default class Collide {
 	}
 
 	/**
-	 * Get all solid tiles that have density.
+	 * Get all collidable Tiles with nonzero density.
 	 *
-	 * @returns {Array} Array of solid tiles with density.
+	 * Density is currently used as the collision threshold. Its numeric value is
+	 * retained for future material and force mechanics.
+	 *
+	 * @returns {Array} Array of nonzero-density Tiles.
 	 */
 	solids = () => {
 		return Game.Room.tiles.platforms.concat(
@@ -135,7 +144,7 @@ export default class Collide {
 
 		for ( let i = 0; i < len; i++ ) {
 
-			// Get the solid tile.
+			// Get the collidable tile.
 			let s = solids[ i ];
 
 			// Broad-phase: Quick distance rejection.

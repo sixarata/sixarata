@@ -70,6 +70,8 @@ export default class Frame {
 
 		// Exponential moving average.
 		this.ema      = 1;
+		this.paused   = false;
+		this.scheduled = false;
 
 		// Start.
 		this.current  = this.request();
@@ -110,6 +112,7 @@ export default class Frame {
 	 * Tick through time.
 	 */
 	tick = () => {
+		Game.Hooks.process( true );
 		Game.Hooks.do( 'Frame.tick' );
 	}
 
@@ -135,6 +138,11 @@ export default class Frame {
 	animate = (
 		now = 0
 	) => {
+		this.scheduled = false;
+
+		if ( this.paused ) {
+			return;
+		}
 
 		// Set per-frame time & delta.
 		Time.update( now );
@@ -142,6 +150,7 @@ export default class Frame {
 		// Set Time diff to raw diff.
 		Time.diff  = this.rawDiff();
 		Time.scale = Math.max( this.settings.throttle, Time.diff );
+		Time.step  = this.clampedDelta();
 
 		// Loop.
 		Game.Hooks.do( 'Frame.animate' );
@@ -168,7 +177,14 @@ export default class Frame {
 	 * @returns {requestAnimationFrame} The requested frame.
 	 */
 	request = () => {
-		return requestAnimationFrame( this.animate );
+		if ( this.scheduled ) {
+			return this.current;
+		}
+
+		this.scheduled = true;
+		this.current = requestAnimationFrame( this.animate );
+
+		return this.current;
 	};
 
 	/**
@@ -177,6 +193,8 @@ export default class Frame {
 	 * @returns {cancelAnimationFrame} The cancelled frame.
 	 */
 	cancel = () => {
+		this.scheduled = false;
+
 		return cancelAnimationFrame( this.current );
 	}
 
@@ -270,6 +288,24 @@ export default class Frame {
 	}
 
 	/**
+	 * Clamp elapsed gameplay time without imposing a minimum timestep.
+	 *
+	 * Raw Time.delta remains available to clocks and input history. Physics uses
+	 * this bounded value so a foreground stall cannot teleport moving objects.
+	 *
+	 * @returns {Number} Bounded gameplay milliseconds for the current frame.
+	 */
+	clampedDelta = () => {
+		const delta = Number( Time.delta );
+
+		if ( ! Number.isFinite( delta ) || delta <= 0 ) {
+			return 0;
+		}
+
+		return Math.min( delta, this.step * this.settings.clamp );
+	}
+
+	/**
 	 * Exponential moving average of time-based diff (reduces jitter).
 	 *
 	 * @param {Number} alpha Smoothing factor (0 < a <= 1).
@@ -296,7 +332,8 @@ export default class Frame {
 
 		// Pause the frame updates.
 		if ( document.hidden ) {
-			this.paused = Time.now;
+			this.paused = true;
+			this.cancel();
 			return;
 		}
 
@@ -305,5 +342,7 @@ export default class Frame {
 
 		// History.
 		this.history = [ Time.now ];
+		this.paused = false;
+		this.request();
 	}
 }

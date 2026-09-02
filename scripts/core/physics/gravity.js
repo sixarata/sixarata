@@ -3,7 +3,9 @@ import Settings from '../../content/settings.js';
 /**
  * The Gravity object.
  *
- * This object is responsible for scaling Gravity to the Room.
+ * Stores the default gravitational acceleration in logical pixels per second
+ * squared. It provides the world baseline; future materials or Tile sides may
+ * modify the effective acceleration without changing this global value.
  */
 export default class Gravity {
 
@@ -13,7 +15,7 @@ export default class Gravity {
 	 * @type {Object}
 	 */
 	static defaults = {
-		force: 80,
+		acceleration: 1440,
 	}
 
 	/**
@@ -42,11 +44,8 @@ export default class Gravity {
 	reset = () => {
 
 		// Get from Settings, or default.
-		const g = Settings.physics?.gravity ?? Gravity.defaults.force;
-
-		// Set properties.
-		this.base  = ( g / 100 );
-		this.force = this.base;
+		this.acceleration = Settings.physics?.gravity
+			?? Gravity.defaults.acceleration;
 
 		// Return.
 		return this;

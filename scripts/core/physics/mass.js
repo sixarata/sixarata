@@ -1,29 +1,55 @@
 /**
- * The Mass object.
- *
- * This object represents the fundamental measure of the amount of
- * matter in the object.
+ * Scalar mass in game-defined mass units.
  */
 export default class Mass {
 
 	/**
-	 * Construct the Mass.
+	 * Construct the object.
+	 *
+	 * @param {Number} value
+	 * @returns {Mass}
 	 */
-	constructor( ...args ) {
-		return this.set( args );
+	constructor( value = 1 ) {
+		return this.set( value );
 	}
 
 	/**
-	 * Set the Mass.
+	 * Set the mass.
+	 *
+	 * @param {Number} value
+	 * @returns {Mass}
 	 */
-	set = ( ...args ) => {
-		return this.reset( args );
-	}
+	set = ( value = 1 ) => {
+		this.value = Math.max( 0, Number( value ) || 0 );
 
-	/**
-	 * Reset the Mass.
-	 */
-	reset = ( ...args ) => {
 		return this;
 	}
+
+	/**
+	 * Reset the mass.
+	 *
+	 * @returns {Mass}
+	 */
+	reset = () => this.set( 0 );
+
+	/**
+	 * Return the numeric mass during arithmetic coercion.
+	 *
+	 * @returns {Number} Mass value.
+	 */
+	valueOf = () => this.value;
+
+	/**
+	 * Serialize mass as its numeric value.
+	 *
+	 * @returns {Number} Mass value.
+	 */
+	toJSON = () => this.value;
+
+	/**
+	 * Convert mass to a JavaScript primitive.
+	 *
+	 * @returns {Number} Mass value.
+	 */
+	[ Symbol.toPrimitive ] = () => this.value;
 }

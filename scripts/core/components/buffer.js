@@ -110,10 +110,7 @@ export default class Buffer {
 
 		// Resize the canvas using screen DPR.
 		this.screen.resize( this.context.canvas, this.size );
-
-		// Resize the canvas.
-		this.context.canvas.width  = size.w;
-		this.context.canvas.height = size.h;
+		this.transform();
 
 		// Return.
 		return this.canvas;
@@ -146,10 +143,23 @@ export default class Buffer {
 			z: scale.z ?? 1,
 		};
 
-		// Rescale the canvas using screen DPR.
-		this.screen.rescale( this.context, this.scale );
+		// Apply an absolute transform so repeated resizes do not accumulate scale.
+		this.transform();
 
 		// Return.
+		return this;
+	}
+
+	/**
+	 * Apply the current DPR and logical scale to the drawing context.
+	 */
+	transform = () => {
+		const x = this.screen.dpr * ( this.scale?.x ?? 1 );
+		const y = this.screen.dpr * ( this.scale?.y ?? 1 );
+
+		this.context.setTransform( x, 0, 0, y, 0, 0 );
+		this.context.imageSmoothingEnabled = false;
+
 		return this;
 	}
 
@@ -218,6 +228,8 @@ export default class Buffer {
 			this.canvas,
 			position.x,
 			position.y,
+			this.size.w,
+			this.size.h,
 		);
 	}
 

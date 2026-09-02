@@ -1,9 +1,12 @@
 /**
  * The Collision object.
  *
- * This object is responsible for determining if a Tile object is
- * occupying the space of another Tile object along the
- * horizontal or vertical plains.
+ * Detects whether the axis-aligned bounds of two Tiles overlap on the current
+ * two-dimensional X and Y plane. It intentionally answers only whether an
+ * overlap exists; Contact identifies the affected side and resolves it.
+ *
+ * Tile positions and sizes retain Z and depth values so this detector can be
+ * extended when rooms gain layers or depth-aware collision behavior.
  */
 export default class Collision {
 
@@ -49,7 +52,7 @@ export default class Collision {
 	}
 
 	/**
-	 * Detect if two Tiles have collided.
+	 * Detect if two Tiles overlap on the X and Y axes.
 	 *
 	 * @returns {Boolean}
 	 */

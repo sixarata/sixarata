@@ -15,6 +15,11 @@ import {
  *
  * This object is responsible for the entire lifecycle of every tile
  * in any given Room.
+ *
+ * Density remains numeric rather than a Boolean solid flag. A zero-density Tile
+ * is currently non-collidable, while any positive density participates in
+ * collision. Fractional values are retained for future material mechanics such
+ * as sinking, resistance, buoyancy, or surface-specific forces.
  */
 export default class Tile {
 
@@ -62,7 +67,7 @@ export default class Tile {
 		size     = { w: 1, h: 1, d: 1, scale: 'up' },
 		color    = 'Green',
 		type     = 'default',
-		density  = true,
+		density  = 1,
 		mass     = 1,
 		opacity  = 1
 	) => {
@@ -117,7 +122,7 @@ export default class Tile {
 		this.color   = color;
 		this.opacity = opacity;
 		this.type    = type;
-		this.density = density;
+		this.density = Math.max( 0, Number( density ) || 0 );
 		this.visible = true;
 		this.state   = 'static';
 
@@ -261,7 +266,7 @@ export default class Tile {
 	 *
 	 * @returns {Boolean}
 	 */
-	destroy = () => {
+	destroy() {
 
 		// Get the group array.
 		const arr = this.group;

@@ -7,6 +7,8 @@
 
 sixarata is an open-source 2D adventure game engine.
 
+[![CI](https://github.com/sixarata/sixarata/actions/workflows/ci.yml/badge.svg)](https://github.com/sixarata/sixarata/actions/workflows/ci.yml)
+
 It is MIT licensed, coded entirely in vanilla JavaScript, and uses no external libraries or dependencies.
 
 Fork it as a head-start for your own ideas, to educate others, or just to boop around for a bit.
@@ -22,11 +24,27 @@ http-server -c-1
 
 Visit: http://127.0.0.1:8080
 
+## test it
+
+Sixarata's unit tests use Node's built-in test runner and have no dependencies.
+
+```bash
+sh tools/test.sh
+```
+
+## physics units
+
+Gameplay uses logical pixels, seconds, pixels per second for velocity, and
+pixels per second squared for acceleration. Device pixel ratio is confined to
+canvas rendering and does not affect simulation speed.
+
 ## contribute
 
 Fork. Jam. Discuss. Merge. Repeat.
 
 All are welcome. Intolerance is not tolerated.
+
+Read the [implementation requirements](AGENTS.md), [contribution guide](CONTRIBUTING.md), and [code of conduct](CODE_OF_CONDUCT.md) before submitting a change.
 
 ## inspiration
 

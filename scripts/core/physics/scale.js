@@ -1,14 +1,17 @@
-import Settings   from '../../content/settings.js';
-import Point      from './point.js';
-import Coordinate from './coordinate.js';
+import Settings from '../../content/settings.js';
+import Vector from './vector.js';
 
 /**
  * The Scale object.
  *
- * This object is responsible for scaling values to best support different aspect
- * ratios, pixel densities, etc...
+ * Stores source values and converts them up or down using the configured game
+ * unit size. Position and Size use it to move between compact room units and
+ * logical pixels without discarding the original X, Y, or Z values.
+ *
+ * Device pixel ratio and browser display scaling are handled separately by
+ * Screen and Buffer, so changing display resolution does not change physics.
  */
-export default class Scale extends Point {
+export default class Scale extends Vector {
 
 	/**
 	 * Default scale settings.
@@ -57,9 +60,9 @@ export default class Scale extends Point {
 	reset = () => {
 
 		// Get the scale settings.
-		this.settings = Settings.scale ?? Scale.defaults;
+		this.settings = Settings.interfaces?.screen ?? Scale.defaults;
 
-		// Get the physics ratio.
+		// Get the game-unit ratio.
 		this.ratio = this.settings.size;
 
 		// Return.
@@ -69,20 +72,20 @@ export default class Scale extends Point {
 	/**
 	 * Scale coordinate up by the ratio.
 	 *
-	 * @param   {Coordinate} n A coordinate to scale.
-	 * @returns {Coordinate}   A new scaled coordinate.
+	 * @param   {Number} c A coordinate to scale.
+	 * @returns {Number}   A new scaled coordinate.
 	 */
 	up = ( c ) => {
-		return new Coordinate( Math.floor( c.value * this.ratio ) );
+		return Math.floor( Number( c ) * this.ratio );
 	}
 
 	/**
 	 * Scale coordinate down by the ratio.
 	 *
-	 * @param   {Coordinate} n A coordinate to scale.
-	 * @returns {Coordinate}   A new scaled coordinate.
+	 * @param   {Number} c A coordinate to scale.
+	 * @returns {Number}   A new scaled coordinate.
 	 */
 	down = ( c ) => {
-		return new Coordinate( Math.floor( c.value / this.ratio ) );
+		return Math.floor( Number( c ) / this.ratio );
 	}
 }

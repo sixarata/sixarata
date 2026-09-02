@@ -2,7 +2,8 @@ import Game from '../game.js';
 import Settings from '../../content/settings.js';
 import Time from '../utilities/time.js';
 
-import { Tile, Projectile } from './exports.js';
+import Tile from './tile.js';
+import Projectile from './projectile.js';
 
 /**
  * The Enemy class.
@@ -11,6 +12,14 @@ import { Tile, Projectile } from './exports.js';
  */
 export default class Enemy extends Tile {
 
+	/**
+	 * Construct an enemy tile.
+	 *
+	 * @param {Array} group Owning enemy collection.
+	 * @param {Object} position Position in room units.
+	 * @param {Object} size Size in room units.
+	 * @returns {Enemy} this
+	 */
 	constructor(
 		group    = [],
 		position = { x: 0, y: 0, z: 0 },
@@ -37,15 +46,20 @@ export default class Enemy extends Tile {
 	 */
 	reset = () => {
 		this.shootOffScreen = true;
-		this.shootCount = 0;
+		this.shootElapsed = 0;
 
 		return this;
 	}
 
+	/**
+	 * Advance the shooting clock and emit a projectile at each interval.
+	 *
+	 * @returns {void}
+	 */
 	update = () => {
-		this.shootCount += Time.scale;
+		this.shootElapsed += Time.seconds();
 
-		if ( Settings.enemies.maxShots < this.shootCount ) {
+		if ( this.shootElapsed >= Settings.enemies.shotIntervalSeconds ) {
 
 			let group  = Game.Room.tiles.projectiles,
 				target = Game.Room.tiles.players[ 0 ];
@@ -53,14 +67,19 @@ export default class Enemy extends Tile {
 			if ( this.canShoot() ) {
 				new Projectile( group, this, target );
 
-				this.shootCount = 0;
+				this.shootElapsed = 0;
 			}
 		}
 	}
 
+	/**
+	 * Determine whether the enemy is allowed to shoot from its current position.
+	 *
+	 * @returns {Boolean} True when offscreen shooting is enabled or the enemy is visible.
+	 */
 	canShoot = () => {
 		let camera = Game.Camera,
-			view   = Game.View,
+			view   = Game.View.buffer,
 			pos    = ( this.physics.position.x - camera.position.x );
 
 		return (

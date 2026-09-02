@@ -1,54 +1,10 @@
-import Settings from '../../content/settings.js';
+import Damping from './damping.js';
 
 /**
- * The Friction object.
+ * Backward-compatible name for the former friction subsystem.
  *
- * This object is responsible for scaling Friction to the Room.
+ * @deprecated Use Damping; this system applies velocity decay rather than a
+ * physical friction force. A future surface-friction model may use Tile-side
+ * material properties instead of this compatibility name.
  */
-export default class Friction {
-
-	/**
-	 * Default friction settings.
-	 *
-	 * @type {Object}
-	 */
-	static defaults = {
-		force: 65,
-	}
-
-	/**
-	 * Construct the object.
-	 *
-	 * @returns {Friction}
-	 */
-	constructor() {
-		return this.set();
-	}
-
-	/**
-	 * Set the object.
-	 *
-	 * @returns {Friction}
-	 */
-	set = () => {
-		return this.reset();
-	}
-
-	/**
-	 * Reset Friction.
-	 *
-	 * @returns {Friction}
-	 */
-	reset = () => {
-
-		// Get from Settings, or default.
-		const f = Settings.physics?.friction ?? Friction.defaults.force;
-
-		// Set properties.
-		this.base  = ( f / 100 );
-		this.force = this.base;
-
-		// Return
-		return this;
-	}
-}
+export default class Friction extends Damping {}

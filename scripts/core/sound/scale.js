@@ -65,13 +65,15 @@ export default class Scale {
 		this.octaveRatio        = octaveRatio;
 		this.semitones          = semitones;
 		this.semitoneRatio      = Math.pow( this.octaveRatio, 1 / semitones.length );
+
+		return this;
 	}
 
 	/**
 	 * Reset the Scale properties.
 	 */
 	reset = () => {
-		this.set(
+		return this.set(
 			Scale.defaults.referenceFrequency,
 			Scale.defaults.referenceSemitone,
 			Scale.defaults.referenceOctave,
@@ -91,14 +93,12 @@ export default class Scale {
 		note   = 'A',
 		octave = 4
 	) => {
-		const
-			semitoneDifference = this.getSemitoneDifference( note ),
-			octaveShift        = octave - this.referenceOctave,
-			octavePower        = Math.pow( this.octaveRatio, octaveShift ),
-			semitonePower      = Math.pow( this.semitoneRatio, semitoneDifference ),
-		    foo                = this.referenceFrequency * octavePower * semitonePower
+		const semitoneDifference = this.getSemitoneDifference( note );
+		const octaveShift = octave - this.referenceOctave;
+		const octavePower = Math.pow( this.octaveRatio, octaveShift );
+		const semitonePower = Math.pow( this.semitoneRatio, semitoneDifference );
 
-		return foo;
+		return this.referenceFrequency * octavePower * semitonePower;
 	}
 
 	/**
@@ -112,18 +112,20 @@ export default class Scale {
 	) => {
 
 		// Calculate the difference between the note and the reference.
-		const
-			referenceIndex = this.semitones.indexOf( this.referenceSemitone ) ?? 0,
-			noteIndex      = this.semitones.indexOf( note ) ?? 0,
-		    diff           = noteIndex - referenceIndex;
+		const referenceIndex = this.semitones.indexOf( this.referenceSemitone );
+		const noteIndex = this.semitones.indexOf( note );
 
 		// Throw error if the note is not found.
 		if ( noteIndex < 0 ) {
 			throw new Error( `Note ${note} not found in the scale.` );
 		}
 
+		if ( referenceIndex < 0 ) {
+			throw new Error( `Reference note ${this.referenceSemitone} not found in the scale.` );
+		}
+
 		// Return the difference.
-		return diff;
+		return noteIndex - referenceIndex;
 	}
 
 	/**
