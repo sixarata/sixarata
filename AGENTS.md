@@ -91,6 +91,7 @@ This file is the canonical implementation and review contract for humans and cod
 
 - Start by inspecting the current branch, worktree, and relevant history. Treat existing changes as user-owned; do not overwrite, stash, reset, or commit unrelated work.
 - Keep one coherent effort per commit and branch. Use clear, imperative commit subjects consistent with the repository history.
+- Name branches for their intent with `feature/`, `fix/`, `maintenance/`, `docs/`, `tests/`, or `release/`, followed by a concise kebab-case topic. Do not encode the author, agent, editor, or tool identity in branch names; prefixes such as `codex/` are not used for new work.
 - Cryptographically sign every commit. Verify the resulting signature before reporting completion.
 - Never commit regenerated `tools/lint` changes unless the linter implementation itself intentionally changed. The lint and pre-commit scripts rebuild that tracked binary, so restore incidental binary changes after checks and commits.
 - Keep the worktree clean at handoff unless the user asked to leave a draft uncommitted.
