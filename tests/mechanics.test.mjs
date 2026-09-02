@@ -7,6 +7,7 @@ installBrowserEnvironment();
 
 const { default: Game } = await import( '../scripts/core/game.js' );
 const { default: Time } = await import( '../scripts/core/utilities/time.js' );
+const { default: Settings } = await import( '../scripts/content/settings.js' );
 const {
 	Brake,
 	Collide,
@@ -139,6 +140,27 @@ test( 'Horizontal movement stages cooperate across the complete input lifecycle'
 	input();
 	decay.listen();
 	assert.equal( tile.physics.velocity.x, 0 );
+} );
+
+/** Contract: Decay derives its zero-snap threshold from configured base movement speed. */
+test( 'Decay follows the configured base movement threshold', t => {
+	const originalBase = Settings.player.move.base;
+	const originalApply = Game.Damping.apply;
+	t.after( () => {
+		Settings.player.move.base = originalBase;
+		Game.Damping.apply = originalApply;
+	} );
+	Settings.player.move.base = 10;
+	Game.Damping.apply = value => value;
+	const tile = body();
+	const decay = new Decay( tile );
+	input();
+	tile.physics.velocity.x = 9;
+	decay.listen();
+	assert.equal( tile.physics.velocity.x, 0 );
+	tile.physics.velocity.x = 10;
+	decay.listen();
+	assert.equal( tile.physics.velocity.x, 10 );
 } );
 
 /** Contract: Orient debounces a requested face change and always flattens vertical orientation. */

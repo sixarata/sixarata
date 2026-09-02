@@ -21,5 +21,6 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 - Prevented projectile vertical motion from also changing its depth coordinate.
 - Preserved numeric tile density for future material and force behavior.
+- Made enemy shot-interval units explicit and tied idle velocity snapping to the configured base movement speed.
 
 Earlier changes predate this changelog.

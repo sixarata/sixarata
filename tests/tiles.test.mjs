@@ -17,6 +17,7 @@ const { default: Tile } = await import( '../scripts/core/tiles/tile.js' );
 const { default: Trigger } = await import( '../scripts/core/tiles/trigger.js' );
 const { default: Wall } = await import( '../scripts/core/tiles/wall.js' );
 const { default: Time } = await import( '../scripts/core/utilities/time.js' );
+const { default: Settings } = await import( '../scripts/content/settings.js' );
 
 /** Prepare a visible logical viewport for tile rendering tests. */
 const prepareView = () => {
@@ -142,7 +143,7 @@ test( 'Enemy shooting respects elapsed time and viewport eligibility', () => {
 	const enemy = new Enemy( enemies, { x: 1, y: 1 } );
 	const player = new Tile( [], { x: 5, y: 1 }, { w: 1, h: 1, d: 1 } );
 	Game.Room.tiles = { projectiles: [], players: [ player ] };
-	Time.step = 2000;
+	Time.step = Settings.enemies.shotIntervalSeconds * 1000;
 	enemy.update();
 	assert.equal( Game.Room.tiles.projectiles.length, 1 );
 	assert.equal( enemy.shootElapsed, 0 );

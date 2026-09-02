@@ -12,6 +12,14 @@ import Projectile from './projectile.js';
  */
 export default class Enemy extends Tile {
 
+	/**
+	 * Construct an enemy tile.
+	 *
+	 * @param {Array} group Owning enemy collection.
+	 * @param {Object} position Position in room units.
+	 * @param {Object} size Size in room units.
+	 * @returns {Enemy} this
+	 */
 	constructor(
 		group    = [],
 		position = { x: 0, y: 0, z: 0 },
@@ -43,10 +51,15 @@ export default class Enemy extends Tile {
 		return this;
 	}
 
+	/**
+	 * Advance the shooting clock and emit a projectile at each interval.
+	 *
+	 * @returns {void}
+	 */
 	update = () => {
 		this.shootElapsed += Time.seconds();
 
-		if ( Settings.enemies.shotInterval < this.shootElapsed ) {
+		if ( this.shootElapsed >= Settings.enemies.shotIntervalSeconds ) {
 
 			let group  = Game.Room.tiles.projectiles,
 				target = Game.Room.tiles.players[ 0 ];
@@ -59,6 +72,11 @@ export default class Enemy extends Tile {
 		}
 	}
 
+	/**
+	 * Determine whether the enemy is allowed to shoot from its current position.
+	 *
+	 * @returns {Boolean} True when offscreen shooting is enabled or the enemy is visible.
+	 */
 	canShoot = () => {
 		let camera = Game.Camera,
 			view   = Game.View.buffer,

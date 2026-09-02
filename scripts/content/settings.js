@@ -195,7 +195,7 @@ export default {
 
 	// Enemies.
 	enemies: {
-		shotInterval: ( 100 / 60 ),
+		shotIntervalSeconds: ( 5 / 3 ),
 	},
 
 	// Projectiles.

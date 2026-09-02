@@ -1,4 +1,5 @@
 import Game from '../../game.js';
+import Settings from '../../../content/settings.js';
 import Time from '../../utilities/time.js';
 
 /**
@@ -10,9 +11,19 @@ import Time from '../../utilities/time.js';
 export default class Decay {
 
 	/**
+	 * Default decay settings.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		base: 30,
+	}
+
+	/**
 	 * Construct the Decay mechanic.
 	 *
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
+	 * @returns {Decay} this
 	 */
 	constructor( tile = null ) {
 		return this.set( tile );
@@ -22,6 +33,7 @@ export default class Decay {
 	 * Set the mechanic.
 	 *
 	 * @param {Tile|null} tile A Tile with a physics.velocity object.
+	 * @returns {Decay} this
 	 */
 	set = ( tile = null ) => {
 		this.reset();
@@ -31,9 +43,12 @@ export default class Decay {
 
 	/**
 	 * Reset the mechanic.
+	 *
+	 * @returns {Decay} this
 	 */
 	reset = () => {
 		this.tile      = null;
+		this.settings  = Settings.player?.move ?? Decay.defaults;
 		this.listening = true;
 
 		return this;
@@ -42,6 +57,8 @@ export default class Decay {
 
 	/**
 	 * Listen for idle decay.
+	 *
+	 * @returns {void}
 	 */
 	listen = () => {
 
@@ -64,7 +81,7 @@ export default class Decay {
 				Time.seconds()
 			);
 
-			if ( Math.abs( v.x ) < 30 ) {
+			if ( Math.abs( v.x ) < this.settings.base ) {
 				v.x = 0;
 			}
 		}
