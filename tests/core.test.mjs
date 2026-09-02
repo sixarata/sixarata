@@ -271,17 +271,25 @@ test( 'Frame lifecycle, measurement, clamping, smoothing, and visibility remain 
 } );
 
 /** Contract: HUD samples game state, draws labels, and respects its visibility setting. */
-test( 'HUD samples game state, draws labels, and respects its visibility setting', () => {
+test( 'HUD samples game state, draws labels, and respects its visibility setting', t => {
 	const hud = new Hud();
 	const originalRoom = Game.Room;
 	const originalClock = Game.Clock;
 	const originalFrame = Game.Frame;
 	const originalView = Game.View;
+	const originalNow = Time.now;
+	t.after( () => {
+		Game.Room = originalRoom;
+		Game.Clock = originalClock;
+		Game.Frame = originalFrame;
+		Game.View = originalView;
+		Time.now = originalNow;
+	} );
 	Game.Room = { id: 3, tiles: { players: [ {} ] } };
 	Game.Clock = { elapsed: () => '00:01' };
 	Game.Frame = { fps: () => 59 };
 	Game.View = { buffer: new Buffer( { w: 100, h: 100, d: 1 } ) };
-	Time.now = hud.flast + 500;
+	Time.now = hud.flast + 501;
 	hud.tick();
 	assert.deepEqual( [ hud.room, hud.time, hud.frames ], [ 3, '00:01', 59 ] );
 	hud.update();
@@ -291,10 +299,6 @@ test( 'HUD samples game state, draws labels, and respects its visibility setting
 	Game.Hooks.reset();
 	hud.hooks();
 	assert.equal( Game.Hooks.exists( 'View.render', hud.render ), true );
-	Game.Room = originalRoom;
-	Game.Clock = originalClock;
-	Game.Frame = originalFrame;
-	Game.View = originalView;
 } );
 
 /** Contract: History records presses, holds, releases, filtering, and bounded events. */
