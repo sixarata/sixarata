@@ -149,7 +149,7 @@ export default class WallClimb {
 				velocity.y,
 				target,
 				this.settings.accel,
-				Game.Kinematics.seconds( Time.delta )
+				Game.Kinematics.seconds( Time.simulationDelta )
 			);
 		}
 

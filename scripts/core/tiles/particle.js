@@ -120,7 +120,7 @@ export default class Particle extends Tile {
 		Game.Kinematics.integrate(
 			this.physics.position,
 			this.physics.velocity,
-			Game.Kinematics.seconds( Time.delta )
+			Game.Kinematics.seconds( Time.simulationDelta )
 		);
 	}
 }

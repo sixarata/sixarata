@@ -45,7 +45,7 @@ test( 'Coordinate distance and interpolation are correct', () => {
 test( 'Vector arithmetic uses vector semantics', () => {
 	const vector = new Vector( 3, 4, 2 );
 
-	assert.equal( vector.length(), 5 );
+	assert.equal( vector.length(), Math.sqrt( 29 ) );
 	assert.equal( vector.dot( new Vector( 2, 3, 4 ) ), 26 );
 	vector.add( { x: 1, y: -1, z: 2 } ).multiplyLinear( 2 );
 	assert.deepEqual( [ vector.x, vector.y, vector.z ], [ 8, 6, 8 ] );

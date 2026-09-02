@@ -39,6 +39,7 @@ class Time {
 		this.now   = t;
 		this.prev  = t;
 		this.delta = 0;
+		this.simulationDelta = 0;
 		this.diff  = 1;
 		this.scale = 1;
 

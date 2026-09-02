@@ -12,6 +12,11 @@ const { default: Keyboard } = await import( '../scripts/core/inputs/keyboard.js'
 const { default: Jobs } = await import( '../scripts/core/utilities/jobs.js' );
 const { default: Time } = await import( '../scripts/core/utilities/time.js' );
 
+const setSimulationDelta = milliseconds => {
+	Time.delta = milliseconds;
+	Time.simulationDelta = milliseconds;
+};
+
 test( 'Game boots with conventional physics services', () => {
 	assert.ok( Game.Gravity );
 	assert.ok( Game.Damping );
@@ -157,7 +162,7 @@ test( 'Player movement uses elapsed seconds without consulting DPR', () => {
 
 	player.mechanics.collide.listen = () => {};
 	player.physics.velocity.set( 120, 0, 0 );
-	Time.delta = 1000 / 60;
+	setSimulationDelta( 1000 / 60 );
 
 	for ( const dpr of [ 1, 2, 3 ] ) {
 		Game.Screen.dpr = dpr;
@@ -170,7 +175,7 @@ test( 'Player movement uses elapsed seconds without consulting DPR', () => {
 
 	player.mechanics.collide.listen = originalListen;
 	player.physics.velocity.reset();
-	Time.delta = originalDelta;
+	setSimulationDelta( originalDelta );
 	Game.Screen.dpr = originalDpr;
 } );
 
@@ -186,7 +191,7 @@ test( 'Held movement input produces velocity and translation at 120 Hz', () => {
 	player.physics.velocity.reset();
 	Game.History.state.left = { down: false, duration: 0 };
 	Game.History.state.right = { down: true, duration: 120 };
-	Time.delta = 1000 / 120;
+	setSimulationDelta( 1000 / 120 );
 
 	player.respond();
 	player.reposition();
@@ -199,7 +204,7 @@ test( 'Held movement input produces velocity and translation at 120 Hz', () => {
 	player.physics.position.x = start;
 	Game.History.state.left = originalLeft;
 	Game.History.state.right = originalRight;
-	Time.delta = originalDelta;
+	setSimulationDelta( originalDelta );
 } );
 
 test( 'Sustained locomotion covers the same distance at 30, 60, and 120 Hz', () => {
@@ -218,7 +223,7 @@ test( 'Sustained locomotion covers the same distance at 30, 60, and 120 Hz', () 
 	for ( const rate of [ 30, 60, 120 ] ) {
 		player.physics.position.x = start;
 		player.physics.velocity.reset();
-		Time.delta = 1000 / rate;
+		setSimulationDelta( 1000 / rate );
 
 		for ( let frame = 0; frame < rate; frame++ ) {
 			player.respond();
@@ -238,7 +243,7 @@ test( 'Sustained locomotion covers the same distance at 30, 60, and 120 Hz', () 
 	player.physics.position.x = start;
 	Game.History.state.left = originalLeft;
 	Game.History.state.right = originalRight;
-	Time.delta = originalDelta;
+	setSimulationDelta( originalDelta );
 } );
 
 test( 'Jump applies a conventional upward velocity impulse', () => {
@@ -268,7 +273,7 @@ test( 'Gravity reaches the same terminal velocity at 30, 60, and 120 Hz', () => 
 
 	for ( const rate of [ 30, 60, 120 ] ) {
 		player.physics.velocity.reset();
-		Time.delta = 1000 / rate;
+		setSimulationDelta( 1000 / rate );
 
 		for ( let frame = 0; frame < rate; frame++ ) {
 			fall.listen();
@@ -281,7 +286,7 @@ test( 'Gravity reaches the same terminal velocity at 30, 60, and 120 Hz', () => 
 
 	player.physics.velocity.reset();
 	player.physics.contact.bottom = originalBottom;
-	Time.delta = originalDelta;
+	setSimulationDelta( originalDelta );
 } );
 
 test( 'Idle velocity damping is equivalent at 30, 60, and 120 Hz', () => {
@@ -297,7 +302,7 @@ test( 'Idle velocity damping is equivalent at 30, 60, and 120 Hz', () => {
 
 	for ( const rate of [ 30, 60, 120 ] ) {
 		player.physics.velocity.set( 1e15, 0, 0 );
-		Time.delta = 1000 / rate;
+		setSimulationDelta( 1000 / rate );
 
 		for ( let frame = 0; frame < rate; frame++ ) {
 			decay.listen();
@@ -313,7 +318,7 @@ test( 'Idle velocity damping is equivalent at 30, 60, and 120 Hz', () => {
 	player.physics.velocity.reset();
 	Game.History.state.left = originalLeft;
 	Game.History.state.right = originalRight;
-	Time.delta = originalDelta;
+	setSimulationDelta( originalDelta );
 } );
 
 test( 'Tile preserves numeric density for future material behavior', () => {
@@ -357,4 +362,21 @@ test( 'Frame requests retain the current animation identifier', () => {
 	assert.ok( after > before );
 	assert.equal( Game.Frame.current, after );
 	assert.ok( Time.now >= 0 );
+} );
+
+test( 'Frame clamps simulation time while preserving raw elapsed time', () => {
+	const originalDelta = Time.delta;
+	const originalSimulationDelta = Time.simulationDelta;
+
+	Time.delta = 1000;
+	Time.simulationDelta = Game.Frame.clampedDelta();
+
+	assert.equal( Time.delta, 1000 );
+	assert.equal(
+		Time.simulationDelta,
+		Game.Frame.step * Game.Frame.settings.clamp
+	);
+
+	Time.delta = originalDelta;
+	Time.simulationDelta = originalSimulationDelta;
 } );

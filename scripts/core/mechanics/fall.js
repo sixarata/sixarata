@@ -181,7 +181,7 @@ export default class Fall {
 	acceleration = () => {
 		return Game.Kinematics.displacement(
 			Game.Gravity.acceleration,
-			Game.Kinematics.seconds( Time.delta )
+			Game.Kinematics.seconds( Time.simulationDelta )
 		);
 	}
 }

@@ -87,7 +87,7 @@ export default class Projectile extends Tile {
 			this.setTrajectory();
 		}
 
-		const seconds = Game.Kinematics.seconds( Time.delta );
+		const seconds = Game.Kinematics.seconds( Time.simulationDelta );
 
 		// Bump position.
 		this.physics.position.x += Game.Kinematics.displacement( this.sin, seconds );

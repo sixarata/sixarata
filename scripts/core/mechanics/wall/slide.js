@@ -157,7 +157,7 @@ export default class WallSlide {
 
 		const inc = Game.Kinematics.displacement(
 			Game.Gravity.acceleration * this.settings.factor,
-			Game.Kinematics.seconds( Time.delta )
+			Game.Kinematics.seconds( Time.simulationDelta )
 		);
 
 		if ( velocity.y < this.settings.max ) {

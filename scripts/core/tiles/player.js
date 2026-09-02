@@ -221,7 +221,7 @@ export default class Player extends Tile {
 
 		// Contact.
 		this.physics.contact.reset();
-		const seconds = Game.Kinematics.seconds( Time.delta );
+		const seconds = Game.Kinematics.seconds( Time.simulationDelta );
 
 		// Cached per-frame movement scale.
 		// Update X.

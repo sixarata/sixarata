@@ -107,17 +107,21 @@ export default class Vector {
 
 	square = (
 		axis1 = 'x',
-		axis2 = 'y'
+		axis2 = 'y',
+		axis3 = 'z'
 	) => (
 		( this[ axis1 ] * this[ axis1 ] )
 		+
 		( this[ axis2 ] * this[ axis2 ] )
+		+
+		( this[ axis3 ] * this[ axis3 ] )
 	);
 
 	length = (
 		axis1 = 'x',
-		axis2 = 'y'
-	) => Math.sqrt( this.square( axis1, axis2 ) );
+		axis2 = 'y',
+		axis3 = 'z'
+	) => Math.sqrt( this.square( axis1, axis2, axis3 ) );
 
 	squareDistance = ( vector = {} ) => {
 		const dx = this.x - Number( vector.x ?? 0 );

@@ -62,7 +62,7 @@ export default class Decay {
 			v.x = Game.Kinematics.decay(
 				v.x,
 				Game.Damping.coefficient,
-				Game.Kinematics.seconds( Time.delta )
+				Game.Kinematics.seconds( Time.simulationDelta )
 			);
 
 			if ( Math.abs( v.x ) < 30 ) {

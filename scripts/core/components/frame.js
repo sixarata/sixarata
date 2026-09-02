@@ -112,6 +112,7 @@ export default class Frame {
 	 * Tick through time.
 	 */
 	tick = () => {
+		Game.Hooks.process( true );
 		Game.Hooks.do( 'Frame.tick' );
 	}
 
@@ -149,6 +150,7 @@ export default class Frame {
 		// Set Time diff to raw diff.
 		Time.diff  = this.rawDiff();
 		Time.scale = Math.max( this.settings.throttle, Time.diff );
+		Time.simulationDelta = this.clampedDelta();
 
 		// Loop.
 		Game.Hooks.do( 'Frame.animate' );
@@ -283,6 +285,24 @@ export default class Frame {
 
 		// Return the final value.
 		return d;
+	}
+
+	/**
+	 * Clamp elapsed simulation time without imposing a minimum timestep.
+	 *
+	 * Raw Time.delta remains available to clocks and input history. Physics uses
+	 * this bounded value so a foreground stall cannot teleport moving objects.
+	 *
+	 * @returns {Number} Simulation milliseconds for the current frame.
+	 */
+	clampedDelta = () => {
+		const delta = Number( Time.delta );
+
+		if ( ! Number.isFinite( delta ) || delta <= 0 ) {
+			return 0;
+		}
+
+		return Math.min( delta, this.step * this.settings.clamp );
 	}
 
 	/**
