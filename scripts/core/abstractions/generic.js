@@ -1,4 +1,4 @@
-import Attributes from "./attributes.js";
+import Attributes from './attributes.js';
 
 /**
  * The Generic object.
@@ -35,7 +35,7 @@ export default class Generic {
 		key   = '',
 		value = {}
 	) => {
-		this.attributes.set( key, value );
+		return this.attributes.set( key, value );
 	}
 
 	/**
@@ -46,7 +46,7 @@ export default class Generic {
 	get = (
 		key = ''
 	) => {
-		this.attributes.get( key );
+		return this.attributes.get( key );
 	}
 
 	/**
@@ -56,7 +56,7 @@ export default class Generic {
 	merge = (
 		entries = {}
 	) => {
-		this.attributes.merge( entries );
+		return this.attributes.merge( entries );
 	}
 
 	/**
@@ -65,7 +65,7 @@ export default class Generic {
 	 * @param {Entries} entries
 	 */
 	reset = () => {
-		this.attributes.reset();
+		return this.attributes.reset();
 	}
 
 	/**

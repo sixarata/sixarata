@@ -1,5 +1,6 @@
 import Game from '../game.js';
 import Settings from '../../content/settings.js';
+import Time from '../utilities/time.js';
 
 /**
  * The Orient mechanic.
@@ -78,7 +79,7 @@ export default class Orient {
 		const edgeL = Game.History.edge( 'left' );
 		const edgeR = Game.History.edge( 'right' );
 
-		const now = performance.now();
+		const now = Time.now;
 
 		// Initialize trackers if missing.
 		if ( this.lastFaceTime == null ) this.lastFaceTime = 0;

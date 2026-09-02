@@ -16,8 +16,8 @@ export default class Jump {
 	 */
 	static defaults = {
 		power: {
-			min: 16,
-			max: 32,
+			min: 480,
+			max: 960,
 		},
 		count: {
 			max: 2,

@@ -2,7 +2,7 @@ import Game from '../game.js';
 import Settings from '../../content/settings.js';
 import Time from '../utilities/time.js';
 
-import { Tile } from './exports.js';
+import Tile from './tile.js';
 import { Collision, Contact, Orientation, Position, Velocity } from '../physics/exports.js';
 import { Collide, Coyote, Dash, Fall, Jump, Orient, WallGrab, WallJump, WallSlide, WallClimb, Nudge, Walk, Sprint, Brake, MicroTap, Decay } from '../mechanics/exports.js';
 
@@ -92,7 +92,9 @@ export default class Player extends Tile {
 	tick = () => {
 
 		// Checks.
-		this.checks();
+		if ( this.checks() ) {
+			return;
+		}
 
 		// Resize.
 		this.resize();
@@ -112,11 +114,7 @@ export default class Player extends Tile {
 	 *
 	 * @returns {Boolean}
 	 */
-	moved = () => {
-		return (
-			Object.getOwnPropertyNames( Game.Inputs.keysDown ).length > 0
-		);
-	}
+	moved = () => Game.Inputs.axes().some( axis => axis !== 0 );
 
 	/**
 	 * Check if the Player has fallen to the bottom of the Room.
@@ -223,44 +221,64 @@ export default class Player extends Tile {
 
 		// Contact.
 		this.physics.contact.reset();
+		const seconds = Game.Kinematics.seconds( Time.delta );
 
 		// Cached per-frame movement scale.
-		const scale = ( Time.scale / Game.Screen.dpr );
-
 		// Update X.
-		this.physics.position.x += ( this.physics.velocity.x * scale );
+		this.physics.position.x += Game.Kinematics.displacement(
+			this.physics.velocity.x,
+			seconds
+		);
 		this.mechanics.collide.listen( { x: this.physics.velocity.x } );
 
 		// Update Y.
-		this.physics.position.y += ( this.physics.velocity.y * scale );
+		this.physics.position.y += Game.Kinematics.displacement(
+			this.physics.velocity.y,
+			seconds
+		);
 		this.mechanics.collide.listen( { y: this.physics.velocity.y } );
 
 		// Update Z.
-		this.physics.position.z += ( this.physics.velocity.z * scale );
+		this.physics.position.z += Game.Kinematics.displacement(
+			this.physics.velocity.z,
+			seconds
+		);
 		this.mechanics.collide.listen( { z: this.physics.velocity.z } );
 	}
 
 	/**
 	 * Do all of the checks.
 	 *
-	 * @returns {Void}
+	 * @returns {Boolean} True when the current player was replaced or reset.
 	 */
 	checks = () => {
 
 		// Check for fell.
 		if ( this.checkFell() ) {
-			return;
+			return true;
 		}
 
 		// Check if hit by projectiles.
 		if ( this.checkProjectiles() ) {
-			return;
+			return true;
 		}
 
 		// Check if reached doors.
 		if ( this.checkDoors() ) {
-			return;
+			return true;
 		}
+
+		return false;
+	}
+
+	/**
+	 * Release hooks owned by player mechanics before removing the tile.
+	 */
+	destroy = () => {
+		this.mechanics?.collide?.unhooks();
+		this.mechanics?.dash?.unhooks();
+
+		return super.destroy();
 	}
 
 	/**

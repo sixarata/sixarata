@@ -16,8 +16,8 @@ export default class Walk {
 	 * @type {Object}
 	 */
 	static defaults = {
-		base: 1,
-		speed: 16,
+		base: 30,
+		speed: 480,
 		accel: 250,
 	}
 

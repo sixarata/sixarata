@@ -1,4 +1,5 @@
 import Game from '../../game.js';
+import Time from '../../utilities/time.js';
 
 /**
  * The Decay mechanic.
@@ -58,9 +59,13 @@ export default class Decay {
 		const r = Game.History.hold( 'right' );
 
 		if ( ! l?.down && ! r?.down ) {
-			v.x *= Game.Friction.force;
+			v.x = Game.Kinematics.decay(
+				v.x,
+				Game.Damping.coefficient,
+				Game.Kinematics.seconds( Time.delta )
+			);
 
-			if ( Math.abs( v.x ) < Game.Friction.force ) {
+			if ( Math.abs( v.x ) < 30 ) {
 				v.x = 0;
 			}
 		}

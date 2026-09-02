@@ -1,6 +1,5 @@
 import Settings   from '../../content/settings.js';
-import Point      from './point.js';
-import Coordinate from './coordinate.js';
+import Vector from './vector.js';
 
 /**
  * The Scale object.
@@ -8,7 +7,7 @@ import Coordinate from './coordinate.js';
  * This object is responsible for scaling values to best support different aspect
  * ratios, pixel densities, etc...
  */
-export default class Scale extends Point {
+export default class Scale extends Vector {
 
 	/**
 	 * Default scale settings.
@@ -57,7 +56,7 @@ export default class Scale extends Point {
 	reset = () => {
 
 		// Get the scale settings.
-		this.settings = Settings.scale ?? Scale.defaults;
+		this.settings = Settings.interfaces?.screen ?? Scale.defaults;
 
 		// Get the physics ratio.
 		this.ratio = this.settings.size;
@@ -69,20 +68,20 @@ export default class Scale extends Point {
 	/**
 	 * Scale coordinate up by the ratio.
 	 *
-	 * @param   {Coordinate} n A coordinate to scale.
-	 * @returns {Coordinate}   A new scaled coordinate.
+	 * @param   {Number} c A coordinate to scale.
+	 * @returns {Number}   A new scaled coordinate.
 	 */
 	up = ( c ) => {
-		return new Coordinate( Math.floor( c.value * this.ratio ) );
+		return Math.floor( Number( c ) * this.ratio );
 	}
 
 	/**
 	 * Scale coordinate down by the ratio.
 	 *
-	 * @param   {Coordinate} n A coordinate to scale.
-	 * @returns {Coordinate}   A new scaled coordinate.
+	 * @param   {Number} c A coordinate to scale.
+	 * @returns {Number}   A new scaled coordinate.
 	 */
 	down = ( c ) => {
-		return new Coordinate( Math.floor( c.value / this.ratio ) );
+		return Math.floor( Number( c ) / this.ratio );
 	}
 }

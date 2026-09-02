@@ -36,8 +36,8 @@ export default class Dash {
 			wall: true,
 		},
 		power: {
-			x: 75,
-			y: 75,
+			x: 2250,
+			y: 2250,
 		},
 		reset: {
 			ground: true,
@@ -162,6 +162,11 @@ export default class Dash {
 	hooks = () => {
 		Game.Hooks.add( 'Combo.trigger', this.combo );
 	}
+
+	/**
+	 * Remove the combo trigger listener.
+	 */
+	unhooks = () => Game.Hooks.remove( 'Combo.trigger', this.combo );
 
 	/**
 	 * Combo hook callback.

@@ -32,6 +32,12 @@ export default {
 			clamp:    5,
 		},
 
+		// Camera behavior when a room is smaller than the viewport.
+		camera: {
+			horizontal: 'left',
+			vertical:   'bottom',
+		},
+
 		// Room.
 		room: {
 			start: 0,
@@ -47,9 +53,9 @@ export default {
 	player: {
 		invincible: false,
 		move: {
-			base:       1,
-			speed:      10,
-			run:        16,
+			base:       30,
+			speed:      300,
+			run:        480,
 			accel:      100,
 			runHold:    100,
 			multiplier: 0.4,
@@ -70,24 +76,24 @@ export default {
 			},
 			knievel: {
 				distance: 64,
-				lift:     8,
+				lift:     240,
 			},
 			fall: {
-				speed:    16,
-				terminal: 16,
+				speed:    480,
+				terminal: 480,
 			},
 			ground: {
 				power: {
-					min: 16,
-					max: 32,
+					min: 480,
+					max: 960,
 				},
 				count: {
 					max: 2,
 				},
 			},
 			wall: {
-				power:   18,
-				lateral: 18,
+				power:   540,
+				lateral: 540,
 				max:     1,
 				time:    100,
 			},
@@ -105,8 +111,8 @@ export default {
 				wall:   true,
 			},
 			power: {
-				x: 75,
-				y: 75,
+				x: 2250,
+				y: 2250,
 			},
 			reset: {
 				ground: true,
@@ -124,12 +130,12 @@ export default {
 			},
 			slide: {
 				factor: 0.5,
-				max:    6,
+				max:    180,
 			},
 			climb: {
-				speed: 10,
+				speed: 300,
 				accel: 0.25,
-				max:   10,
+				max:   300,
 			},
 		},
 		retries: {
@@ -173,19 +179,18 @@ export default {
 
 	// Physics.
 	physics: {
-		gravity:  80,
-		friction: 65,
-		terminal: 16,
+		gravity: 1440, // Logical pixels per second squared.
+		damping: 65,
 	},
 
 	// Enemies.
 	enemies: {
-		maxShots: 100,
+		shotInterval: ( 100 / 60 ),
 	},
 
 	// Projectiles.
 	projectiles: {
-		speed: 8,
+		speed: 480,
 	},
 
 	// Tiles.

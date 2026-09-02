@@ -54,7 +54,7 @@ export default class Sound {
 	}
 
 	reset = () => {
-		this.set( 440, 0.5, 'sine', '', '', 500, 0, 0, [] );
+		return this.set( 440, 0.5, 'sine', [], '', 500, 0, 0, [] );
 	}
 
 	/**

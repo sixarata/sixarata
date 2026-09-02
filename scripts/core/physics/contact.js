@@ -1,6 +1,3 @@
-import Velocity from './velocity.js';
-import Tile from '../tiles/tile.js';
-
 /**
  * The Contact object.
  *
@@ -101,7 +98,7 @@ export default class Contact {
 
 		// Is left touching?
 		if ( velocity.x < 0 ) {
-			tile1.physics.position.x     = ( tile2.physics.position.x + tile1.physics.size.w );
+			tile1.physics.position.x     = ( tile2.physics.position.x + tile2.physics.size.w );
 			tile1.physics.contact.left   = true;
 			tile1.physics.velocity.x     = 0;
 		}
@@ -110,13 +107,14 @@ export default class Contact {
 		if ( velocity.y > 0 ) {
 			tile1.physics.position.y     = ( tile2.physics.position.y - tile1.physics.size.h );
 			tile1.physics.contact.bottom = true;
+			tile1.physics.velocity.y     = 0;
 		}
 
 		// Is top touching?
 		if ( velocity.y < 0 ) {
-			tile1.physics.position.y     = ( tile2.physics.position.y + tile1.physics.size.h );
+			tile1.physics.position.y     = ( tile2.physics.position.y + tile2.physics.size.h );
 			tile1.physics.contact.top    = true;
-			tile1.physics.velocity.y++;
+			tile1.physics.velocity.y     = 0;
 		}
 	}
 }

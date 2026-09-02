@@ -1,13 +1,12 @@
-import { Point } from './exports.js';
+import Vector from './vector.js';
 
 /**
  * The Velocity object.
  *
  * This object is responsible for holding, calculating, and adjusting the
- * movement of a thing. It may be influenced by other physical forces,
- * such as Gravity, Friction, etc...
+	 * rate and direction of change in position.
  */
-export default class Velocity extends Point {
+export default class Velocity extends Vector {
 
 	/**
 	 * Construct the Velocity.
@@ -17,9 +16,9 @@ export default class Velocity extends Point {
 	 * @param {Number} z
 	 */
 	constructor(
-		x = Point.defaults.x,
-		y = Point.defaults.y,
-		z = Point.defaults.z
+		x = Vector.defaults.x,
+		y = Vector.defaults.y,
+		z = Vector.defaults.z
 	) {
 		super( x, y, z );
 

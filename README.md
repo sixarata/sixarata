@@ -22,6 +22,20 @@ http-server -c-1
 
 Visit: http://127.0.0.1:8080
 
+## test it
+
+Sixarata's unit tests use Node's built-in test runner and have no dependencies.
+
+```bash
+sh tools/test.sh
+```
+
+## physics units
+
+Gameplay uses logical pixels, seconds, pixels per second for velocity, and
+pixels per second squared for acceleration. Device pixel ratio is confined to
+canvas rendering and does not affect simulation speed.
+
 ## contribute
 
 Fork. Jam. Discuss. Merge. Repeat.

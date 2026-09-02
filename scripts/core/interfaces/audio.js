@@ -1,105 +1,58 @@
 import { Scale, Sound } from '../sound/exports.js';
 
 /**
- * The Audio class.
- *
- * This class is a collection of methods used to generate a sound.
+ * Browser audio interface.
  */
 export default class Audio {
 
-	/**
-	 * Construct the Audio component.
-	 */
-	constructor() {
-		return this.set();
+	constructor( pipeline = null ) {
+		return this.set( pipeline );
 	}
 
-	/**
-	 * Set the pipeline for the Audio component.
-	 *
-	 * @param   {Object} pipeline Default AudioContext. The pipeline to send sounds through.
-	 * @returns {Audio}  The Audio component.
-	 */
-	set = (
-		pipeline = AudioContext
-	) => {
+	set = ( pipeline = null ) => {
+		const Pipeline = pipeline
+			?? globalThis.AudioContext
+			?? globalThis.webkitAudioContext
+			?? null;
 
-		// Pipeline.
-		this.pipeline = new pipeline
-			?? new AudioContext;
-
-		// Maybe resume.
-		if ( this.canPlay() ) {
-			this.pipeline.resume();
-		}
-
-		// Scale.
+		this.pipeline = typeof Pipeline === 'function'
+			? new Pipeline()
+			: Pipeline;
 		this.scale = new Scale();
-
-		// Sound.
 		this.sound = new Sound();
 
-		// Return.
 		return this;
 	}
 
-	/**
-	 * Reset the Audio component.
-	 */
-	reset = () => {
-		return this.set();
-	}
+	reset = () => this.set();
 
-	/**
-	 * Return the pipeline when getting the Audio component.
-	 *
-	 * @returns {Object}
-	 */
-	valueOf = () => {
-		return this.pipeline;
-	}
+	valueOf = () => this.pipeline;
 
-	/**
-	 * Set the sound.
-	 *
-	 * @param   {Sound} sound Default new Sound(). The sound to set.
-	 * @returns {Audio} The Audio component.
-	 */
-	setSound = (
-		sound = new Sound()
-	) => {
+	setSound = ( sound = new Sound() ) => {
 		this.sound = sound;
 
 		return this.sound;
 	}
 
-	/**
-	 * Set the scale.
-	 *
-	 * @param   {Scale} scale Default new Scale(). The scale to set.
-	 * @returns {Audio} The Audio component.
-	 */
-	setScale = (
-		scale = new Scale()
-	) => {
+	setScale = ( scale = new Scale() ) => {
 		this.scale = scale;
 
 		return this.scale;
 	}
 
-	/**
-	 * Check if sound can be played.
-	 *
-	 * @returns {Boolean}
-	 */
-	canPlay = () => {
-		return ( this.pipeline.state === 'running' );
-	}
+	canPlay = () => this.pipeline?.state === 'running';
 
-	/**
-	 * Play the sound.
-	 */
-	play = () => {
+	play = async () => {
+		if ( ! this.pipeline ) {
+			return false;
+		}
+
+		if ( this.pipeline.state === 'suspended' ) {
+			await this.pipeline.resume();
+		}
+
 		this.sound.play( this.pipeline );
+
+		return true;
 	}
 }

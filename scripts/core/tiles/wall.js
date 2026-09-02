@@ -1,4 +1,4 @@
-import { Tile } from './exports.js';
+import Tile from './tile.js';
 
 /**
  * The Wall object.

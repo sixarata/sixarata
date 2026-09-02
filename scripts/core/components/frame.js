@@ -70,6 +70,8 @@ export default class Frame {
 
 		// Exponential moving average.
 		this.ema      = 1;
+		this.paused   = false;
+		this.scheduled = false;
 
 		// Start.
 		this.current  = this.request();
@@ -135,6 +137,11 @@ export default class Frame {
 	animate = (
 		now = 0
 	) => {
+		this.scheduled = false;
+
+		if ( this.paused ) {
+			return;
+		}
 
 		// Set per-frame time & delta.
 		Time.update( now );
@@ -168,7 +175,14 @@ export default class Frame {
 	 * @returns {requestAnimationFrame} The requested frame.
 	 */
 	request = () => {
-		return requestAnimationFrame( this.animate );
+		if ( this.scheduled ) {
+			return this.current;
+		}
+
+		this.scheduled = true;
+		this.current = requestAnimationFrame( this.animate );
+
+		return this.current;
 	};
 
 	/**
@@ -177,6 +191,8 @@ export default class Frame {
 	 * @returns {cancelAnimationFrame} The cancelled frame.
 	 */
 	cancel = () => {
+		this.scheduled = false;
+
 		return cancelAnimationFrame( this.current );
 	}
 
@@ -296,7 +312,8 @@ export default class Frame {
 
 		// Pause the frame updates.
 		if ( document.hidden ) {
-			this.paused = Time.now;
+			this.paused = true;
+			this.cancel();
 			return;
 		}
 
@@ -305,5 +322,7 @@ export default class Frame {
 
 		// History.
 		this.history = [ Time.now ];
+		this.paused = false;
+		this.request();
 	}
 }

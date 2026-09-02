@@ -15,8 +15,8 @@ export default class Fall {
 	 * @type {Object}
 	 */
 	static defaults = {
-		speed: 20,
-		terminal: 20,
+		speed: 600,
+		terminal: 600,
 	}
 
 	/**
@@ -126,7 +126,7 @@ export default class Fall {
 		}
 
 		// Apply gravity.
-		velocity.y += this.force();
+		velocity.y += this.acceleration();
 	}
 
 	/**
@@ -155,7 +155,7 @@ export default class Fall {
 			return;
 		}
 
-		velocity.y = this.force();
+		velocity.y = this.acceleration();
 	}
 
 	/**
@@ -174,11 +174,14 @@ export default class Fall {
 	}
 
 	/**
-	 * Get the current fall force.
+	 * Get the gravitational acceleration for the current simulation step.
 	 *
-	 * @returns {Number} The current fall force.
+	 * @returns {Number} The current acceleration.
 	 */
-	force = () => {
-		return ( Game.Gravity.force * Time.scale );
+	acceleration = () => {
+		return Game.Kinematics.displacement(
+			Game.Gravity.acceleration,
+			Game.Kinematics.seconds( Time.delta )
+		);
 	}
 }

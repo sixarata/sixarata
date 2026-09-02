@@ -2,7 +2,8 @@ import Game from '../game.js';
 import Settings from '../../content/settings.js';
 import Time from '../utilities/time.js';
 
-import { Tile, Projectile } from './exports.js';
+import Tile from './tile.js';
+import Projectile from './projectile.js';
 
 /**
  * The Enemy class.
@@ -37,15 +38,15 @@ export default class Enemy extends Tile {
 	 */
 	reset = () => {
 		this.shootOffScreen = true;
-		this.shootCount = 0;
+		this.shootElapsed = 0;
 
 		return this;
 	}
 
 	update = () => {
-		this.shootCount += Time.scale;
+		this.shootElapsed += Game.Kinematics.seconds( Time.delta );
 
-		if ( Settings.enemies.maxShots < this.shootCount ) {
+		if ( Settings.enemies.shotInterval < this.shootElapsed ) {
 
 			let group  = Game.Room.tiles.projectiles,
 				target = Game.Room.tiles.players[ 0 ];
@@ -53,14 +54,14 @@ export default class Enemy extends Tile {
 			if ( this.canShoot() ) {
 				new Projectile( group, this, target );
 
-				this.shootCount = 0;
+				this.shootElapsed = 0;
 			}
 		}
 	}
 
 	canShoot = () => {
 		let camera = Game.Camera,
-			view   = Game.View,
+			view   = Game.View.buffer,
 			pos    = ( this.physics.position.x - camera.position.x );
 
 		return (
