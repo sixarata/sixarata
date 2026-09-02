@@ -12,4 +12,4 @@ Sixarata is maintained as an open-source project. Response times are best effort
 
 ## Security
 
-Do not post vulnerabilities or credentials publicly. Follow [SECURITY.md](SECURITY.md) for the currently available private-reporting path.
+Do not post vulnerabilities or credentials publicly. Follow [SECURITY.md](SECURITY.md) and use [GitHub private vulnerability reporting](https://github.com/sixarata/sixarata/security/advisories/new).

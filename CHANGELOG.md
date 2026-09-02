@@ -9,6 +9,7 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 - Added documented tests across every engine class, with explicit coverage gates for lines, branches, and functions.
 - Added GitHub Actions for Node.js testing, repository linting, CodeQL analysis, and signed-commit verification.
 - Added issue forms, pull-request guidance, contribution and support policies, CODEOWNERS, and automated GitHub Actions updates.
+- Enabled GitHub private vulnerability reporting with a confidential reporting path documented throughout the repository.
 
 ### Changed
 

@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Read the security policy
-    url: https://github.com/sixarata/sixarata/security/policy
+  - name: Report a security vulnerability privately
+    url: https://github.com/sixarata/sixarata/security/advisories/new
     about: Do not disclose vulnerability details in a public issue.
   - name: Ask a question
     url: https://github.com/sixarata/sixarata/discussions

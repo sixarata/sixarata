@@ -6,7 +6,7 @@ Until Sixarata publishes a stable release line, security fixes are applied to th
 
 ## Report a vulnerability privately
 
-Do not publish vulnerability details in a public issue. Use [GitHub private vulnerability reporting](https://github.com/sixarata/sixarata/security/advisories/new) when the repository enables it. Until then, open a public issue containing no vulnerability details and ask a maintainer to arrange private contact.
+Do not publish vulnerability details in a public issue. Use [GitHub private vulnerability reporting](https://github.com/sixarata/sixarata/security/advisories/new).
 
 Include as much of the following as is safe:
 

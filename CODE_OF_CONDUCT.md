@@ -27,7 +27,7 @@ This policy applies in Sixarata repositories, issue trackers, pull requests, rel
 
 ## Reporting and enforcement
 
-Do not litigate sensitive conduct reports in a public issue. Follow the private-contact process in [SECURITY.md](SECURITY.md) and clearly label the eventual message as a **Code of Conduct report**, not a vulnerability.
+Do not litigate sensitive conduct reports in a public issue. Submit a confidential report through [GitHub private reporting](https://github.com/sixarata/sixarata/security/advisories/new) and clearly label it as a **Code of Conduct report**, not a vulnerability.
 
 Project maintainers will review reports as privately and promptly as practical. Consequences may include a private warning, removal of content, temporary participation limits, or permanent removal from project spaces. Maintainers will avoid conflicts of interest and share report details only as needed to investigate and act.
 
