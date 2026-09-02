@@ -92,7 +92,6 @@ export default class Projectile extends Tile {
 		// Bump position.
 		this.physics.position.x += Game.Kinematics.displacement( this.sin, seconds );
 		this.physics.position.y += Game.Kinematics.displacement( this.cos, seconds );
-		this.physics.position.z += Game.Kinematics.displacement( this.cos, seconds );
 	}
 
 	/**

@@ -5,18 +5,30 @@
  */
 export default class Draw {
 
+	/**
+	 * Construct an empty drawing helper.
+	 *
+	 * @returns {Draw} this
+	 */
 	constructor() {
 		return this.set();
 	}
 
+	/**
+	 * Initialize the drawing helper.
+	 *
+	 * @returns {Draw} this
+	 */
 	set = () => {
-		this.reset();
-
-		// Return.
-		return this;
+		return this.reset();
 	}
 
+	/**
+	 * Reset drawing state.
+	 *
+	 * @returns {Draw} this
+	 */
 	reset = () => {
-
+		return this;
 	}
 }

@@ -53,6 +53,17 @@ test( 'Coordinate distance and interpolation are correct', () => {
 	assert.equal( Number( coordinate ), 5 );
 } );
 
+/** Contract: Coordinate exposes subtraction, squaring, length, and tolerance comparisons. */
+test( 'Coordinate complete arithmetic and comparison surface remains numeric', () => {
+	const coordinate = new Coordinate( 5 );
+	coordinate.sub( 2 ).subLinear( 1 );
+	assert.equal( Number( coordinate ), 2 );
+	assert.equal( coordinate.square( 3 ), 13 );
+	assert.equal( coordinate.length( 3 ), Math.sqrt( 13 ) );
+	assert.equal( coordinate.squareDistance( 5 ), 9 );
+	assert.equal( coordinate.equals( 2 ), true );
+} );
+
 /** Contract: Coordinate imports, exports, resets, and handles zero division. */
 test( 'Coordinate imports, exports, resets, and handles zero division', () => {
 	const coordinate = new Coordinate( 12 );
@@ -73,6 +84,25 @@ test( 'Vector arithmetic uses vector semantics', () => {
 	assert.equal( vector.dot( new Vector( 2, 3, 4 ) ), 26 );
 	vector.add( { x: 1, y: -1, z: 2 } ).multiplyLinear( 2 );
 	assert.deepEqual( [ vector.x, vector.y, vector.z ], [ 8, 6, 8 ] );
+} );
+
+/** Contract: Vector exposes every component-wise, scalar, copy, and interpolation operation. */
+test( 'Vector complete arithmetic surface remains mutable and chainable', () => {
+	const vector = new Vector( 2, 4, 6 );
+
+	vector.sub( { x: 1, y: 2, z: 3 } );
+	assert.deepEqual( [ vector.x, vector.y, vector.z ], [ 1, 2, 3 ] );
+	vector.subLinear( 1 ).multiply( { x: 2, y: 3, z: 4 } );
+	assert.deepEqual( [ vector.x, vector.y, vector.z ], [ 0, 3, 8 ] );
+	vector.divideLinear( 2 );
+	assert.deepEqual( [ vector.x, vector.y, vector.z ], [ 0, 1.5, 4 ] );
+	vector.import( { x: 3, y: 4, z: 0 } );
+	assert.equal( vector.square(), 25 );
+	assert.equal( vector.empty(), false );
+	assert.equal( vector.lerp( { x: 5, y: 6, z: 2 }, 0.5 ), vector );
+	assert.deepEqual( [ vector.x, vector.y, vector.z ], [ 4, 5, 1 ] );
+	assert.deepEqual( [ vector.export().x, vector.export().y, vector.export().z ], [ 4, 5, 1 ] );
+	assert.deepEqual( [ vector.divideLinear( 0 ).x, vector.y, vector.z ], [ 0, 0, 0 ] );
 } );
 
 /** Contract: Vector distance is pure and three-dimensional. */
@@ -120,6 +150,19 @@ test( 'Position and Size scale world units into logical pixels', () => {
 	);
 } );
 
+/** Contract: Position and Size support up, down, raw reset, and visibility branches. */
+test( 'Position and Size complete their scaling lifecycles', () => {
+	const position = new Position( 2, 3, 4, false );
+	assert.deepEqual( [ position.rescale( 'down' ).x, position.y, position.z ], [ 0, 0, 0 ] );
+	assert.deepEqual( [ position.reset().x, position.y, position.z ], [ 2, 3, 4 ] );
+
+	const size = new Size( 2, 3, 4, false );
+	assert.equal( size.viewable(), true );
+	assert.deepEqual( [ size.rescale( 'down' ).w, size.h, size.d ], [ 0, 0, 0 ] );
+	assert.deepEqual( [ size.reset().w, size.h, size.d ], [ 2, 3, 4 ] );
+	assert.equal( new Size( 1, 0, 1, false ).viewable(), false );
+} );
+
 /** Contract: Scale follows the configured logical tile size. */
 test( 'Scale follows the configured logical tile size', () => {
 	const scale = new Scale();
@@ -144,6 +187,7 @@ test( 'Time converts milliseconds and its current step to seconds', () => {
 	assert.equal( Time.seconds(), 0.008 );
 	assert.equal( Time.seconds( 250 ), 0.25 );
 	assert.equal( Time.seconds( -1 ), 0 );
+	assert.ok( Number.isFinite( Time.epoch() ) );
 
 	Time.step = originalStep;
 } );
@@ -262,6 +306,15 @@ test( 'Mass and Volume reset, serialize, and clamp invalid dimensions', () => {
 	assert.equal( Number( volume.reset() ), 0 );
 } );
 
+/** Contract: Mass and Volume implement explicit primitive coercion. */
+test( 'Mass and Volume implement explicit primitive coercion', () => {
+	const mass = new Mass( 7 );
+	const volume = new Volume( 2, 3, 4 );
+
+	assert.equal( mass[ Symbol.toPrimitive ](), 7 );
+	assert.equal( volume[ Symbol.toPrimitive ](), 24 );
+} );
+
 /** Contract: Collision detects overlapping two-dimensional bounds. */
 test( 'Collision detects overlapping two-dimensional bounds', () => {
 	const tile = ( x, y, w = 10, h = 10 ) => ( {
@@ -273,6 +326,14 @@ test( 'Collision detects overlapping two-dimensional bounds', () => {
 
 	assert.equal( new Collision( tile( 0, 0 ), tile( 9, 9 ) ).detect(), true );
 	assert.equal( new Collision( tile( 0, 0 ), tile( 10, 10 ) ).detect(), false );
+} );
+
+/** Contract: Collision can be rebound and reset through its full lifecycle. */
+test( 'Collision supports set and reset lifecycle operations', () => {
+	const collision = new Collision( { one: true }, { two: true } );
+	assert.deepEqual( collision.reset(), collision );
+	assert.deepEqual( collision.tile1, {} );
+	assert.deepEqual( collision.tile2, {} );
 } );
 
 /** Contract: Contact resolves against the stationary tile dimensions. */

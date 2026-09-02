@@ -38,16 +38,32 @@ export const installBrowserEnvironment = () => {
 		setTransform: ( ...transform ) => {
 			canvas.transform = transform;
 		},
-		scale: () => {},
-		clearRect: () => {},
-		fillRect: () => {},
-		fillText: () => {},
+		scale: ( ...args ) => {
+			canvas.scaleArgs = args;
+		},
+		clearRect: ( ...args ) => {
+			canvas.clearRectArgs = args;
+		},
+		fillRect: ( ...args ) => {
+			canvas.fillRectArgs = args;
+		},
+		fillText: ( ...args ) => {
+			canvas.fillTextArgs = args;
+		},
 		drawImage: ( ...args ) => {
 			canvas.drawImageArgs = args;
 		},
-		getImageData: () => ( { data: new Uint8ClampedArray() } ),
-		save: () => {},
-		restore: () => {},
+		getImageData: ( ...args ) => {
+			canvas.getImageDataArgs = args;
+
+			return { data: new Uint8ClampedArray() };
+		},
+		save: () => {
+			canvas.saved = ( canvas.saved ?? 0 ) + 1;
+		},
+		restore: () => {
+			canvas.restored = ( canvas.restored ?? 0 ) + 1;
+		},
 	} );
 
 	/**
@@ -64,7 +80,9 @@ export const installBrowserEnvironment = () => {
 			appendChild( child ) {
 				this.children.push( child );
 			},
-			remove() {},
+			remove() {
+				this.removed = true;
+			},
 		};
 
 		if ( tag === 'canvas' ) {
