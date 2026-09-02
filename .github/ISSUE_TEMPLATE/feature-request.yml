@@ -1,0 +1,50 @@
+name: Game or engine improvement
+description: Propose a focused improvement to Sixarata.
+title: "[Idea]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the player, creator, or contributor and what is currently in their way.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What should become possible?
+      description: Focus on the observable outcome rather than only one implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example
+      description: Walk through a representative room, mechanic, API, or contributor workflow.
+    validations:
+      required: true
+  - type: checkboxes
+    id: surfaces
+    attributes:
+      label: Relevant areas
+      options:
+        - label: Gameplay or rooms
+        - label: Physics or timing
+        - label: Input or accessibility
+        - label: Rendering, audio, or weather
+        - label: Engine API or hooks
+        - label: Documentation or contributor tooling
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Existing behavior, workarounds, other engines, or simpler approaches.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and Discussions.
+          required: true

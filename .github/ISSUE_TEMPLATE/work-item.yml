@@ -1,0 +1,41 @@
+name: Sixarata work item
+description: Define a focused implementation, cleanup, documentation, or research task.
+title: ""
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is happening?
+      description: Describe the player, engine, or maintenance problem rather than only a proposed implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: What should be observably better when this is complete?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List the behaviors that make this ready for review.
+      placeholder: |
+        - [ ] The behavior works when…
+        - [ ] Existing behavior remains…
+        - [ ] Relevant tests and documentation cover…
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints and context
+      description: Relevant classes, rooms, screenshots, timing or physics concerns, alternatives, and explicit non-goals.
+  - type: checkboxes
+    id: contract
+    attributes:
+      label: Repository contract
+      options:
+        - label: The implementation must follow `AGENTS.md`.
+          required: true

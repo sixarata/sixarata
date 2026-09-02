@@ -1,0 +1,87 @@
+name: Bug report
+description: Report reproducible game or engine behavior that is not working as intended.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping Sixarata play better. Security vulnerabilities belong in private vulnerability reporting, not this form.
+  - type: input
+    id: revision
+    attributes:
+      label: Version or commit
+      description: Provide a release version or commit hash when possible.
+      placeholder: v0.1.0 or 943c439
+    validations:
+      required: true
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome or Chromium
+        - Firefox
+        - Safari
+        - Edge
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: operating_system
+    attributes:
+      label: Operating system
+      placeholder: macOS 26, Windows 11, Ubuntu 24.04…
+    validations:
+      required: true
+  - type: dropdown
+    id: controls
+    attributes:
+      label: Controls
+      options:
+        - Keyboard
+        - Gamepad
+        - Both
+        - Not applicable
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Describe the observable behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start room…
+        2. Move or jump…
+        3. Observe…
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add screenshots, recordings, console output, refresh rate, device pixel ratio, or workarounds.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues.
+          required: true
+        - label: I reproduced this against the latest available revision.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true

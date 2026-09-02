@@ -7,6 +7,8 @@
 
 sixarata is an open-source 2D adventure game engine.
 
+[![CI](https://github.com/sixarata/sixarata/actions/workflows/ci.yml/badge.svg)](https://github.com/sixarata/sixarata/actions/workflows/ci.yml)
+
 It is MIT licensed, coded entirely in vanilla JavaScript, and uses no external libraries or dependencies.
 
 Fork it as a head-start for your own ideas, to educate others, or just to boop around for a bit.
@@ -41,6 +43,8 @@ canvas rendering and does not affect simulation speed.
 Fork. Jam. Discuss. Merge. Repeat.
 
 All are welcome. Intolerance is not tolerated.
+
+Read the [implementation requirements](AGENTS.md), [contribution guide](CONTRIBUTING.md), and [code of conduct](CODE_OF_CONDUCT.md) before submitting a change.
 
 ## inspiration
 
