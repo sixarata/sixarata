@@ -158,6 +158,9 @@ export default class Vector {
 	/**
 	 * Calculate the sum of squares along the selected axes.
 	 *
+	 * @param {String} axis1 First component name.
+	 * @param {String} axis2 Second component name.
+	 * @param {String} axis3 Third component name.
 	 * @returns {Number} Squared magnitude.
 	 */
 	square = (
@@ -172,7 +175,14 @@ export default class Vector {
 		( this[ axis3 ] * this[ axis3 ] )
 	);
 
-	/** @returns {Number} Magnitude along the selected axes. */
+	/**
+	 * Calculate magnitude along the selected axes.
+	 *
+	 * @param {String} axis1 First component name.
+	 * @param {String} axis2 Second component name.
+	 * @param {String} axis3 Third component name.
+	 * @returns {Number} Magnitude along the selected axes.
+	 */
 	length = (
 		axis1 = 'x',
 		axis2 = 'y',
@@ -191,13 +201,20 @@ export default class Vector {
 	/** @param {Object} vector Vector-like endpoint. @returns {Number} Distance. */
 	distance = ( vector = {} ) => Math.sqrt( this.squareDistance( vector ) );
 
-	/** @returns {Boolean} Whether another vector is within the tolerance. */
+	/**
+	 * @param {Object} vector Vector-like value to compare.
+	 * @param {Number} tolerance Maximum exclusive distance.
+	 * @returns {Boolean} Whether another vector is within the tolerance.
+	 */
 	equals = (
 		vector    = {},
 		tolerance = 0.0001
 	) => this.distance( vector ) < tolerance;
 
-	/** @returns {Boolean} Whether the magnitude is within the zero tolerance. */
+	/**
+	 * @param {Number} tolerance Maximum magnitude.
+	 * @returns {Boolean} Whether the magnitude is within the zero tolerance.
+	 */
 	empty = ( tolerance = 0.0001 ) => this.length() < tolerance;
 
 	/** @param {Object} vector Vector-like operand. @returns {Number} Dot product. */

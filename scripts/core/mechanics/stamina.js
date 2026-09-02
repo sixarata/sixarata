@@ -9,6 +9,7 @@ import Time from '../utilities/time.js';
  *
  * Features:
  * - Time-based (not frame-based) for consistent behavior across frame rates
+ * - Uses the bounded gameplay step so a stalled frame cannot empty the meter
  * - Configurable max capacity (milliseconds)
  * - Drain rate (ms per ms) or instant costs
  * - Delayed regeneration with configurable rate
@@ -55,7 +56,7 @@ export default class Stamina {
 	/**
 	 * Set/configure the stamina mechanic.
 	 *
-	 * @param {Object|null} settings Settings object with max, drainRate, etc.
+	 * @param {Object|null} settings Settings with max, drain, delay, and rate.
 	 * @returns {Stamina} this
 	 */
 	set = (
@@ -94,6 +95,8 @@ export default class Stamina {
 	 * Primary loop hook - handles auto-recharge logic.
 	 *
 	 * Call this each frame to allow stamina to regenerate.
+	 *
+	 * @returns {void}
 	 */
 	listen = () => {
 
@@ -109,7 +112,7 @@ export default class Stamina {
 
 		// Gradually refill stamina based on time elapsed.
 		this.current = Math.min(
-			this.current + ( this.settings.rate * Time.delta ),
+			this.current + ( this.settings.rate * Time.step ),
 			this.settings.max
 		);
 	}
@@ -117,8 +120,8 @@ export default class Stamina {
 	/**
 	 * Check if stamina is available.
 	 *
-	 * @param {Number} amount Optional minimum amount required (default: any).
-	 * @returns {Boolean} True if current stamina >= amount.
+	 * @param {Number} amount Optional exclusive minimum (default: any stamina).
+	 * @returns {Boolean} True if current stamina is greater than amount.
 	 */
 	has = (
 		amount = 0
@@ -141,7 +144,7 @@ export default class Stamina {
 
 		// If specific amount provided, drain that exact amount (instant cost).
 		// Otherwise, drain based on time elapsed * drain rate.
-		const drainAmount = amount ?? ( this.settings.drain * Time.delta );
+		const drainAmount = amount ?? ( this.settings.drain * Time.step );
 
 		// Reduce current stamina (clamp to 0).
 		this.current = Math.max( 0, this.current - drainAmount );

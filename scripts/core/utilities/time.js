@@ -4,6 +4,12 @@
  *
  * Provides a monotonic high‑resolution timestamp (now) updated once per rAF
  * by Frame.animate, so all systems share an identical per‑frame time.
+ *
+ * `delta` is the raw elapsed wall-clock duration. Timers and input history use
+ * it indirectly through `now`. `step` is the bounded gameplay duration used by
+ * motion and other stateful mechanics, preventing a stalled frame from causing
+ * a large jump. `diff` and `scale` describe the current frame relative to the
+ * configured frame goal.
  */
 class Time {
 

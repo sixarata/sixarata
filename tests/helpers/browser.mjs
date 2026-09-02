@@ -1,3 +1,12 @@
+/**
+ * Install the minimal browser APIs required by engine tests.
+ *
+ * The mocks preserve logical canvas dimensions, rendering calls, animation
+ * identifiers, input APIs, and a running audio pipeline without starting a
+ * real browser.
+ *
+ * @returns {Object} Captured browser event listeners.
+ */
 export const installBrowserEnvironment = () => {
 	const listeners = new Map();
 	let animationId = 0;
@@ -16,6 +25,10 @@ export const installBrowserEnvironment = () => {
 	globalThis.requestAnimationFrame = () => ++animationId;
 	globalThis.cancelAnimationFrame = () => {};
 
+	/**
+	 * @param {Object} canvas Owning canvas mock.
+	 * @returns {Object} A canvas context spy bound to the supplied canvas.
+	 */
 	const createContext = canvas => ( {
 		canvas,
 		imageSmoothingEnabled: true,
@@ -37,6 +50,10 @@ export const installBrowserEnvironment = () => {
 		restore: () => {},
 	} );
 
+	/**
+	 * @param {String} tag HTML tag name.
+	 * @returns {Object} A minimal DOM element for the requested tag.
+	 */
 	const createElement = tag => {
 		const element = {
 			tagName: tag.toUpperCase(),
@@ -79,6 +96,7 @@ export const installBrowserEnvironment = () => {
 		},
 	} );
 
+	/** Minimal running Web Audio pipeline used by Game.Audio. */
 	class AudioContext {
 		state = 'running';
 		destination = {};

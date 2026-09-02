@@ -9,10 +9,17 @@ const { default: Game } = await import( '../scripts/core/game.js' );
 const { default: Buffer } = await import( '../scripts/core/components/buffer.js' );
 const { default: Gamepad } = await import( '../scripts/core/inputs/gamepad.js' );
 const { default: Keyboard } = await import( '../scripts/core/inputs/keyboard.js' );
+const { default: Stamina } = await import( '../scripts/core/mechanics/stamina.js' );
 const { default: Jobs } = await import( '../scripts/core/utilities/jobs.js' );
 const { default: Time } = await import( '../scripts/core/utilities/time.js' );
 const { default: Settings } = await import( '../scripts/content/settings.js' );
 
+/**
+ * Set both raw and bounded time for a controlled engine frame.
+ *
+ * @param {Number} milliseconds Elapsed time for the test frame.
+ * @returns {void}
+ */
 const setTimeStep = milliseconds => {
 	Time.delta = milliseconds;
 	Time.step  = milliseconds;
@@ -403,6 +410,33 @@ test( 'Frame bounds Time.step while preserving raw Time.delta', () => {
 		Game.Frame.step * Game.Frame.settings.clamp
 	);
 
+	Time.delta = originalDelta;
+	Time.step  = originalStep;
+} );
+
+/** Contract: Stamina uses the bounded gameplay step instead of raw frame time. */
+test( 'Stamina uses the bounded gameplay step instead of raw frame time', () => {
+	const originalNow   = Time.now;
+	const originalDelta = Time.delta;
+	const originalStep  = Time.step;
+	const stamina       = new Stamina( {
+		max:   1000,
+		drain: 1,
+		delay: 1,
+		rate:  2,
+	} );
+
+	Time.now   = 100;
+	Time.delta = 1000;
+	Time.step  = 50;
+	stamina.drain();
+	assert.equal( stamina.current, 950 );
+
+	Time.now = 101;
+	stamina.listen();
+	assert.equal( stamina.current, 1000 );
+
+	Time.now   = originalNow;
 	Time.delta = originalDelta;
 	Time.step  = originalStep;
 } );

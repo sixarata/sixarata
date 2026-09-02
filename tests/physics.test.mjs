@@ -19,6 +19,14 @@ import Velocity from '../scripts/core/physics/velocity.js';
 import Volume from '../scripts/core/physics/volume.js';
 import Time from '../scripts/core/utilities/time.js';
 
+/**
+ * Assert two floating-point values are within an explicit tolerance.
+ *
+ * @param {Number} actual Observed value.
+ * @param {Number} expected Required value.
+ * @param {Number} tolerance Maximum absolute difference.
+ * @returns {void}
+ */
 const closeTo = (
 	actual,
 	expected,

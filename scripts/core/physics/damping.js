@@ -44,20 +44,21 @@ export default class Damping {
 	 * @returns {Damping}
 	 */
 	reset = () => {
-		const configured = Settings.physics?.damping
-			?? Settings.physics?.friction;
-		const retention = typeof configured === 'object'
-			? ( configured.retention ?? configured.coefficient )
+		const configured = Settings.physics?.damping;
+		const retention  = typeof configured === 'object'
+			? configured.retention
 			: configured;
-		const normalized = retention === undefined
+		const numeric    = Number( retention );
+		const normalized = ! Number.isFinite( numeric )
 			? Damping.defaults.retention
-			: ( retention > 1 ? retention / 100 : retention );
+			: ( numeric > 1 ? numeric / 100 : numeric );
+		const steps      = typeof configured === 'object'
+			? Number( configured.stepsPerSecond )
+			: Damping.defaults.stepsPerSecond;
 
-		this.retention = Math.min( 1, Math.max( 0, normalized ) );
-		this.stepsPerSecond = typeof configured === 'object'
-			? ( configured.stepsPerSecond
-				?? configured.referenceRate
-				?? Damping.defaults.stepsPerSecond )
+		this.retention      = Math.min( 1, Math.max( 0, normalized ) );
+		this.stepsPerSecond = Number.isFinite( steps ) && steps > 0
+			? steps
 			: Damping.defaults.stepsPerSecond;
 
 		return this;

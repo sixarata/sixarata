@@ -9,9 +9,16 @@ import Time from './time.js';
  */
 export default class Hooks {
 
+	/** @type {String} Name of the hook currently executing. */
 	#current = '';
+
+	/** @type {Map<String, Map<Number, Array<Function>>>} Active callbacks. */
 	#queued = new Map();
+
+	/** @type {Array<Object>} Bounded callback execution history. */
 	#done = [];
+
+	/** @type {Array<Object>} Callbacks awaiting automatic or manual resumption. */
 	#suspended = [];
 
 	/** @returns {Hooks} A reset hook registry. */
@@ -35,6 +42,9 @@ export default class Hooks {
 	/**
 	 * Register a callback at a numeric priority.
 	 *
+	 * @param {String} name Hook name.
+	 * @param {Function} callback Callback to register.
+	 * @param {Number} priority Execution priority; lower values run first.
 	 * @returns {Number|Boolean} One-based position, or false for invalid input.
 	 */
 	add = (
@@ -66,7 +76,14 @@ export default class Hooks {
 		return callbacks.push( callback );
 	}
 
-	/** @returns {Boolean} Whether the exact callback was removed. */
+	/**
+	 * Remove one exact callback registration.
+	 *
+	 * @param {String} name Hook name.
+	 * @param {Function} callback Callback to remove.
+	 * @param {Number} priority Registered priority.
+	 * @returns {Boolean} Whether the exact callback was removed.
+	 */
 	remove = (
 		name     = '',
 		callback = null,
@@ -90,7 +107,12 @@ export default class Hooks {
 		return true;
 	}
 
-	/** @returns {Boolean} Whether a named hook queue existed and was cleared. */
+	/**
+	 * Remove every callback registered to one hook name.
+	 *
+	 * @param {String} name Hook name.
+	 * @returns {Boolean} Whether a named hook queue existed and was cleared.
+	 */
 	clear = ( name = '' ) => name
 		? this.#queued.delete( name )
 		: false;
@@ -113,6 +135,8 @@ export default class Hooks {
 	 * Every callback receives the original arguments. The return value is the
 	 * final callback result, or the first argument when no callback runs.
 	 *
+	 * @param {String} name Hook name.
+	 * @param {...*} args Arguments forwarded to every callback.
 	 * @returns {*} Final callback result or initial value.
 	 */
 	do = (
@@ -189,7 +213,14 @@ export default class Hooks {
 		return true;
 	}
 
-	/** @returns {Boolean} Whether the exact suspended callback was restored. */
+	/**
+	 * Restore one suspended callback immediately.
+	 *
+	 * @param {String} name Hook name.
+	 * @param {Function} callback Exact suspended callback.
+	 * @param {Number} priority Registered priority.
+	 * @returns {Boolean} Whether the exact suspended callback was restored.
+	 */
 	resume = (
 		name     = '',
 		callback = null,
@@ -217,6 +248,7 @@ export default class Hooks {
 	 * Restore suspended callbacks whose time or frame delay has elapsed.
 	 *
 	 * @param {Boolean} advanceFrames Whether this processing pass counts a frame.
+	 * @returns {void}
 	 */
 	process = ( advanceFrames = false ) => {
 		const remaining = [];
@@ -239,10 +271,22 @@ export default class Hooks {
 		this.#suspended = remaining;
 	}
 
-	/** @returns {Boolean} Whether the named hook is currently executing. */
+	/**
+	 * @param {String} name Hook name.
+	 * @returns {Boolean} Whether the named hook is currently executing.
+	 */
 	doing = ( name = '' ) => name === this.#current;
 
-	/** @returns {Boolean} Whether a matching callback execution was recorded. */
+	/**
+	 * Check the bounded execution history.
+	 *
+	 * Omitting `callback` matches any execution of the named hook.
+	 *
+	 * @param {String} name Hook name.
+	 * @param {Function|null} callback Optional exact callback.
+	 * @param {Number} priority Registered priority when callback is supplied.
+	 * @returns {Boolean} Whether a matching callback execution was recorded.
+	 */
 	did = (
 		name     = '',
 		callback = null,
@@ -255,7 +299,14 @@ export default class Hooks {
 		( typeof callback !== 'function' || entry.priority === priority )
 	) );
 
-	/** @returns {Boolean} Whether a matching callback is currently registered. */
+	/**
+	 * Check the active callback registry.
+	 *
+	 * @param {String} name Hook name.
+	 * @param {Function|null} callback Optional exact callback.
+	 * @param {Number} priority Registered priority.
+	 * @returns {Boolean} Whether a matching callback is currently registered.
+	 */
 	exists = (
 		name     = '',
 		callback = null,
@@ -272,11 +323,25 @@ export default class Hooks {
 			: callbacks.length > 0;
 	}
 
+	/**
+	 * Get the callback list at one name and priority.
+	 *
+	 * @param {String} name Hook name.
+	 * @param {Number} priority Registered priority.
+	 * @returns {Array<Function>|undefined} Internal callback list.
+	 */
 	#callbacks = (
 		name,
 		priority
 	) => this.#queued.get( name )?.get( priority );
 
+	/**
+	 * Remove empty priority and hook containers after a callback is removed.
+	 *
+	 * @param {String} name Hook name.
+	 * @param {Number} priority Registered priority.
+	 * @returns {void}
+	 */
 	#prune = (
 		name,
 		priority
