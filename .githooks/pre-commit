@@ -8,7 +8,7 @@ if [[ ! -x ./tools/lint.sh ]]; then
   exit 1
 fi
 
-./tools/lint.sh || {
+./tools/lint.sh --staged || {
   echo "Commit blocked due to semicolon lint errors." >&2
   exit 1
 }

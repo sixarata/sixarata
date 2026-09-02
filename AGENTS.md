@@ -96,5 +96,6 @@ This file is the canonical implementation and review contract for humans and cod
 - Never commit regenerated `tools/lint` changes unless the linter implementation itself intentionally changed. The lint and pre-commit scripts rebuild that tracked binary, so restore incidental binary changes after checks and commits.
 - Keep the worktree clean at handoff unless the user asked to leave a draft uncommitted.
 - Do not push, open or merge pull requests, change repository settings, or mutate GitHub issues without explicit user authorization.
+- Repository automation queues every non-draft pull request for auto-merge; required checks, signature verification, and unresolved review conversations remain merge gates.
 - CI must remain green, but automated success is not a substitute for reviewing gameplay behavior, public API compatibility, documentation, and the actual diff.
 - Update tests and documentation atomically with implementation changes.

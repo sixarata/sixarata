@@ -20,6 +20,12 @@ Then visit `http://127.0.0.1:8080`.
 
 ## Verify a change
 
+Enable the repository's pre-commit hook once per clone. It checks only staged `.js` and `.mjs` files for the project's semicolon policy:
+
+```sh
+git config core.hooksPath .githooks
+```
+
 ```sh
 sh tools/test.sh
 sh tools/lint.sh
@@ -27,6 +33,6 @@ sh tools/lint.sh
 
 Add or update tests and documentation with the implementation. Exercise player-visible changes in a browser, include visual evidence when useful, update `CHANGELOG.md`, and sign every commit.
 
-Keep pull requests focused and wait for all required checks before merge. AI-assisted contributions are welcome, but contributors remain responsible for understanding and reviewing the resulting code.
+Keep pull requests focused. Non-draft pull requests are queued for auto-merge, but they merge only after all required checks and review gates pass. AI-assisted contributions are welcome, but contributors remain responsible for understanding and reviewing the resulting code.
 
 By contributing, you agree that your contribution is licensed under the repository's [MIT License](LICENSE).
