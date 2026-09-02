@@ -3,7 +3,9 @@
  *
  * Vectors represent quantities with magnitude and direction, including
  * velocity and acceleration. Components are stored as ordinary numbers so
- * arithmetic and browser APIs observe the same values.
+ * arithmetic and browser APIs observe the same values. The current game uses
+ * two-dimensional motion, but retains the Z component for layered rooms and
+ * future depth-aware mechanics.
  */
 export default class Vector {
 

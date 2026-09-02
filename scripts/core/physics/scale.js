@@ -1,11 +1,15 @@
-import Settings   from '../../content/settings.js';
+import Settings from '../../content/settings.js';
 import Vector from './vector.js';
 
 /**
  * The Scale object.
  *
- * This object is responsible for scaling values to best support different aspect
- * ratios, pixel densities, etc...
+ * Stores source values and converts them up or down using the configured game
+ * unit size. Position and Size use it to move between compact room units and
+ * logical pixels without discarding the original X, Y, or Z values.
+ *
+ * Device pixel ratio and browser display scaling are handled separately by
+ * Screen and Buffer, so changing display resolution does not change physics.
  */
 export default class Scale extends Vector {
 
@@ -58,7 +62,7 @@ export default class Scale extends Vector {
 		// Get the scale settings.
 		this.settings = Settings.interfaces?.screen ?? Scale.defaults;
 
-		// Get the physics ratio.
+		// Get the game-unit ratio.
 		this.ratio = this.settings.size;
 
 		// Return.
