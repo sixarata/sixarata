@@ -150,7 +150,7 @@ export default class Frame {
 		// Set Time diff to raw diff.
 		Time.diff  = this.rawDiff();
 		Time.scale = Math.max( this.settings.throttle, Time.diff );
-		Time.simulationDelta = this.clampedDelta();
+		Time.step = this.clampedDelta();
 
 		// Loop.
 		Game.Hooks.do( 'Frame.animate' );

@@ -17,6 +17,7 @@ import Size from '../scripts/core/physics/size.js';
 import Vector from '../scripts/core/physics/vector.js';
 import Velocity from '../scripts/core/physics/velocity.js';
 import Volume from '../scripts/core/physics/volume.js';
+import Time from '../scripts/core/utilities/time.js';
 
 const closeTo = (
 	actual,
@@ -24,6 +25,7 @@ const closeTo = (
 	tolerance = 0.000001
 ) => assert.ok( Math.abs( actual - expected ) <= tolerance );
 
+/** Contract: Coordinate remains numerically consistent after mutation. */
 test( 'Coordinate remains numerically consistent after mutation', () => {
 	const coordinate = new Coordinate( 3 );
 
@@ -34,6 +36,7 @@ test( 'Coordinate remains numerically consistent after mutation', () => {
 	assert.equal( JSON.stringify( coordinate ), '3' );
 } );
 
+/** Contract: Coordinate distance and interpolation are correct. */
 test( 'Coordinate distance and interpolation are correct', () => {
 	const coordinate = new Coordinate( 3 );
 
@@ -42,6 +45,19 @@ test( 'Coordinate distance and interpolation are correct', () => {
 	assert.equal( Number( coordinate ), 5 );
 } );
 
+/** Contract: Coordinate imports, exports, resets, and handles zero division. */
+test( 'Coordinate imports, exports, resets, and handles zero division', () => {
+	const coordinate = new Coordinate( 12 );
+	const exported = coordinate.export();
+
+	assert.notEqual( exported, coordinate );
+	assert.equal( exported.equals( coordinate ), true );
+	assert.equal( coordinate.divide( 0 ).empty(), true );
+	assert.equal( Number( coordinate.import( exported ) ), 12 );
+	assert.equal( Number( coordinate.reset() ), 0 );
+} );
+
+/** Contract: Vector arithmetic uses vector semantics. */
 test( 'Vector arithmetic uses vector semantics', () => {
 	const vector = new Vector( 3, 4, 2 );
 
@@ -51,6 +67,7 @@ test( 'Vector arithmetic uses vector semantics', () => {
 	assert.deepEqual( [ vector.x, vector.y, vector.z ], [ 8, 6, 8 ] );
 } );
 
+/** Contract: Vector distance is pure and three-dimensional. */
 test( 'Vector distance is pure and three-dimensional', () => {
 	const point = new Point( 3, 4, 12 );
 
@@ -58,6 +75,19 @@ test( 'Vector distance is pure and three-dimensional', () => {
 	assert.deepEqual( [ point.x, point.y, point.z ], [ 3, 4, 12 ] );
 } );
 
+/** Contract: Vector exports preserve concrete types and zero division is finite. */
+test( 'Vector exports preserve concrete types and zero division is finite', () => {
+	const point = new Point( 6, 8, 10 );
+	const exported = point.export();
+
+	assert.ok( exported instanceof Point );
+	assert.notEqual( exported, point );
+	assert.deepEqual( [ exported.x, exported.y, exported.z ], [ 6, 8, 10 ] );
+	point.divide( { x: 2, y: 0 } );
+	assert.deepEqual( [ point.x, point.y, point.z ], [ 3, 0, 0 ] );
+} );
+
+/** Contract: Physical vector types inherit from Vector, not Point. */
 test( 'Physical vector types inherit from Vector, not Point', () => {
 	for ( const value of [
 		new Velocity(),
@@ -69,6 +99,7 @@ test( 'Physical vector types inherit from Vector, not Point', () => {
 	}
 } );
 
+/** Contract: Position and Size scale world units into logical pixels. */
 test( 'Position and Size scale world units into logical pixels', () => {
 	const position = new Position( 2, 3, 1 );
 	const size = new Size( 2, 3, 1 );
@@ -81,6 +112,7 @@ test( 'Position and Size scale world units into logical pixels', () => {
 	);
 } );
 
+/** Contract: Scale follows the configured logical tile size. */
 test( 'Scale follows the configured logical tile size', () => {
 	const scale = new Scale();
 
@@ -88,19 +120,33 @@ test( 'Scale follows the configured logical tile size', () => {
 	assert.equal( scale.down( 64 ), 2 );
 } );
 
-test( 'Gravity exposes acceleration and damping exposes a coefficient', () => {
+/** Contract: Gravity and damping expose conventional, readable settings. */
+test( 'Gravity and damping expose conventional, readable settings', () => {
 	assert.equal( new Gravity().acceleration, 1440 );
-	assert.equal( new Damping().coefficient, 0.65 );
+	assert.equal( new Damping().retention, 0.65 );
+	assert.equal( new Damping().stepsPerSecond, 60 );
 } );
 
-test( 'Kinematics uses elapsed seconds and is refresh-rate independent', () => {
+/** Contract: Time converts milliseconds and its current step to seconds. */
+test( 'Time converts milliseconds and its current step to seconds', () => {
+	const originalStep = Time.step;
+
+	Time.step = 8;
+
+	assert.equal( Time.seconds(), 0.008 );
+	assert.equal( Time.seconds( 250 ), 0.25 );
+	assert.equal( Time.seconds( -1 ), 0 );
+
+	Time.step = originalStep;
+} );
+
+/** Contract: Kinematics integration is refresh-rate independent. */
+test( 'Kinematics integration is refresh-rate independent', () => {
 	const kinematics = new Kinematics();
 	const at30Hz = new Point();
 	const at60Hz = new Point();
 	const at120Hz = new Point();
 	const velocity = new Velocity( 300, -480, 0 );
-
-	assert.equal( kinematics.seconds( 8 ), 0.008 );
 
 	for ( let frame = 0; frame < 30; frame++ ) {
 		kinematics.integrate( at30Hz, velocity, 1 / 30 );
@@ -120,28 +166,51 @@ test( 'Kinematics uses elapsed seconds and is refresh-rate independent', () => {
 	closeTo( at60Hz.y, -480 );
 } );
 
-test( 'Kinematics damping is refresh-rate independent', () => {
+/** Contract: Kinematics displacement and integration preserve signed motion. */
+test( 'Kinematics displacement and integration preserve signed motion', () => {
 	const kinematics = new Kinematics();
+	const position = new Point( 10, 20, 30 );
+	const velocity = new Velocity( -4, 6, 2 );
+
+	assert.equal( kinematics.displacement( -4, 0.5 ), -2 );
+	assert.equal( kinematics.displacement( 4, -1 ), 0 );
+	assert.equal( kinematics.integrate( position, velocity, 0.5 ), position );
+	assert.deepEqual( [ position.x, position.y, position.z ], [ 8, 23, 31 ] );
+} );
+
+/** Contract: Damping is refresh-rate independent. */
+test( 'Damping is refresh-rate independent', () => {
+	const damping = new Damping();
 	let at30Hz = 300;
 	let at60Hz = 300;
 	let at120Hz = 300;
 
 	for ( let frame = 0; frame < 30; frame++ ) {
-		at30Hz = kinematics.decay( at30Hz, 0.65, 1 / 30 );
+		at30Hz = damping.apply( at30Hz, 1 / 30 );
 	}
 
 	for ( let frame = 0; frame < 60; frame++ ) {
-		at60Hz = kinematics.decay( at60Hz, 0.65, 1 / 60 );
+		at60Hz = damping.apply( at60Hz, 1 / 60 );
 	}
 
 	for ( let frame = 0; frame < 120; frame++ ) {
-		at120Hz = kinematics.decay( at120Hz, 0.65, 1 / 120 );
+		at120Hz = damping.apply( at120Hz, 1 / 120 );
 	}
 
 	closeTo( at30Hz, at60Hz );
 	closeTo( at60Hz, at120Hz );
 } );
 
+/** Contract: Damping approaches a target without overshooting it. */
+test( 'Damping approaches a target without overshooting it', () => {
+	const damping = new Damping();
+
+	assert.equal( damping.approach( 0, 10, 1 / 60, 0.25 ), 2.5 );
+	assert.equal( damping.approach( 20, 10, 1 / 60, 1 ), 10 );
+	assert.equal( damping.apply( 100, 0 ), 100 );
+} );
+
+/** Contract: Kinematics applies acceleration in units per second squared. */
 test( 'Kinematics applies acceleration in units per second squared', () => {
 	const kinematics = new Kinematics();
 	const at30Hz = new Velocity();
@@ -166,12 +235,26 @@ test( 'Kinematics applies acceleration in units per second squared', () => {
 	closeTo( at60Hz.y, at120Hz.y );
 } );
 
+/** Contract: Mass and Volume are meaningful scalar quantities. */
 test( 'Mass and Volume are meaningful scalar quantities', () => {
 	assert.equal( Number( new Mass( 4 ) ), 4 );
 	assert.equal( Number( new Mass( -1 ) ), 0 );
 	assert.equal( Number( new Volume( 2, 3, 4 ) ), 24 );
 } );
 
+/** Contract: Mass and Volume reset, serialize, and clamp invalid dimensions. */
+test( 'Mass and Volume reset, serialize, and clamp invalid dimensions', () => {
+	const mass = new Mass( 4 );
+	const volume = new Volume( 2, -3, 4 );
+
+	assert.equal( JSON.stringify( mass ), '4' );
+	assert.equal( Number( mass.reset() ), 0 );
+	assert.equal( Number( volume ), 0 );
+	assert.equal( JSON.stringify( volume.set( 2, 3, 4 ) ), '24' );
+	assert.equal( Number( volume.reset() ), 0 );
+} );
+
+/** Contract: Collision detects overlapping two-dimensional bounds. */
 test( 'Collision detects overlapping two-dimensional bounds', () => {
 	const tile = ( x, y, w = 10, h = 10 ) => ( {
 		physics: {
@@ -184,6 +267,7 @@ test( 'Collision detects overlapping two-dimensional bounds', () => {
 	assert.equal( new Collision( tile( 0, 0 ), tile( 10, 10 ) ).detect(), false );
 } );
 
+/** Contract: Contact resolves against the stationary tile dimensions. */
 test( 'Contact resolves against the stationary tile dimensions', () => {
 	const moving = {
 		physics: {
@@ -209,6 +293,7 @@ test( 'Contact resolves against the stationary tile dimensions', () => {
 	assert.equal( moving.physics.velocity.y, 0 );
 } );
 
+/** Contract: Contact resolves all four collision directions. */
 test( 'Contact resolves all four collision directions', () => {
 	const moving = {
 		physics: {

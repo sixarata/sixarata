@@ -59,10 +59,9 @@ export default class Decay {
 		const r = Game.History.hold( 'right' );
 
 		if ( ! l?.down && ! r?.down ) {
-			v.x = Game.Kinematics.decay(
+			v.x = Game.Damping.apply(
 				v.x,
-				Game.Damping.coefficient,
-				Game.Kinematics.seconds( Time.simulationDelta )
+				Time.seconds()
 			);
 
 			if ( Math.abs( v.x ) < 30 ) {

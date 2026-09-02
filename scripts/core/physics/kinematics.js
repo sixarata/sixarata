@@ -8,37 +8,11 @@
 export default class Kinematics {
 
 	/**
-	 * Default Kinematics settings.
+	 * Calculate the signed distance traveled at a constant velocity.
 	 *
-	 * @type {Object}
-	 */
-	static defaults = {
-		nominalRate: 60,
-	}
-
-	/**
-	 * Construct the object.
-	 *
-	 * @param {Number} nominalRate
-	 */
-	constructor(
-		nominalRate = Kinematics.defaults.nominalRate
-	) {
-		this.nominalRate = nominalRate;
-	}
-
-	/**
-	 * Convert milliseconds to seconds.
-	 *
-	 * @param {Number} milliseconds
-	 * @returns {Number}
-	 */
-	seconds = (
-		milliseconds = 0
-	) => Math.max( 0, Number( milliseconds ) || 0 ) / 1000;
-
-	/**
-	 * Calculate displacement over elapsed time.
+	 * In kinematics, displacement is the change in position. For example,
+	 * 300 px/s for 0.5 seconds produces 150 logical pixels; a negative velocity
+	 * produces a negative displacement.
 	 *
 	 * @param {Number} velocity
 	 * @param {Number} seconds
@@ -50,7 +24,11 @@ export default class Kinematics {
 	) => Number( velocity ) * Math.max( 0, Number( seconds ) || 0 );
 
 	/**
-	 * Integrate velocity into position.
+	 * Advance a position using a velocity and elapsed time.
+	 *
+	 * This mutates and returns `position`. “Integrate” is the standard physics
+	 * term for accumulating a rate over time; here it is simply
+	 * `position += velocity * seconds` on each axis.
 	 *
 	 * @param {Object} position
 	 * @param {Object} velocity
@@ -70,7 +48,10 @@ export default class Kinematics {
 	}
 
 	/**
-	 * Integrate acceleration into velocity.
+	 * Advance a velocity using an acceleration and elapsed time.
+	 *
+	 * This mutates and returns `velocity`, applying
+	 * `velocity += acceleration * seconds` on each axis.
 	 *
 	 * @param {Object} velocity
 	 * @param {Object} acceleration
@@ -89,42 +70,4 @@ export default class Kinematics {
 		return velocity;
 	}
 
-	/**
-	 * Apply refresh-rate-independent exponential decay.
-	 *
-	 * @param {Number} value
-	 * @param {Number} coefficient
-	 * @param {Number} seconds
-	 * @returns {Number}
-	 */
-	decay = (
-		value       = 0,
-		coefficient = 1,
-		seconds     = 0
-	) => {
-		const retention = Math.min( 1, Math.max( 0, Number( coefficient ) || 0 ) );
-		const steps = Math.max( 0, Number( seconds ) || 0 ) * this.nominalRate;
-
-		return Number( value ) * Math.pow( retention, steps );
-	}
-
-	/**
-	 * Approach a target using refresh-rate-independent decay.
-	 *
-	 * @param {Number} value
-	 * @param {Number} target
-	 * @param {Number} coefficient
-	 * @param {Number} seconds
-	 * @returns {Number}
-	 */
-	approach = (
-		value       = 0,
-		target      = 0,
-		coefficient = 1,
-		seconds     = 0
-	) => {
-		const remaining = this.decay( 1, 1 - coefficient, seconds );
-
-		return Number( target ) + ( Number( value ) - Number( target ) ) * remaining;
-	}
 }

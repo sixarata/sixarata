@@ -113,7 +113,7 @@ export default class Camera {
 			return;
 		}
 
-		const alignment = Settings.components.camera ?? {};
+		const alignment = Settings.components.camera?.alignment ?? {};
 
 		this.position.x = this.limitAxis(
 			this.position.x,

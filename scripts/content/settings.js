@@ -34,8 +34,10 @@ export default {
 
 		// Camera behavior when a room is smaller than the viewport.
 		camera: {
-			horizontal: 'left',
-			vertical:   'bottom',
+			alignment: {
+				horizontal: 'left',
+				vertical:   'bottom',
+			},
 		},
 
 		// Room.
@@ -50,6 +52,11 @@ export default {
 	},
 
 	// Player.
+	//
+	// Motion values use logical pixels per second (px/s), acceleration values
+	// use logical pixels per second squared (px/s²), and durations use
+	// milliseconds. A room tile is 32 logical pixels, so 480 px/s is 15
+	// tiles per second regardless of display refresh rate or device pixel ratio.
 	player: {
 		invincible: false,
 		move: {
@@ -179,8 +186,11 @@ export default {
 
 	// Physics.
 	physics: {
-		gravity: 1440, // Logical pixels per second squared.
-		damping: 65,
+		gravity: 1440, // 45 tiles/s².
+		damping: {
+			retention:      0.65, // Retain 65% per calibrated step.
+			stepsPerSecond: 60,
+		},
 	},
 
 	// Enemies.
@@ -190,7 +200,7 @@ export default {
 
 	// Projectiles.
 	projectiles: {
-		speed: 480,
+		speed: 480, // 15 tiles/s.
 	},
 
 	// Tiles.

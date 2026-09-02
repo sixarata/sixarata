@@ -47,9 +47,24 @@ export default class Volume {
 	 */
 	reset = () => this.set();
 
+	/**
+	 * Return the calculated volume during arithmetic coercion.
+	 *
+	 * @returns {Number} Width multiplied by height and depth.
+	 */
 	valueOf = () => this.value;
 
+	/**
+	 * Serialize volume as its calculated numeric value.
+	 *
+	 * @returns {Number} Calculated volume.
+	 */
 	toJSON = () => this.value;
 
+	/**
+	 * Convert volume to a JavaScript primitive.
+	 *
+	 * @returns {Number} Calculated volume.
+	 */
 	[ Symbol.toPrimitive ] = () => this.value;
 }

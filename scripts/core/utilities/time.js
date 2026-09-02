@@ -39,7 +39,7 @@ class Time {
 		this.now   = t;
 		this.prev  = t;
 		this.delta = 0;
-		this.simulationDelta = 0;
+		this.step  = 0;
 		this.diff  = 1;
 		this.scale = 1;
 
@@ -65,6 +65,19 @@ class Time {
 		// Return.
 		return this;
 	}
+
+	/**
+	 * Convert a millisecond duration to seconds.
+	 *
+	 * With no argument, this returns the current bounded physics timestep in
+	 * seconds. Pass an explicit duration when converting some other clock value.
+	 *
+	 * @param {Number} milliseconds Milliseconds to convert. Defaults to step.
+	 * @returns {Number} A non-negative duration in seconds.
+	 */
+	seconds = (
+		milliseconds = this.step
+	) => Math.max( 0, Number( milliseconds ) || 0 ) / 1000;
 
 	/**
 	 * Get a wall‑clock epoch ms if ever needed.

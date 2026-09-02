@@ -145,11 +145,11 @@ export default class WallClimb {
 		if ( this.settings.accel <= 0 ) {
 			velocity.y = target;
 		} else {
-			velocity.y = Game.Kinematics.approach(
+			velocity.y = Game.Damping.approach(
 				velocity.y,
 				target,
-				this.settings.accel,
-				Game.Kinematics.seconds( Time.simulationDelta )
+				Time.seconds(),
+				this.settings.accel
 			);
 		}
 

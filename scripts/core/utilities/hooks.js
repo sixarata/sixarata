@@ -2,6 +2,10 @@ import Time from './time.js';
 
 /**
  * Priority-ordered synchronous event hooks.
+ *
+ * Named hooks contain callbacks grouped by numeric priority. Lower priorities
+ * run first. Callbacks can be temporarily suspended by elapsed milliseconds or
+ * processed frames without losing their original name and priority.
  */
 export default class Hooks {
 
@@ -10,12 +14,15 @@ export default class Hooks {
 	#done = [];
 	#suspended = [];
 
+	/** @returns {Hooks} A reset hook registry. */
 	constructor() {
 		return this.reset();
 	}
 
+	/** @returns {Hooks} this, reset for compatibility with other services. */
 	set = () => this.reset();
 
+	/** @returns {Hooks} this, with all queued and historical state cleared. */
 	reset = () => {
 		this.#current = '';
 		this.#queued.clear();
@@ -25,6 +32,11 @@ export default class Hooks {
 		return this;
 	}
 
+	/**
+	 * Register a callback at a numeric priority.
+	 *
+	 * @returns {Number|Boolean} One-based position, or false for invalid input.
+	 */
 	add = (
 		name     = '',
 		callback = null,
@@ -54,6 +66,7 @@ export default class Hooks {
 		return callbacks.push( callback );
 	}
 
+	/** @returns {Boolean} Whether the exact callback was removed. */
 	remove = (
 		name     = '',
 		callback = null,
@@ -77,18 +90,31 @@ export default class Hooks {
 		return true;
 	}
 
+	/** @returns {Boolean} Whether a named hook queue existed and was cleared. */
 	clear = ( name = '' ) => name
 		? this.#queued.delete( name )
 		: false;
 
+	/** @returns {String} The hook currently executing, or an empty string. */
 	current = () => this.#current;
 
+	/** @returns {Array} Copies of callback execution records. */
 	done = () => [ ...this.#done ];
 
+	/** @returns {Array} Copies of callbacks waiting to resume. */
 	suspended = () => [ ...this.#suspended ];
 
+	/** @returns {Array<String>} Names with registered callbacks. */
 	queued = () => [ ...this.#queued.keys() ];
 
+	/**
+	 * Run a named hook synchronously in ascending priority order.
+	 *
+	 * Every callback receives the original arguments. The return value is the
+	 * final callback result, or the first argument when no callback runs.
+	 *
+	 * @returns {*} Final callback result or initial value.
+	 */
 	do = (
 		name = '',
 		...args
@@ -124,6 +150,15 @@ export default class Hooks {
 		return retval;
 	}
 
+	/**
+	 * Temporarily remove a callback until either delay condition is satisfied.
+	 *
+	 * @param {String} name Hook name.
+	 * @param {Function} callback Exact registered callback.
+	 * @param {Number} priority Registered priority.
+	 * @param {Object} options Millisecond (`ms`) and/or frame delay.
+	 * @returns {Boolean} Whether the callback was suspended.
+	 */
 	suspend = (
 		name     = '',
 		callback = null,
@@ -154,6 +189,7 @@ export default class Hooks {
 		return true;
 	}
 
+	/** @returns {Boolean} Whether the exact suspended callback was restored. */
 	resume = (
 		name     = '',
 		callback = null,
@@ -177,6 +213,11 @@ export default class Hooks {
 		return true;
 	}
 
+	/**
+	 * Restore suspended callbacks whose time or frame delay has elapsed.
+	 *
+	 * @param {Boolean} advanceFrames Whether this processing pass counts a frame.
+	 */
 	process = ( advanceFrames = false ) => {
 		const remaining = [];
 
@@ -198,8 +239,10 @@ export default class Hooks {
 		this.#suspended = remaining;
 	}
 
+	/** @returns {Boolean} Whether the named hook is currently executing. */
 	doing = ( name = '' ) => name === this.#current;
 
+	/** @returns {Boolean} Whether a matching callback execution was recorded. */
 	did = (
 		name     = '',
 		callback = null,
@@ -212,6 +255,7 @@ export default class Hooks {
 		( typeof callback !== 'function' || entry.priority === priority )
 	) );
 
+	/** @returns {Boolean} Whether a matching callback is currently registered. */
 	exists = (
 		name     = '',
 		callback = null,

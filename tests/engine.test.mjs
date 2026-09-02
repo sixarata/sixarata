@@ -11,17 +11,20 @@ const { default: Gamepad } = await import( '../scripts/core/inputs/gamepad.js' )
 const { default: Keyboard } = await import( '../scripts/core/inputs/keyboard.js' );
 const { default: Jobs } = await import( '../scripts/core/utilities/jobs.js' );
 const { default: Time } = await import( '../scripts/core/utilities/time.js' );
+const { default: Settings } = await import( '../scripts/content/settings.js' );
 
-const setSimulationDelta = milliseconds => {
+const setTimeStep = milliseconds => {
 	Time.delta = milliseconds;
-	Time.simulationDelta = milliseconds;
+	Time.step  = milliseconds;
 };
 
+/** Contract: Game boots with conventional physics services. */
 test( 'Game boots with conventional physics services', () => {
 	assert.ok( Game.Gravity );
 	assert.ok( Game.Damping );
 } );
 
+/** Contract: Buffer keeps a DPR-scaled backing store and logical transform. */
 test( 'Buffer keeps a DPR-scaled backing store and logical transform', () => {
 	const buffer = new Buffer( { w: 100, h: 50, d: 1 } );
 
@@ -30,6 +33,7 @@ test( 'Buffer keeps a DPR-scaled backing store and logical transform', () => {
 	assert.deepEqual( buffer.canvas.transform, [ 2, 0, 0, 2, 0, 0 ] );
 } );
 
+/** Contract: Buffer composites DPR backing stores at logical dimensions. */
 test( 'Buffer composites DPR backing stores at logical dimensions', () => {
 	const source = new Buffer( { w: 100, h: 50, d: 1 } );
 	const target = new Buffer( { w: 200, h: 100, d: 1 } );
@@ -42,6 +46,7 @@ test( 'Buffer composites DPR backing stores at logical dimensions', () => {
 	);
 } );
 
+/** Contract: Keyboard maps physical keys to logical actions. */
 test( 'Keyboard maps physical keys to logical actions', () => {
 	const keyboard = new Keyboard();
 
@@ -52,6 +57,7 @@ test( 'Keyboard maps physical keys to logical actions', () => {
 	assert.equal( keyboard.pressed( 'left' ), false );
 } );
 
+/** Contract: Gamepad maps axes and buttons to logical actions. */
 test( 'Gamepad maps axes and buttons to logical actions', () => {
 	const gamepad = new Gamepad();
 	gamepad.state = {
@@ -67,6 +73,7 @@ test( 'Gamepad maps axes and buttons to logical actions', () => {
 	assert.deepEqual( gamepad.axes(), [ 0.75, -0.75 ] );
 } );
 
+/** Contract: Jobs respect time and frame delays. */
 test( 'Jobs respect time and frame delays', () => {
 	const jobs = new Jobs();
 	const calls = [];
@@ -84,6 +91,7 @@ test( 'Jobs respect time and frame delays', () => {
 	assert.deepEqual( calls, [ 'frame', 'time' ] );
 } );
 
+/** Contract: Jobs repeat, cancel, and clean keyed indexes. */
 test( 'Jobs repeat, cancel, and clean keyed indexes', () => {
 	const jobs = new Jobs();
 	let calls = 0;
@@ -114,6 +122,7 @@ test( 'Jobs repeat, cancel, and clean keyed indexes', () => {
 	assert.equal( jobs.cancel( repeating ), false );
 } );
 
+/** Contract: Room parsing supports ragged rows and cleans old player hooks. */
 test( 'Room parsing supports ragged rows and cleans old player hooks', () => {
 	Game.Hooks.reset();
 	Game.Room.reset();
@@ -141,6 +150,7 @@ test( 'Room parsing supports ragged rows and cleans old player hooks', () => {
 	assert.equal( Game.Hooks.exists( 'Tile.render', previousPlayer.mechanics.collide.render ), false );
 } );
 
+/** Contract: Player moved helper follows unified input axes. */
 test( 'Player moved helper follows unified input axes', () => {
 	const player = Game.Room.tiles.players[ 0 ];
 	const originalAxes = Game.Inputs.axes;
@@ -152,6 +162,7 @@ test( 'Player moved helper follows unified input axes', () => {
 	Game.Inputs.axes = originalAxes;
 } );
 
+/** Contract: Player movement uses elapsed seconds without consulting DPR. */
 test( 'Player movement uses elapsed seconds without consulting DPR', () => {
 	const player = Game.Room.tiles.players[ 0 ];
 	const originalListen = player.mechanics.collide.listen;
@@ -162,7 +173,7 @@ test( 'Player movement uses elapsed seconds without consulting DPR', () => {
 
 	player.mechanics.collide.listen = () => {};
 	player.physics.velocity.set( 120, 0, 0 );
-	setSimulationDelta( 1000 / 60 );
+	setTimeStep( 1000 / 60 );
 
 	for ( const dpr of [ 1, 2, 3 ] ) {
 		Game.Screen.dpr = dpr;
@@ -175,10 +186,11 @@ test( 'Player movement uses elapsed seconds without consulting DPR', () => {
 
 	player.mechanics.collide.listen = originalListen;
 	player.physics.velocity.reset();
-	setSimulationDelta( originalDelta );
+	setTimeStep( originalDelta );
 	Game.Screen.dpr = originalDpr;
 } );
 
+/** Contract: Held movement input produces velocity and translation at 120 Hz. */
 test( 'Held movement input produces velocity and translation at 120 Hz', () => {
 	const player = Game.Room.tiles.players[ 0 ];
 	const originalListen = player.mechanics.collide.listen;
@@ -191,7 +203,7 @@ test( 'Held movement input produces velocity and translation at 120 Hz', () => {
 	player.physics.velocity.reset();
 	Game.History.state.left = { down: false, duration: 0 };
 	Game.History.state.right = { down: true, duration: 120 };
-	setSimulationDelta( 1000 / 120 );
+	setTimeStep( 1000 / 120 );
 
 	player.respond();
 	player.reposition();
@@ -204,9 +216,10 @@ test( 'Held movement input produces velocity and translation at 120 Hz', () => {
 	player.physics.position.x = start;
 	Game.History.state.left = originalLeft;
 	Game.History.state.right = originalRight;
-	setSimulationDelta( originalDelta );
+	setTimeStep( originalDelta );
 } );
 
+/** Contract: Sustained locomotion covers the same distance at 30, 60, and 120 Hz. */
 test( 'Sustained locomotion covers the same distance at 30, 60, and 120 Hz', () => {
 	const player = Game.Room.tiles.players[ 0 ];
 	const originalListen = player.mechanics.collide.listen;
@@ -223,7 +236,7 @@ test( 'Sustained locomotion covers the same distance at 30, 60, and 120 Hz', () 
 	for ( const rate of [ 30, 60, 120 ] ) {
 		player.physics.position.x = start;
 		player.physics.velocity.reset();
-		setSimulationDelta( 1000 / rate );
+		setTimeStep( 1000 / rate );
 
 		for ( let frame = 0; frame < rate; frame++ ) {
 			player.respond();
@@ -243,9 +256,10 @@ test( 'Sustained locomotion covers the same distance at 30, 60, and 120 Hz', () 
 	player.physics.position.x = start;
 	Game.History.state.left = originalLeft;
 	Game.History.state.right = originalRight;
-	setSimulationDelta( originalDelta );
+	setTimeStep( originalDelta );
 } );
 
+/** Contract: Jump applies a conventional upward velocity impulse. */
 test( 'Jump applies a conventional upward velocity impulse', () => {
 	const player = Game.Room.tiles.players[ 0 ];
 	const jump = player.mechanics.jump;
@@ -262,6 +276,7 @@ test( 'Jump applies a conventional upward velocity impulse', () => {
 	jump.count = originalCount;
 } );
 
+/** Contract: Gravity reaches the same terminal velocity at 30, 60, and 120 Hz. */
 test( 'Gravity reaches the same terminal velocity at 30, 60, and 120 Hz', () => {
 	const player = Game.Room.tiles.players[ 0 ];
 	const fall = player.mechanics.fall;
@@ -273,7 +288,7 @@ test( 'Gravity reaches the same terminal velocity at 30, 60, and 120 Hz', () => 
 
 	for ( const rate of [ 30, 60, 120 ] ) {
 		player.physics.velocity.reset();
-		setSimulationDelta( 1000 / rate );
+		setTimeStep( 1000 / rate );
 
 		for ( let frame = 0; frame < rate; frame++ ) {
 			fall.listen();
@@ -286,9 +301,10 @@ test( 'Gravity reaches the same terminal velocity at 30, 60, and 120 Hz', () => 
 
 	player.physics.velocity.reset();
 	player.physics.contact.bottom = originalBottom;
-	setSimulationDelta( originalDelta );
+	setTimeStep( originalDelta );
 } );
 
+/** Contract: Idle velocity damping is equivalent at 30, 60, and 120 Hz. */
 test( 'Idle velocity damping is equivalent at 30, 60, and 120 Hz', () => {
 	const player = Game.Room.tiles.players[ 0 ];
 	const decay = player.mechanics.walk.decay;
@@ -302,7 +318,7 @@ test( 'Idle velocity damping is equivalent at 30, 60, and 120 Hz', () => {
 
 	for ( const rate of [ 30, 60, 120 ] ) {
 		player.physics.velocity.set( 1e15, 0, 0 );
-		setSimulationDelta( 1000 / rate );
+		setTimeStep( 1000 / rate );
 
 		for ( let frame = 0; frame < rate; frame++ ) {
 			decay.listen();
@@ -318,9 +334,10 @@ test( 'Idle velocity damping is equivalent at 30, 60, and 120 Hz', () => {
 	player.physics.velocity.reset();
 	Game.History.state.left = originalLeft;
 	Game.History.state.right = originalRight;
-	setSimulationDelta( originalDelta );
+	setTimeStep( originalDelta );
 } );
 
+/** Contract: Tile preserves numeric density for future material behavior. */
 test( 'Tile preserves numeric density for future material behavior', () => {
 	const player = Game.Room.tiles.players[ 0 ];
 	const originalDensity = player.density;
@@ -332,7 +349,13 @@ test( 'Tile preserves numeric density for future material behavior', () => {
 	player.density = originalDensity;
 } );
 
+/** Contract: Camera bottom-aligns a room smaller than the view. */
 test( 'Camera bottom-aligns a room smaller than the view', () => {
+	assert.deepEqual( Settings.components.camera.alignment, {
+		horizontal: 'left',
+		vertical:   'bottom',
+	} );
+
 	Game.Camera.target = { physics: { position: { y: 0 } } };
 	Game.Camera.view = { size: { w: 100, h: 100 } };
 	Game.Camera.room = { size: { w: 50, h: 50 } };
@@ -342,6 +365,7 @@ test( 'Camera bottom-aligns a room smaller than the view', () => {
 	assert.deepEqual( Game.Camera.position, { x: 0, y: -50 } );
 } );
 
+/** Contract: Camera supports start, center, end, and scrolling alignment. */
 test( 'Camera supports start, center, end, and scrolling alignment', () => {
 	assert.equal( Game.Camera.limitAxis( 20, 50, 100, 'left' ), 0 );
 	assert.equal( Game.Camera.limitAxis( 20, 50, 100, 'center' ), -25 );
@@ -350,6 +374,7 @@ test( 'Camera supports start, center, end, and scrolling alignment', () => {
 	assert.equal( Game.Camera.limitAxis( 120, 200, 100, 'center' ), 100 );
 } );
 
+/** Contract: Frame requests retain the current animation identifier. */
 test( 'Frame requests retain the current animation identifier', () => {
 	const before = Game.Frame.current;
 	const duplicate = Game.Frame.request();
@@ -364,19 +389,20 @@ test( 'Frame requests retain the current animation identifier', () => {
 	assert.ok( Time.now >= 0 );
 } );
 
-test( 'Frame clamps simulation time while preserving raw elapsed time', () => {
+/** Contract: Frame bounds Time.step while preserving raw Time.delta. */
+test( 'Frame bounds Time.step while preserving raw Time.delta', () => {
 	const originalDelta = Time.delta;
-	const originalSimulationDelta = Time.simulationDelta;
+	const originalStep  = Time.step;
 
 	Time.delta = 1000;
-	Time.simulationDelta = Game.Frame.clampedDelta();
+	Time.step  = Game.Frame.clampedDelta();
 
 	assert.equal( Time.delta, 1000 );
 	assert.equal(
-		Time.simulationDelta,
+		Time.step,
 		Game.Frame.step * Game.Frame.settings.clamp
 	);
 
 	Time.delta = originalDelta;
-	Time.simulationDelta = originalSimulationDelta;
+	Time.step  = originalStep;
 } );

@@ -4,7 +4,7 @@ import Vector from './vector.js';
  * The Orientation object.
  *
  * This object is responsible for storing & manipulating the direction
-	 * that a Tile is facing as Euler angles in degrees.
+ * that a Tile is facing as Euler angles in degrees.
  */
 export default class Orientation extends Vector {
 

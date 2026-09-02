@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import Attributes from '../scripts/core/abstractions/attributes.js';
 import Generic from '../scripts/core/abstractions/generic.js';
+import Audio from '../scripts/core/interfaces/audio.js';
 import Scale from '../scripts/core/sound/scale.js';
 import Sound from '../scripts/core/sound/sound.js';
 import Colors from '../scripts/core/utilities/colors.js';
@@ -11,6 +12,7 @@ import Hooks from '../scripts/core/utilities/hooks.js';
 import Time from '../scripts/core/utilities/time.js';
 import Timer from '../scripts/core/utilities/timer.js';
 
+/** Contract: Hooks run callbacks by numeric priority and reject duplicates. */
 test( 'Hooks run callbacks by numeric priority and reject duplicates', () => {
 	const hooks = new Hooks();
 	const order = [];
@@ -27,6 +29,7 @@ test( 'Hooks run callbacks by numeric priority and reject duplicates', () => {
 	assert.deepEqual( hooks.queued(), [ 'test' ] );
 } );
 
+/** Contract: Hooks remove and clear exact zero-argument callbacks. */
 test( 'Hooks remove and clear exact zero-argument callbacks', () => {
 	const hooks = new Hooks();
 	const first = () => {};
@@ -41,6 +44,7 @@ test( 'Hooks remove and clear exact zero-argument callbacks', () => {
 	assert.equal( hooks.exists( 'test', second ), false );
 } );
 
+/** Contract: Hooks restore frame-based and time-based suspensions. */
 test( 'Hooks restore frame-based and time-based suspensions', () => {
 	const hooks = new Hooks();
 	const callback = value => value;
@@ -63,6 +67,7 @@ test( 'Hooks restore frame-based and time-based suspensions', () => {
 	assert.equal( hooks.exists( 'time', callback ), true );
 } );
 
+/** Contract: Hooks clear current state even when a callback throws. */
 test( 'Hooks clear current state even when a callback throws', () => {
 	const hooks = new Hooks();
 	hooks.add( 'boom', () => {
@@ -73,6 +78,55 @@ test( 'Hooks clear current state even when a callback throws', () => {
 	assert.equal( hooks.current(), '' );
 } );
 
+/** Contract: Hooks expose current, completed, queued, and suspended state safely. */
+test( 'Hooks expose current, completed, queued, and suspended state safely', () => {
+	const hooks = new Hooks();
+	const observations = [];
+	const callback = () => observations.push( hooks.doing( 'inspect' ) );
+
+	hooks.add( 'inspect', callback );
+	assert.deepEqual( hooks.queued(), [ 'inspect' ] );
+	hooks.suspend( 'inspect', callback, 10, { frames: 1 } );
+	assert.equal( hooks.suspended().length, 1 );
+	hooks.process( true );
+	hooks.do( 'inspect' );
+
+	assert.deepEqual( observations, [ true ] );
+	assert.equal( hooks.current(), '' );
+	assert.equal( hooks.done().length, 1 );
+} );
+
+/** Contract: Audio resumes a suspended pipeline before playing its selected sound. */
+test( 'Audio resumes a suspended pipeline before playing its selected sound', async () => {
+	const calls = [];
+	const pipeline = {
+		state: 'suspended',
+		resume: async () => {
+			calls.push( 'resume' );
+			pipeline.state = 'running';
+		},
+	};
+	const audio = new Audio( pipeline );
+
+	audio.setSound( { play: value => calls.push( value ) } );
+
+	assert.equal( audio.canPlay(), false );
+	assert.equal( await audio.play(), true );
+	assert.equal( audio.canPlay(), true );
+	assert.deepEqual( calls, [ 'resume', pipeline ] );
+} );
+
+/** Contract: Audio reports failed playback when no pipeline is available. */
+test( 'Audio reports failed playback when no pipeline is available', async () => {
+	const audio = new Audio( {} );
+
+	audio.pipeline = null;
+
+	assert.equal( audio.canPlay(), false );
+	assert.equal( await audio.play(), false );
+} );
+
+/** Contract: Timer reports progress and preserves remaining time across pause. */
 test( 'Timer reports progress and preserves remaining time across pause', () => {
 	Time.now = 100;
 	const timer = new Timer( 100 );
@@ -86,6 +140,7 @@ test( 'Timer reports progress and preserves remaining time across pause', () => 
 	assert.equal( timer.expires, 560 );
 } );
 
+/** Contract: Timer can shift a timing window backward. */
 test( 'Timer can shift a timing window backward', () => {
 	Time.now = 100;
 	const timer = new Timer( 100 );
@@ -95,6 +150,7 @@ test( 'Timer can shift a timing window backward', () => {
 	assert.equal( timer.expires, 180 );
 } );
 
+/** Contract: Attributes reset without mutating defaults. */
 test( 'Attributes reset without mutating defaults', () => {
 	const attributes = new Attributes( { color: 'red' } );
 
@@ -106,6 +162,7 @@ test( 'Attributes reset without mutating defaults', () => {
 	assert.equal( attributes.get( 'size' ), undefined );
 } );
 
+/** Contract: Generic forwards attribute return values. */
 test( 'Generic forwards attribute return values', () => {
 	const generic = new Generic( { answer: 42 } );
 
@@ -114,6 +171,7 @@ test( 'Generic forwards attribute return values', () => {
 	assert.equal( generic.get( 'name' ), 'Sixarata' );
 } );
 
+/** Contract: Sound scale generates reference and octave frequencies. */
 test( 'Sound scale generates reference and octave frequencies', () => {
 	const scale = new Scale();
 
@@ -122,6 +180,7 @@ test( 'Sound scale generates reference and octave frequencies', () => {
 	assert.throws( () => scale.getFrequency( 'H', 4 ), /not found/ );
 } );
 
+/** Contract: Sound reset restores consistent collection types. */
 test( 'Sound reset restores consistent collection types', () => {
 	const sound = new Sound();
 	sound.reset();
@@ -129,6 +188,7 @@ test( 'Sound reset restores consistent collection types', () => {
 	assert.deepEqual( sound.timbre, [] );
 } );
 
+/** Contract: Easing functions preserve their endpoints. */
 test( 'Easing functions preserve their endpoints', () => {
 	const easing = new Easing();
 
@@ -138,6 +198,7 @@ test( 'Easing functions preserve their endpoints', () => {
 	}
 } );
 
+/** Contract: Colors produce valid CSS color strings. */
 test( 'Colors produce valid CSS color strings', () => {
 	const colors = new Colors();
 

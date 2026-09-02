@@ -32,9 +32,24 @@ export default class Mass {
 	 */
 	reset = () => this.set( 0 );
 
+	/**
+	 * Return the numeric mass during arithmetic coercion.
+	 *
+	 * @returns {Number} Mass value.
+	 */
 	valueOf = () => this.value;
 
+	/**
+	 * Serialize mass as its numeric value.
+	 *
+	 * @returns {Number} Mass value.
+	 */
 	toJSON = () => this.value;
 
+	/**
+	 * Convert mass to a JavaScript primitive.
+	 *
+	 * @returns {Number} Mass value.
+	 */
 	[ Symbol.toPrimitive ] = () => this.value;
 }

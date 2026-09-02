@@ -14,6 +14,7 @@ export default class Acceleration extends Vector {
 	 * @param {Number} x
 	 * @param {Number} y
 	 * @param {Number} z
+	 * @returns {Acceleration} this
 	 */
 	constructor(
 		x = Vector.defaults.x,

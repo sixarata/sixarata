@@ -44,7 +44,7 @@ export default class Enemy extends Tile {
 	}
 
 	update = () => {
-		this.shootElapsed += Game.Kinematics.seconds( Time.simulationDelta );
+		this.shootElapsed += Time.seconds();
 
 		if ( Settings.enemies.shotInterval < this.shootElapsed ) {
 
