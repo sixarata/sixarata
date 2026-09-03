@@ -27,6 +27,7 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Fixed
 
+- Normalized Hook execution-history limits so disabled, invalid, fractional, and changed capacities remain bounded and chronological.
 - Kept Room tile traversal compatible with browser engines that do not provide `Object.hasOwn()`.
 - Avoided duplicate collection scans during Entity destruction while preserving its lifecycle callback order and reusable collection association.
 - Prevented projectile vertical motion from also changing its depth coordinate.

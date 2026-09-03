@@ -56,7 +56,7 @@ test( 'Hooks cache priority ordering between executions', t => {
 	assert.deepEqual( order, [ 10, 20, 10, 20, 5, 10, 20 ] );
 } );
 
-/** Contract: Hooks retain the latest 1,000 execution records in chronological order without shifting history. */
+/** Contract: Hooks retain the configured execution-history capacity in chronological order without shifting. */
 test( 'Hooks retain circular execution history', () => {
 	const hooks = new Hooks();
 	const callbacks = [];
@@ -78,6 +78,36 @@ test( 'Hooks retain circular execution history', () => {
 	);
 	assert.equal( hooks.did( 'history0', callbacks[ 0 ] ), false );
 	assert.equal( hooks.did( 'history5', callbacks[ 5 ] ), true );
+} );
+
+/** Contract: Hooks safely normalize invalid, fractional, and changing execution-history capacities. */
+test( 'Hooks normalize execution-history capacity', t => {
+	const hooks = new Hooks();
+	const originalHistory = Hooks.defaults.history;
+	const record = name => {
+		hooks.add( name, () => {} );
+		hooks.do( name );
+	};
+
+	t.after( () => {
+		Hooks.defaults.history = originalHistory;
+	} );
+
+	for ( const [ index, limit ] of [ 0, -1, NaN, Infinity ].entries() ) {
+		Hooks.defaults.history = limit;
+		record( `invalid${index}` );
+		assert.deepEqual( hooks.done(), [] );
+	}
+
+	Hooks.defaults.history = 2.9;
+	record( 'one' );
+	record( 'two' );
+	record( 'three' );
+	assert.deepEqual( hooks.done().map( entry => entry.name ), [ 'two', 'three' ] );
+
+	Hooks.defaults.history = 4;
+	record( 'four' );
+	assert.deepEqual( hooks.done().map( entry => entry.name ), [ 'two', 'three', 'four' ] );
 } );
 
 /** Contract: Hooks remove and clear exact zero-argument callbacks. */
