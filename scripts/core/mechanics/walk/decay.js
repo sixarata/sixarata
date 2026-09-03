@@ -5,8 +5,8 @@ import Time from '../../utilities/time.js';
 /**
  * The Decay mechanic.
  *
- * Applies passive frictional decay when no horizontal input is held and
- * snaps very small velocities to zero to prevent drift.
+ * Applies passive frictional decay when no horizontal input is held and snaps
+ * velocities below the tile-relative base-speed threshold to zero.
  */
 export default class Decay {
 
@@ -16,7 +16,7 @@ export default class Decay {
 	 * @type {Object}
 	 */
 	static defaults = {
-		base: 30,
+		base: 1,
 	}
 
 	/**
@@ -81,7 +81,7 @@ export default class Decay {
 				Time.seconds()
 			);
 
-			if ( Math.abs( v.x ) < this.settings.base ) {
+			if ( Math.abs( v.x ) < Game.Screen.unit( this.settings.base ) ) {
 				v.x = 0;
 			}
 		}

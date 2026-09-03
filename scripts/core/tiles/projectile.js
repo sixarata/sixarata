@@ -9,7 +9,8 @@ import { Size, Position } from '../physics/exports.js';
  * The Projectile object.
  *
  * An extension of the Tile object, a Projectile is shot from something,
- * typically an Enemy object, but could be anything.
+ * typically an Enemy object, but could be anything. Its configured speed is in
+ * tiles per second and is converted to logical pixels per second through Screen.
  */
 export default class Projectile extends Tile {
 
@@ -21,6 +22,7 @@ export default class Projectile extends Tile {
 	 * @param {Tile}   target
 	 * @param {Size}   size
 	 * @param {String} type
+	 * @returns {Projectile} this
 	 */
 	constructor(
 		group  = [],
@@ -64,11 +66,12 @@ export default class Projectile extends Tile {
 	 *
 	 * @param {Tile} tile
 	 * @param {Tile} target
+	 * @returns {Projectile} this
 	 */
 	set = ( tile, target ) => {
 		this.tile   = tile;
 		this.target = target;
-		this.speed  = Settings.projectiles.speed;
+		this.speed  = Game.Screen.unit( Settings.projectiles.speed );
 
 		// Trajectory.
 		this.setTrajectory();
@@ -78,7 +81,9 @@ export default class Projectile extends Tile {
 	}
 
 	/**
-	 * Tick through time.
+	 * Advance the projectile by its logical-pixel velocity over Time.step.
+	 *
+	 * @returns {void}
 	 */
 	tick = () => {
 
@@ -95,7 +100,9 @@ export default class Projectile extends Tile {
 	}
 
 	/**
-	 * Set the trajectory of the Projectile.
+	 * Aim the projectile at its target and cache its logical-pixel velocity.
+	 *
+	 * @returns {void}
 	 */
 	setTrajectory = () => {
 

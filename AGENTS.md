@@ -36,7 +36,7 @@ This file is the canonical implementation and review contract for humans and cod
 - Boolean queries use readable predicates such as `can()`, `doing()`, `active()`, `viewable()`, `grounded()`, `maxed()`, `full()`, or `depleted()`.
 - Mutating verbs should describe the mutation: `set`, `reset`, `add`, `remove`, `clear`, `resize`, `rescale`, `integrate`, `reposition`, or `destroy`.
 - Hook names use the `Class.method` form with the owning class and lifecycle event capitalized exactly, for example `Player.jump` or `Room.loaded`.
-- Keep units visible in names or documentation whenever a number could be ambiguous. Durations are milliseconds unless explicitly converted to seconds; velocity is logical pixels per second; acceleration is logical pixels per second squared.
+- Keep units visible in names or documentation whenever a number could be ambiguous. Durations are milliseconds unless explicitly converted to seconds. Settings express spatial design values in tiles, tiles per second, and tiles per second squared; `Screen.unit()` converts them to the logical pixels, pixels per second, and pixels per second squared used internally.
 - Preserve backward-compatible room tokens and public method behavior unless a deliberate breaking change is approved, documented in `CHANGELOG.md`, and covered by migration or compatibility tests.
 
 ## Time, physics, and rendering
@@ -46,6 +46,7 @@ This file is the canonical implementation and review contract for humans and cod
 - Do not read `performance.now()`, `Date.now()`, animation-frame timestamps, or device pixel ratio directly inside gameplay mechanics. Clock ownership belongs to `Time` and `Frame`; `Time.epoch()` is only for explicit wall-clock needs.
 - Keep physics independent of refresh rate. Test timing-sensitive behavior at 30, 60, and 120 Hz when practical.
 - Gameplay coordinates use logical pixels. Device pixel ratio belongs only to `Screen` and `Buffer` backing-store rendering and must not affect gameplay speed, forces, collision, camera bounds, or room dimensions.
+- Keep every configured spatial distance, speed, acceleration, impulse, and threshold tile-relative so changing `Settings.interfaces.screen.size` scales geometry and motion together. Do not apply tile scaling to durations, counts, ratios, damping retention, health, or stamina.
 - Keep motion two-dimensional unless a feature explicitly introduces depth mechanics. Do not apply X or Y velocity to Z as a convenience.
 - Preserve numeric density and mass values. Collision may currently treat nonzero density as solid, but material magnitudes remain part of the data model.
 - Use `Kinematics.displacement()` for a scalar velocity-to-distance conversion and `Kinematics.integrate()` to apply a velocity vector to a position over elapsed seconds.

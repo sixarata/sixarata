@@ -34,9 +34,11 @@ sh tools/test.sh
 
 ## physics units
 
-Gameplay uses logical pixels, seconds, pixels per second for velocity, and
-pixels per second squared for acceleration. Device pixel ratio is confined to
-canvas rendering and does not affect simulation speed.
+Game settings express spatial design values in tiles, tiles per second, and
+tiles per second squared. `Screen.unit()` converts them to the logical pixels,
+pixels per second, and pixels per second squared used by runtime physics.
+Device pixel ratio is confined to canvas rendering and does not affect world
+scale or simulation speed.
 
 ## contribute
 

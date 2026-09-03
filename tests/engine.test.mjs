@@ -266,6 +266,57 @@ test( 'Sustained locomotion covers the same distance at 30, 60, and 120 Hz', () 
 	setTimeStep( originalDelta );
 } );
 
+/** Contract: Tile-relative locomotion covers the same number of tiles at every configured tile size. */
+test( 'Configured locomotion scales with tile size', t => {
+	const player = Game.Room.tiles.players[ 0 ];
+	const sprint = player.mechanics.walk.sprint;
+	const originalListen = player.mechanics.collide.listen;
+	const originalDelta = Time.delta;
+	const originalTile = Game.Screen.tile;
+	const originalDpr = Game.Screen.dpr;
+	const originalSize = Settings.interfaces.screen.size;
+	const originalLeft = Game.History.state.left;
+	const originalRight = Game.History.state.right;
+	const start = player.physics.position.x;
+	const distances = [];
+
+	t.after( () => {
+		player.mechanics.collide.listen = originalListen;
+		player.physics.velocity.reset();
+		player.physics.position.x = start;
+		Settings.interfaces.screen.size = originalSize;
+		Game.Screen.reset();
+		Game.Screen.tile = originalTile;
+		Game.Screen.dpr = originalDpr;
+		Game.History.state.left = originalLeft;
+		Game.History.state.right = originalRight;
+		setTimeStep( originalDelta );
+	} );
+
+	player.mechanics.collide.listen = () => {};
+	Game.History.state.left = { down: false, duration: 0 };
+	Game.History.state.right = { down: true, duration: sprint.settings.runHold };
+	setTimeStep( 1000 / 60 );
+
+	for ( const tile of [ 16, 32, 64 ] ) {
+		Settings.interfaces.screen.size = tile;
+		Game.Screen.reset();
+		player.physics.position.x = start;
+		player.physics.velocity.reset();
+		sprint.listen();
+
+		for ( let frame = 0; frame < 60; frame++ ) {
+			player.reposition();
+		}
+
+		distances.push( ( player.physics.position.x - start ) / tile );
+	}
+
+	assert.ok( distances.every(
+		distance => Math.abs( distance - Settings.player.move.run ) < 0.000001
+	) );
+} );
+
 /** Contract: Jump applies a conventional upward velocity impulse. */
 test( 'Jump applies a conventional upward velocity impulse', () => {
 	const player = Game.Room.tiles.players[ 0 ];

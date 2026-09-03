@@ -8,7 +8,8 @@ import Timer from '../../utilities/timer.js';
  * Responsibilities:
  * - Consumes combo trigger events (from Controls / Combo system).
  * - Validates dash eligibility (cooldown, limit, air permissions).
- * - Applies directional velocity impulse with temporary movement lockout.
+ * - Converts configured tile-per-second power through Screen and applies the
+ *   resulting directional velocity impulse with temporary movement lockout.
  * - Restores normal movement mechanics when dash concludes.
  *
  * Lifecycle Notes:
@@ -36,8 +37,8 @@ export default class Dash {
 			wall: true,
 		},
 		power: {
-			x: 2250,
-			y: 2250,
+			x: 70,
+			y: 70,
 		},
 		reset: {
 			ground: true,
@@ -352,21 +353,26 @@ export default class Dash {
 		this.hover.set( this.settings.times.duration + this.settings.times.hover );
 		this.cool.set( this.settings.times.cooldown );
 
+		const power = {
+			x: Game.Screen.unit( this.settings.power.x ),
+			y: Game.Screen.unit( this.settings.power.y ),
+		};
+
 		// Reset motion before impulse.
 		v.x = 0;
 		v.y = 0;
 
 		// Horizontal.
 		if ( dir === 'left' ) {
-			v.x = -( this.settings.power.x );
+			v.x = -power.x;
 		} else if ( dir === 'right' ) {
-			v.x = this.settings.power.x;
+			v.x = power.x;
 
 		// Vertical.
 		} else if ( dir === 'up' ) {
-			v.y = -( this.settings.power.y );
+			v.y = -power.y;
 		} else if ( dir === 'down' ) {
-			v.y = this.settings.power.y;
+			v.y = power.y;
 		}
 
 		// Avoid locomotion interference.

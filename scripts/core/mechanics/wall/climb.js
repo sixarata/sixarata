@@ -8,6 +8,8 @@ import Time from '../../utilities/time.js';
  * Allows a tile (player) to ascend a wall at a controlled speed while:
  * - Actively grabbing a wall (WallGrab is active)
  * - Holding the Up key
+ * Configured climb speed and maximum are tile-per-second rates converted to
+ * logical pixels per second through Screen.
  *
  * NOTE: WallClimb requires an active WallGrab as its base state.
  * Climbing is WallGrab + Up input → ascend the wall.
@@ -20,9 +22,9 @@ export default class WallClimb {
 	 * @type {Object}
 	 */
 	static defaults = {
-		speed: 300,
+		speed: 10,
 		accel: 0.25,
-		max: 300,
+		max: 10,
 	}
 
 	/**
@@ -139,7 +141,8 @@ export default class WallClimb {
 		}
 
 		// Upward (negative Y)
-		const target = -Math.abs( this.settings.speed );
+		const target = -Math.abs( Game.Screen.unit( this.settings.speed ) );
+		const max    = Math.abs( Game.Screen.unit( this.settings.max ) );
 
 		// Optional smoothing; accel <= 0 => instant set.
 		if ( this.settings.accel <= 0 ) {
@@ -154,8 +157,8 @@ export default class WallClimb {
 		}
 
 		// Clamp (ensure we don't exceed max upward magnitude negatively).
-		if ( velocity.y < -Math.abs( this.settings.max ) ) {
-			velocity.y = -Math.abs( this.settings.max );
+		if ( velocity.y < -max ) {
+			velocity.y = -max;
 		}
 	}
 }

@@ -5,7 +5,9 @@ import Time from '../utilities/time.js';
 /**
  * The Fall mechanic.
  *
- * Applies gravity and clamps vertical (downward) velocity.
+ * Converts tile-relative gravity and terminal speed through Screen, applies
+ * acceleration over elapsed seconds, and clamps downward logical-pixel
+ * velocity.
  */
 export default class Fall {
 
@@ -15,8 +17,8 @@ export default class Fall {
 	 * @type {Object}
 	 */
 	static defaults = {
-		speed: 600,
-		terminal: 600,
+		speed: 15,
+		terminal: 15,
 	}
 
 	/**
@@ -85,7 +87,7 @@ export default class Fall {
 		// Cap velocity at max.
 		const velocity = this.tile?.physics?.velocity;
 		if ( velocity && this.maxed() ) {
-			velocity.y = this.settings.terminal;
+			velocity.y = Game.Screen.unit( this.settings.terminal );
 		}
 	}
 
@@ -138,7 +140,7 @@ export default class Fall {
 		const velocity = this.tile?.physics?.velocity;
 
 		return velocity
-			? ( velocity.y >= this.settings.terminal )
+			? ( velocity.y >= Game.Screen.unit( this.settings.terminal ) )
 			: false;
 	}
 
@@ -180,7 +182,7 @@ export default class Fall {
 	 */
 	acceleration = () => {
 		return Game.Kinematics.displacement(
-			Game.Gravity.acceleration,
+			Game.Screen.unit( Game.Gravity.acceleration ),
 			Time.seconds()
 		);
 	}

@@ -223,7 +223,6 @@ export default class Player extends Tile {
 		this.physics.contact.reset();
 		const seconds = Time.seconds();
 
-		// Cached per-frame movement scale.
 		// Update X.
 		this.physics.position.x += Game.Kinematics.displacement(
 			this.physics.velocity.x,

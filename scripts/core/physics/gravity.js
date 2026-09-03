@@ -3,9 +3,10 @@ import Settings from '../../content/settings.js';
 /**
  * The Gravity object.
  *
- * Stores the default gravitational acceleration in logical pixels per second
- * squared. It provides the world baseline; future materials or Tile sides may
- * modify the effective acceleration without changing this global value.
+ * Stores gravitational acceleration in tiles per second squared. Mechanics
+ * convert this world-relative value through Screen before changing a logical-
+ * pixel velocity. Future materials may modify the effective acceleration
+ * without changing the shared baseline.
  */
 export default class Gravity {
 
@@ -15,7 +16,7 @@ export default class Gravity {
 	 * @type {Object}
 	 */
 	static defaults = {
-		acceleration: 1440,
+		acceleration: 45,
 	}
 
 	/**

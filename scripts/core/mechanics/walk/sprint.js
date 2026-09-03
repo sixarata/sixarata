@@ -4,8 +4,9 @@ import Game from '../../game.js';
 /**
  * The Sprint mechanic.
  *
- * Upgrades horizontal velocity to run speed once an exclusive direction is
- * held long enough (>= runHold).
+ * Upgrades horizontal velocity to the configured tile-per-second run speed,
+ * converted through Screen, once an exclusive direction is held for runHold
+ * milliseconds.
  *
  * Assumes Ramp handled prior ramping.
  */
@@ -17,7 +18,7 @@ export default class Sprint {
 	 * @type {Object}
 	 */
 	static defaults = {
-		run: 600,
+		run: 15,
 		runHold: 300,
 	}
 
@@ -70,11 +71,12 @@ export default class Sprint {
 
 		const l = Game.History.hold( 'left' );
 		const r = Game.History.hold( 'right' );
+		const run = Game.Screen.unit( this.settings.run );
 
 		if ( l?.down && ! r?.down && l.duration >= this.settings.runHold ) {
-			v.x = -this.settings.run;
+			v.x = -run;
 		} else if ( r?.down && ! l?.down && r.duration >= this.settings.runHold ) {
-			v.x = this.settings.run;
+			v.x = run;
 		}
 	}
 }

@@ -58,9 +58,9 @@ test( 'Fall applies bounded gravity in air and a base force on ground', () => {
 	Time.step = 10;
 	fall.listen();
 	assert.ok( tile.physics.velocity.y > 0 );
-	tile.physics.velocity.y = fall.settings.terminal + 1;
+	tile.physics.velocity.y = Game.Screen.unit( fall.settings.terminal ) + 1;
 	fall.listen();
-	assert.equal( tile.physics.velocity.y, fall.settings.terminal );
+	assert.equal( tile.physics.velocity.y, Game.Screen.unit( fall.settings.terminal ) );
 	tile.physics.contact.bottom = true;
 	fall.listen();
 	assert.equal( fall.doing(), false );
@@ -77,7 +77,7 @@ test( 'Jump counts impulses, detects landing, and enforces its configured limit'
 
 	jump.listen();
 	assert.equal( jump.count, 1 );
-	assert.equal( tile.physics.velocity.y, -jump.settings.power.min );
+	assert.equal( tile.physics.velocity.y, -Game.Screen.unit( jump.settings.power.min ) );
 	jump.count = jump.settings.count.max;
 	assert.equal( jump.maxed(), true );
 	assert.equal( jump.can(), false );
@@ -122,16 +122,19 @@ test( 'Horizontal movement stages cooperate across the complete input lifecycle'
 
 	input( {}, { right: true } );
 	nudge.listen();
-	assert.equal( tile.physics.velocity.x, nudge.settings.base );
+	assert.equal( tile.physics.velocity.x, Game.Screen.unit( nudge.settings.base ) );
 	input( { right: { down: true, duration: walk.settings.accel / 2 } } );
 	walk.listen();
-	assert.ok( tile.physics.velocity.x > walk.settings.base );
+	assert.ok( tile.physics.velocity.x > Game.Screen.unit( walk.settings.base ) );
 	input( { right: { down: true, duration: sprint.settings.runHold } } );
 	sprint.listen();
-	assert.equal( tile.physics.velocity.x, sprint.settings.run );
+	assert.equal( tile.physics.velocity.x, Game.Screen.unit( sprint.settings.run ) );
 	input( {}, { left: true } );
 	brake.listen();
-	assert.equal( tile.physics.velocity.x, sprint.settings.run * brake.settings.multiplier );
+	assert.equal(
+		tile.physics.velocity.x,
+		Game.Screen.unit( sprint.settings.run ) * brake.settings.multiplier
+	);
 	tile.physics.velocity.x = 100;
 	input( { right: { down: false, duration: 1 } }, {}, { right: true } );
 	micro.listen();
@@ -150,17 +153,17 @@ test( 'Decay follows the configured base movement threshold', t => {
 		Settings.player.move.base = originalBase;
 		Game.Damping.apply = originalApply;
 	} );
-	Settings.player.move.base = 10;
+	Settings.player.move.base = 2;
 	Game.Damping.apply = value => value;
 	const tile = body();
 	const decay = new Decay( tile );
 	input();
-	tile.physics.velocity.x = 9;
+	tile.physics.velocity.x = Game.Screen.unit( 2 ) - 1;
 	decay.listen();
 	assert.equal( tile.physics.velocity.x, 0 );
-	tile.physics.velocity.x = 10;
+	tile.physics.velocity.x = Game.Screen.unit( 2 );
 	decay.listen();
-	assert.equal( tile.physics.velocity.x, 10 );
+	assert.equal( tile.physics.velocity.x, Game.Screen.unit( 2 ) );
 } );
 
 /** Contract: Orient debounces a requested face change and always flattens vertical orientation. */
@@ -233,7 +236,7 @@ test( 'WallClimb and WallSlide apply bounded vertical motion', () => {
 	assert.equal( climb.doing(), true );
 	climb.settings = { ...climb.settings, accel: 0 };
 	climb.listen();
-	assert.equal( tile.physics.velocity.y, -climb.settings.speed );
+	assert.equal( tile.physics.velocity.y, -Game.Screen.unit( climb.settings.speed ) );
 
 	const slide = new WallSlide( tile );
 	tile.physics.velocity.y = 0;
@@ -241,9 +244,9 @@ test( 'WallClimb and WallSlide apply bounded vertical motion', () => {
 	Time.step = 1000 / 60;
 	slide.listen();
 	assert.ok( tile.physics.velocity.y > 0 );
-	tile.physics.velocity.y = slide.settings.max + 1;
+	tile.physics.velocity.y = Game.Screen.unit( slide.settings.max ) + 1;
 	slide.do();
-	assert.equal( tile.physics.velocity.y, slide.settings.max );
+	assert.equal( tile.physics.velocity.y, Game.Screen.unit( slide.settings.max ) );
 } );
 
 /** Contract: Wall jump launches away from contact and restores suspended mechanics. */
@@ -264,8 +267,8 @@ test( 'WallJump launches away from contact and controls overlapping mechanics', 
 	input( {}, { jump: true } );
 	assert.equal( wallJump.doing(), true );
 	wallJump.do();
-	assert.equal( tile.physics.velocity.x, wallJump.settings.lateral );
-	assert.equal( tile.physics.velocity.y, -wallJump.settings.power );
+	assert.equal( tile.physics.velocity.x, Game.Screen.unit( wallJump.settings.lateral ) );
+	assert.equal( tile.physics.velocity.y, -Game.Screen.unit( wallJump.settings.power ) );
 	assert.equal( tile.mechanics.jump.listening, false );
 	wallJump.ignore( true );
 	assert.equal( toggled.listening, true );
@@ -286,7 +289,7 @@ test( 'Dash maps directional combos to bounded impulses', () => {
 	const dash = new Dash( tile );
 	tile.mechanics.dash = dash;
 	dash.combo( 'dashRight' );
-	assert.equal( tile.physics.velocity.x, dash.settings.power.x );
+	assert.equal( tile.physics.velocity.x, Game.Screen.unit( dash.settings.power.x ) );
 	assert.equal( dash.uses, 1 );
 	assert.equal( competing.listening, false );
 	assert.equal( dash.active(), true );
