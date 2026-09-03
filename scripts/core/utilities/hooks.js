@@ -9,6 +9,15 @@ import Time from './time.js';
  */
 export default class Hooks {
 
+	/**
+	 * Default maximum callback execution-history length.
+	 *
+	 * @type {Object}
+	 */
+	static defaults = {
+		history: 1000,
+	}
+
 	/** @type {String} Name of the hook currently executing. */
 	#current = '';
 
@@ -20,6 +29,9 @@ export default class Hooks {
 
 	/** @type {Array<Object>} Bounded callback execution history. */
 	#done = [];
+
+	/** @type {Number} Next execution-history slot to replace after capacity. */
+	#doneIndex = 0;
 
 	/** @type {Array<Object>} Callbacks awaiting automatic or manual resumption. */
 	#suspended = [];
@@ -38,6 +50,7 @@ export default class Hooks {
 		this.#queued.clear();
 		this.#ordered.clear();
 		this.#done = [];
+		this.#doneIndex = 0;
 		this.#suspended = [];
 
 		return this;
@@ -132,8 +145,17 @@ export default class Hooks {
 	/** @returns {String} The hook currently executing, or an empty string. */
 	current = () => this.#current;
 
-	/** @returns {Array} Copies of callback execution records. */
-	done = () => [ ...this.#done ];
+	/**
+	 * Return callback execution records in chronological order.
+	 *
+	 * @returns {Array} Copies of the bounded callback execution records.
+	 */
+	done = () => this.#doneIndex
+		? [
+			...this.#done.slice( this.#doneIndex ),
+			...this.#done.slice( 0, this.#doneIndex ),
+		]
+		: [ ...this.#done ];
 
 	/** @returns {Array} Copies of callbacks waiting to resume. */
 	suspended = () => [ ...this.#suspended ];
@@ -174,7 +196,7 @@ export default class Hooks {
 				for ( const priority of ordered ) {
 					for ( const callback of [ ...priorities.get( priority ) ] ) {
 						retval = callback( ...args );
-						this.#done.push( {
+						this.#record( {
 							name,
 							callback,
 							priority,
@@ -184,10 +206,6 @@ export default class Hooks {
 			}
 		} finally {
 			this.#current = '';
-		}
-
-		if ( this.#done.length > 1000 ) {
-			this.#done.splice( 0, this.#done.length - 1000 );
 		}
 
 		return retval;
@@ -353,6 +371,26 @@ export default class Hooks {
 		name,
 		priority
 	) => this.#queued.get( name )?.get( priority );
+
+	/**
+	 * Record one callback execution without shifting the bounded history.
+	 *
+	 * Once the history limit is reached, the oldest slot is replaced and the
+	 * circular index advances. Ordering is restored only when done() is read.
+	 *
+	 * @param {Object} entry Callback execution record.
+	 * @returns {void}
+	 */
+	#record = ( entry ) => {
+		if ( this.#done.length < Hooks.defaults.history ) {
+			this.#done.push( entry );
+
+			return;
+		}
+
+		this.#done[ this.#doneIndex ] = entry;
+		this.#doneIndex = ( this.#doneIndex + 1 ) % Hooks.defaults.history;
+	}
 
 	/**
 	 * Remove empty priority and hook containers after a callback is removed.

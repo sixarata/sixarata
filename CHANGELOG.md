@@ -16,6 +16,7 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 - Reduced per-frame allocations by retaining Frame history, scanning collision groups directly with one reusable detector, and caching Hook priority order until registration changes.
 - Cached gamepad mappings, reused Tile visibility objects, and traversed Room groups without allocating intermediate arrays during each frame.
+- Replaced Hook execution-history shifting with a fixed-size circular history.
 - Added a non-spatial `Entity` lifecycle base and made `Tile` its renderable, physical specialization.
 - Restored tile-relative spatial settings and routed motion through `Screen.unit()` so tile-size changes scale geometry and gameplay together.
 - Standardized enemy shot intervals on the engine's default millisecond duration unit.

@@ -56,6 +56,30 @@ test( 'Hooks cache priority ordering between executions', t => {
 	assert.deepEqual( order, [ 10, 20, 10, 20, 5, 10, 20 ] );
 } );
 
+/** Contract: Hooks retain the latest 1,000 execution records in chronological order without shifting history. */
+test( 'Hooks retain circular execution history', () => {
+	const hooks = new Hooks();
+	const callbacks = [];
+
+	for ( let i = 0; i < Hooks.defaults.history + 5; i++ ) {
+		const callback = () => i;
+
+		callbacks.push( callback );
+		hooks.add( `history${i}`, callback );
+		hooks.do( `history${i}` );
+	}
+
+	const done = hooks.done();
+
+	assert.equal( done.length, Hooks.defaults.history );
+	assert.deepEqual(
+		[ done[ 0 ].name, done.at( -1 ).name ],
+		[ 'history5', `history${Hooks.defaults.history + 4}` ]
+	);
+	assert.equal( hooks.did( 'history0', callbacks[ 0 ] ), false );
+	assert.equal( hooks.did( 'history5', callbacks[ 5 ] ), true );
+} );
+
 /** Contract: Hooks remove and clear exact zero-argument callbacks. */
 test( 'Hooks remove and clear exact zero-argument callbacks', () => {
 	const hooks = new Hooks();
