@@ -271,13 +271,14 @@ export default class Player extends Tile {
 	}
 
 	/**
-	 * Release hooks owned by player mechanics before removing the tile.
+	 * Release hooks owned by player mechanics before Entity removes the Player.
+	 *
+	 * @protected
+	 * @returns {void}
 	 */
-	destroy = () => {
+	destroying = () => {
 		this.mechanics?.collide?.unhooks();
 		this.mechanics?.dash?.unhooks();
-
-		return super.destroy();
 	}
 
 	/**

@@ -15,6 +15,7 @@ This file is the canonical implementation and review contract for humans and cod
 - Use one primary class per implementation file and export it as the default export.
 - Name classes and constructor-like value objects with `PascalCase`. Name methods, properties, variables, folders, and files with concise `camelCase` or lowercase names consistent with the surrounding directory.
 - Keep classes grouped by responsibility: abstractions, components, controls, inputs, interfaces, mechanics, physics, sound, tiles, utilities, and weather.
+- Keep `Entity` non-spatial: it owns semantic state and collection lifecycle. `Tile` extends `Entity` with visibility, rendering, geometry, collision, and physical properties.
 - Re-export public classes from the nearest `exports.js` barrel and preserve the established grouping and column alignment there.
 - Use `static defaults` for meaningful class defaults. Keep configurable game defaults in `scripts/content/settings.js`; do not scatter duplicate magic values across consumers.
 - Prefer instance arrow methods for consistency with existing hook callbacks and stable callback identity.

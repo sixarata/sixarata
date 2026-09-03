@@ -40,6 +40,13 @@ pixels per second, and pixels per second squared used by runtime physics.
 Device pixel ratio is confined to canvas rendering and does not affect world
 scale or simulation speed.
 
+## engine objects
+
+`Entity` provides non-spatial state and collection lifecycle. Renderable,
+physical `Tile` objects extend it with geometry, visibility, collision, and
+camera-relative drawing; players, enemies, projectiles, and room fixtures then
+specialize `Tile`.
+
 ## contribute
 
 Fork. Jam. Discuss. Merge. Repeat.

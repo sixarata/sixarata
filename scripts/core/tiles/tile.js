@@ -1,4 +1,5 @@
 import Game from '../game.js';
+import Entity from '../abstractions/entity.js';
 
 import {
 	Collision,
@@ -13,15 +14,15 @@ import {
 /**
  * The Tile object.
  *
- * This object is responsible for the entire lifecycle of every tile
- * in any given Room.
+ * Tile specializes Entity with logical-pixel geometry, physical properties,
+ * camera-relative visibility, rendering, and tile-specific lifecycle hooks.
  *
  * Density remains numeric rather than a Boolean solid flag. A zero-density Tile
  * is currently non-collidable, while any positive density participates in
  * collision. Fractional values are retained for future material mechanics such
  * as sinking, resistance, buoyancy, or surface-specific forces.
  */
-export default class Tile {
+export default class Tile extends Entity {
 
 	/**
 	 * Construct the object.
@@ -34,6 +35,7 @@ export default class Tile {
 	 * @param {Number}   density
 	 * @param {Number}   mass
 	 * @param {Number}   opacity
+	 * @returns {Tile} this
 	 */
 	constructor(
 		group    = [],
@@ -45,6 +47,8 @@ export default class Tile {
 		mass     = 1,
 		opacity  = 1
 	) {
+		super();
+
 		return this.set( group, position, size, color, type, density, mass, opacity );
 	}
 
@@ -106,6 +110,7 @@ export default class Tile {
 		mass     = 1,
 		opacity  = 1
 	) => {
+		this.configure( group, type, 'static' );
 
 		// Physics.
 		this.physics = {
@@ -118,13 +123,10 @@ export default class Tile {
 		};
 
 		// Attributes.
-		this.group   = group;
 		this.color   = color;
 		this.opacity = opacity;
-		this.type    = type;
 		this.density = Math.max( 0, Number( density ) || 0 );
 		this.visible = true;
-		this.state   = 'static';
 
 		// Add to group.
 		this.add( this );
@@ -134,21 +136,27 @@ export default class Tile {
 	}
 
 	/**
-	 * Resize the Tile.
+	 * Notify listeners that the Tile should respond to a viewport resize.
+	 *
+	 * @returns {void}
 	 */
 	resize = () => {
 		Game.Hooks.do( 'Tile.resize', this );
 	}
 
 	/**
-	 * Tick through time.
+	 * Notify listeners of the Tile's time-advancement phase.
+	 *
+	 * @returns {void}
 	 */
 	tick = () => {
 		Game.Hooks.do( 'Tile.tick', this );
 	}
 
 	/**
-	 * Update the Tile.
+	 * Notify listeners of the Tile's state-update phase.
+	 *
+	 * @returns {void}
 	 */
 	update = () => {
 		Game.Hooks.do( 'Tile.update', this );
@@ -157,7 +165,7 @@ export default class Tile {
 	/**
 	 * Render the Tile.
 	 *
-	 * @returns {Void}
+	 * @returns {void}
 	 */
 	render = () => {
 
@@ -183,7 +191,7 @@ export default class Tile {
 	 *
 	 * Relative to the Game Camera.
 	 *
-	 * @returns {Position}
+	 * @returns {Position} Camera-relative position in logical pixels.
 	 */
 	offset = () => {
 
@@ -203,7 +211,8 @@ export default class Tile {
 	/**
 	 * Check if the Tile is within the Game View.
 	 *
-	 * @returns {Boolean}
+	 * @returns {Boolean|undefined} Whether the Tile intersects the viewport, or
+	 * undefined when visibility or size makes the check inert.
 	 */
 	viewable = () => {
 
@@ -241,67 +250,23 @@ export default class Tile {
 	}
 
 	/**
-	 * Add Tile to group.
+	 * Publish the Tile.added hook after Entity registers a unique item.
 	 *
-	 * @param {Array} group
-	 *
-	 * @returns {Array}
+	 * @protected
+	 * @param {*} item Item that joined the Tile's owning group.
+	 * @returns {void}
 	 */
-	add = (
-		item = {}
-	) => {
-
-		// Get the group array.
-		this.group.push( item );
-
-		// Hook.
+	added = ( item = this ) => {
 		Game.Hooks.do( 'Tile.added', this );
-
-		// Return the group.
-		return this.group;
 	}
 
 	/**
-	 * Destroy a Tile.
+	 * Publish the Tile.destroy hook after Entity removes the Tile.
 	 *
-	 * @returns {Boolean}
+	 * @protected
+	 * @returns {void}
 	 */
-	destroy() {
-
-		// Get the group array.
-		const arr = this.group;
-
-		// Skip if no group or empty.
-		if ( ! arr || ! arr.length ) {
-			return false;
-		}
-
-		// Find the index.
-		const i = arr.indexOf( this );
-
-		// Skip if not found.
-		if ( i < 0 ) {
-			return false;
-		}
-
-		// Swap with last then pop to O(1) remove
-		const last = arr.length - 1;
-
-		// Swap with last if not the same
-		if ( i !== last ) {
-			arr[ i ] = arr[ last ];
-		}
-
-		// Remove last item.
-		arr.pop();
-
-		// Hook.
+	destroyed = () => {
 		Game.Hooks.do( 'Tile.destroy', this );
-
-		// Delete reference to this tile.
-		delete this;
-
-		// Return.
-		return true;
 	}
 }
