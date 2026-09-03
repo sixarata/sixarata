@@ -61,8 +61,8 @@ test( 'Entity manages non-spatial state and collection membership', () => {
 	assert.equal( entity.remove( sibling ), true );
 	assert.equal( entity.remove( sibling ), false );
 	entity.added = item => lifecycle.push( [ 'added', item ] );
-	entity.destroying = () => lifecycle.push( [ 'destroying', entity ] );
-	entity.destroyed = () => lifecycle.push( [ 'destroyed', entity ] );
+	entity.destroying = () => lifecycle.push( [ 'destroying', entity.group.includes( entity ) ] );
+	entity.destroyed = () => lifecycle.push( [ 'destroyed', entity.group.includes( entity ) ] );
 	assert.equal( entity.set( second, 'effect', 'idle' ), entity );
 	assert.equal( first.includes( entity ), false );
 	assert.equal( second[ 0 ], entity );
@@ -73,8 +73,44 @@ test( 'Entity manages non-spatial state and collection membership', () => {
 	assert.equal( entity.destroy(), false );
 	assert.equal( entity.set( null ), entity );
 	assert.deepEqual( entity.group, [ entity ] );
+	const owning = entity.group;
 	assert.equal( entity.destroy(), true );
+	assert.equal( entity.group, owning );
+	assert.deepEqual( owning, [] );
 	assert.deepEqual( lifecycle.map( event => event[ 0 ] ), [ 'added', 'added', 'destroying', 'destroyed' ] );
+	assert.deepEqual( lifecycle.slice( -2 ).map( event => event[ 1 ] ), [ true, false ] );
+	assert.equal( entity.destroy(), false );
+	assert.equal( lifecycle.length, 4 );
+} );
+
+/** Contract: Entity destruction locates membership once and removes it without changing collection association. */
+test( 'Entity destroys collection membership with one lookup', () => {
+	const group = [];
+	const sibling = {};
+	let searches = 0;
+	const includes = group.includes.bind( group );
+	const indexOf = group.indexOf.bind( group );
+
+	group.includes = ( ...args ) => {
+		searches++;
+
+		return includes( ...args );
+	};
+	group.indexOf = ( ...args ) => {
+		searches++;
+
+		return indexOf( ...args );
+	};
+
+	const entity = new Entity( group );
+
+	group.push( sibling );
+	searches = 0;
+
+	assert.equal( entity.destroy(), true );
+	assert.equal( searches, 1 );
+	assert.equal( entity.group, group );
+	assert.equal( group[ 0 ], sibling );
 } );
 
 /** Contract: Generic forwards attribute operations and exposes safe lifecycle defaults. */
