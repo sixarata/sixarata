@@ -27,6 +27,7 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Fixed
 
+- Kept Room tile traversal compatible with browser engines that do not provide `Object.hasOwn()`.
 - Avoided duplicate collection scans during Entity destruction while preserving its lifecycle callback order and reusable collection association.
 - Prevented projectile vertical motion from also changing its depth coordinate.
 - Preserved numeric tile density for future material and force behavior.

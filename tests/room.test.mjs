@@ -94,6 +94,30 @@ test( 'Room forwards tick, update, and render across tile groups', t => {
 	assert.equal( valueCalls, 0 );
 } );
 
+/** Contract: Room loops remain compatible without Object.hasOwn and skip inherited tile groups. */
+test( 'Room loops own tile groups without Object.hasOwn', t => {
+	Game.Hooks.reset();
+	const room = new Room();
+	const calls = [];
+	const originalHasOwn = Object.hasOwn;
+	t.after( () => {
+		Object.hasOwn = originalHasOwn;
+	} );
+	room.tiles = Object.assign(
+		Object.create( {
+			inherited: [ { tick: () => calls.push( 'inherited' ) } ],
+		} ),
+		{
+			owned: [ { tick: () => calls.push( 'owned' ) } ],
+		}
+	);
+	Object.hasOwn = undefined;
+
+	room.loopTiles( 'tick' );
+
+	assert.deepEqual( calls, [ 'owned' ] );
+} );
+
 /** Contract: Room retry reloads the current room and reports that callers should bail. */
 test( 'Room retry reloads the current room', () => {
 	Game.Hooks.reset();
