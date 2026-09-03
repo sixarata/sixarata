@@ -19,7 +19,7 @@ export default class Entity {
 	}
 
 	/**
-	 * Collection that currently owns this entity.
+	 * Collection associated with this Entity for membership operations.
 	 *
 	 * @type {Array}
 	 */
@@ -153,7 +153,7 @@ export default class Entity {
 	added = ( item = this ) => {}
 
 	/**
-	 * Remove an item from the owning collection in constant time.
+	 * Remove an item from the owning collection without preserving its order.
 	 *
 	 * Removal may reorder the collection by swapping its final item into the
 	 * removed slot.
@@ -202,20 +202,30 @@ export default class Entity {
 	destroyed = () => {}
 
 	/**
-	 * Destroy the Entity by releasing its owning collection reference.
+	 * Destroy the Entity by removing it from its owning collection.
 	 *
-	 * Subclasses release their own hooks, listeners, and resources before or
-	 * after delegating to this method.
+	 * The collection remains associated with the Entity so callers can inspect
+	 * or reuse it. Subclasses release their own hooks, listeners, and resources
+	 * through the destroying() and destroyed() lifecycle callbacks.
 	 *
 	 * @returns {Boolean} True when the Entity was removed, otherwise false.
 	 */
 	destroy = () => {
-		if ( ! this.group.includes( this ) ) {
+		const index = this.group.indexOf( this );
+
+		if ( index < 0 ) {
 			return false;
 		}
 
 		this.destroying();
-		this.remove( this );
+
+		const last = this.group.length - 1;
+
+		if ( index !== last ) {
+			this.group[ index ] = this.group[ last ];
+		}
+
+		this.group.pop();
 		this.destroyed();
 
 		return true;
