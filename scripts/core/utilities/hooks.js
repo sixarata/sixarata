@@ -382,14 +382,50 @@ export default class Hooks {
 	 * @returns {void}
 	 */
 	#record = ( entry ) => {
-		if ( this.#done.length < Hooks.defaults.history ) {
+		const limit = this.#historyLimit();
+
+		// A disabled or invalid limit retains no execution history.
+		if ( ! limit ) {
+			this.#done = [];
+			this.#doneIndex = 0;
+
+			return;
+		}
+
+		// Restore chronology when a changed limit no longer fits the ring.
+		if (
+			this.#done.length > limit
+			||
+			( this.#doneIndex && this.#done.length < limit )
+		) {
+			this.#done = this.done().slice( -limit );
+			this.#doneIndex = 0;
+		}
+
+		if ( this.#done.length < limit ) {
 			this.#done.push( entry );
 
 			return;
 		}
 
 		this.#done[ this.#doneIndex ] = entry;
-		this.#doneIndex = ( this.#doneIndex + 1 ) % Hooks.defaults.history;
+		this.#doneIndex = ( this.#doneIndex + 1 ) % limit;
+	}
+
+	/**
+	 * Normalize the configured execution-history capacity.
+	 *
+	 * Fractional values are truncated to whole records. Zero, negative,
+	 * nonnumeric, and non-finite values disable history retention.
+	 *
+	 * @returns {Number} Nonnegative integer record capacity.
+	 */
+	#historyLimit = () => {
+		const limit = Number( Hooks.defaults.history );
+
+		return Number.isFinite( limit )
+			? Math.max( 0, Math.floor( limit ) )
+			: 0;
 	}
 
 	/**
