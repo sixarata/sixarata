@@ -6,7 +6,9 @@ import { installBrowserEnvironment } from './helpers/browser.mjs';
 const browser = installBrowserEnvironment();
 
 const { default: Game } = await import( '../scripts/core/game.js' );
+const Abstractions = await import( '../scripts/core/abstractions/exports.js' );
 const { default: Attributes } = await import( '../scripts/core/abstractions/attributes.js' );
+const { default: Entity } = await import( '../scripts/core/abstractions/entity.js' );
 const { default: Generic } = await import( '../scripts/core/abstractions/generic.js' );
 const { default: Buffer } = await import( '../scripts/core/components/buffer.js' );
 const { default: Camera } = await import( '../scripts/core/components/camera.js' );
@@ -35,6 +37,44 @@ test( 'Attributes supports object and Map lifecycles without changing defaults',
 	assert.equal( attributes.modified.size, 0 );
 	assert.equal( attributes.reset(), attributes );
 	assert.deepEqual( [ ...attributes.modified ], [ [ 'one', 1 ] ] );
+} );
+
+/** Contract: Entity owns reusable type, state, and unique collection membership without spatial behavior. */
+test( 'Entity manages non-spatial state and collection membership', () => {
+	const first = [];
+	const second = [];
+	const entity = new Entity( first, 'actor', 'active' );
+	const inert = new Entity();
+	const sibling = {};
+	const lifecycle = [];
+
+	assert.equal( Abstractions.Entity, Entity );
+	assert.equal( inert.destroy(), true );
+	assert.equal( first[ 0 ], entity );
+	assert.deepEqual( [ entity.type, entity.state ], [ 'actor', 'active' ] );
+	assert.equal( 'physics' in entity, false );
+	assert.equal( entity.add( sibling ), first );
+	assert.equal( entity.add( sibling ), first );
+	assert.equal( first.filter( item => item === sibling ).length, 1 );
+	assert.equal( entity.remove(), true );
+	assert.deepEqual( first, [ sibling ] );
+	assert.equal( entity.remove( sibling ), true );
+	assert.equal( entity.remove( sibling ), false );
+	entity.added = item => lifecycle.push( [ 'added', item ] );
+	entity.destroying = () => lifecycle.push( [ 'destroying', entity ] );
+	entity.destroyed = () => lifecycle.push( [ 'destroyed', entity ] );
+	assert.equal( entity.set( second, 'effect', 'idle' ), entity );
+	assert.equal( first.includes( entity ), false );
+	assert.equal( second[ 0 ], entity );
+	assert.deepEqual( lifecycle, [ [ 'added', entity ] ] );
+	assert.equal( entity.reset(), entity );
+	assert.equal( second.includes( entity ), false );
+	assert.deepEqual( [ entity.group, entity.type, entity.state ], [ [], 'default', 'static' ] );
+	assert.equal( entity.destroy(), false );
+	assert.equal( entity.set( null ), entity );
+	assert.deepEqual( entity.group, [ entity ] );
+	assert.equal( entity.destroy(), true );
+	assert.deepEqual( lifecycle.map( event => event[ 0 ] ), [ 'added', 'added', 'destroying', 'destroyed' ] );
 } );
 
 /** Contract: Generic forwards attribute operations and exposes safe lifecycle defaults. */

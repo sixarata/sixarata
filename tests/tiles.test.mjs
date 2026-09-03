@@ -7,6 +7,7 @@ installBrowserEnvironment();
 
 const { default: Game } = await import( '../scripts/core/game.js' );
 const { default: Buffer } = await import( '../scripts/core/components/buffer.js' );
+const { default: Entity } = await import( '../scripts/core/abstractions/entity.js' );
 const { default: Door } = await import( '../scripts/core/tiles/door.js' );
 const { default: Enemy } = await import( '../scripts/core/tiles/enemy.js' );
 const { default: Particle } = await import( '../scripts/core/tiles/particle.js' );
@@ -37,6 +38,7 @@ test( 'Tile initializes physics, emits lifecycle hooks, renders, and destroys it
 	const group = [ { sentinel: true } ];
 	const tile = new Tile( group, { x: 1, y: 2, z: 0 }, { w: 1, h: 1, d: 1 }, 'Blue', 'test', 0.5, 3, 0.75 );
 
+	assert.ok( tile instanceof Entity );
 	assert.equal( group.at( -1 ), tile );
 	assert.equal( Number( tile.physics.mass ), 3 );
 	assert.equal( tile.density, 0.5 );
