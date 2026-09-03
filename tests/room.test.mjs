@@ -64,10 +64,15 @@ test( 'Room chooses the appropriate directional fallback player position', () =>
 } );
 
 /** Contract: Room loops skip holes and forward each lifecycle event to present tiles. */
-test( 'Room forwards tick, update, and render across tile groups', () => {
+test( 'Room forwards tick, update, and render across tile groups', t => {
 	Game.Hooks.reset();
 	const room = new Room();
 	const calls = [];
+	const originalValues = Object.values;
+	let valueCalls = 0;
+	t.after( () => {
+		Object.values = originalValues;
+	} );
 	room.tiles = {
 		items: [
 			{ tick: () => calls.push( 'tick' ), update: () => calls.push( 'update' ), render: () => calls.push( 'render' ) },
@@ -75,12 +80,18 @@ test( 'Room forwards tick, update, and render across tile groups', () => {
 		],
 	};
 	room.buffer.put = () => calls.push( 'put' );
+	Object.values = ( ...args ) => {
+		valueCalls++;
+
+		return originalValues( ...args );
+	};
 	room.tick();
 	room.update();
 	room.render();
 	room.loopTiles();
 
 	assert.deepEqual( calls, [ 'tick', 'update', 'render', 'put' ] );
+	assert.equal( valueCalls, 0 );
 } );
 
 /** Contract: Room retry reloads the current room and reports that callers should bail. */

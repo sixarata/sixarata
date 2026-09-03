@@ -10,6 +10,13 @@ import Device from './device.js';
 export default class Gamepad extends Device {
 
 	/**
+	 * Cached logical action mappings refreshed by reset().
+	 *
+	 * @type {Object}
+	 */
+	map = {};
+
+	/**
 	 * Default input mappings.
 	 *
 	 * These are the default inputs used for each action.
@@ -108,6 +115,7 @@ export default class Gamepad extends Device {
 		this.gamepads = [];
 		this.state = {};
 		this.prev = {};
+		this.map = this.actions();
 
 		// Return.
 		return this;
@@ -215,11 +223,8 @@ export default class Gamepad extends Device {
 		action = ''
 	) => {
 
-		// Map actions to standard gamepad buttons/axes
-		const map = this.actions();
-
 		// Get the checks for the action
-		const checks = map[ action ];
+		const checks = this.map[ action ];
 
 		// Skip if no mapping found
 		if ( ! checks ) {

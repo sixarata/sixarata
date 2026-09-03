@@ -25,6 +25,20 @@ import {
 export default class Tile extends Entity {
 
 	/**
+	 * Reusable detector for viewport overlap checks.
+	 *
+	 * @type {Collision}
+	 */
+	collision = new Collision();
+
+	/**
+	 * Reusable camera-relative position used during rendering.
+	 *
+	 * @type {Position}
+	 */
+	renderPosition = new Position( 0, 0, 0, false );
+
+	/**
 	 * Construct the object.
 	 *
 	 * @param {Array}    group
@@ -111,6 +125,7 @@ export default class Tile extends Entity {
 		opacity  = 1
 	) => {
 		this.configure( group, type, 'static' );
+		this.collision.reset();
 
 		// Physics.
 		this.physics = {
@@ -168,16 +183,17 @@ export default class Tile extends Entity {
 	 * @returns {void}
 	 */
 	render = () => {
+		const position = this.renderPosition;
 
 		// Skip if unviewable.
-		if ( ! this.viewable() ) {
+		if ( ! this.viewable( position ) ) {
 			return;
 		}
 
 		// Draw the rectangle.
 		Game.View.buffer.rect(
 			this.color,
-			this.offset(),
+			position,
 			this.physics.size,
 			this.opacity
 		);
@@ -191,30 +207,38 @@ export default class Tile extends Entity {
 	 *
 	 * Relative to the Game Camera.
 	 *
-	 * @returns {Position} Camera-relative position in logical pixels.
+	 * @param {Position|null} position Optional Position to update in place.
+	 * @returns {Position} Camera-relative position in logical pixels. A new
+	 * Position is returned when no reusable destination is supplied.
 	 */
-	offset = () => {
+	offset = (
+		position = null
+	) => {
 
 		// Get camera and position.
-		let camera = Game.Camera.position,
-			pos    = this.physics.position;
+		const camera = Game.Camera.position;
+		const pos    = this.physics.position;
+		const offset = position instanceof Position
+			? position
+			: new Position( 0, 0, 0, false );
 
-		// Return offset position.
-		return new Position(
-			( pos.x - camera.x ),
-			( pos.y - camera.y ),
-			( pos.z - camera.z ),
-			false
-		);
+		offset.x = pos.x - camera.x;
+		offset.y = pos.y - camera.y;
+		offset.z = pos.z - camera.z;
+
+		return offset;
 	}
 
 	/**
 	 * Check if the Tile is within the Game View.
 	 *
+	 * @param {Position|null} position Optional reusable camera-relative Position.
 	 * @returns {Boolean|undefined} Whether the Tile intersects the viewport, or
 	 * undefined when visibility or size makes the check inert.
 	 */
-	viewable = () => {
+	viewable = (
+		position = null
+	) => {
 
 		// Skip if invisible.
 		if ( ! this.visible ) {
@@ -229,7 +253,7 @@ export default class Tile extends Entity {
 		// Determine if tile is in view.
 		const offset = {
 				physics: {
-					position: this.offset(),
+					position: this.offset( position ),
 					size:     this.physics.size,
 				}
 			},
@@ -243,7 +267,7 @@ export default class Tile extends Entity {
 			},
 
 			// Collision
-			collide = new Collision( offset, viewport );
+			collide = this.collision.set( offset, viewport );
 
 		// Check for collision.
 		return collide.detect();

@@ -323,8 +323,18 @@ test( 'Collide resolves nearby solid tiles and renders debug bounds', () => {
 	Game.View.buffer.rect = () => drawings++;
 	const collide = new Collide( moving );
 	assert.deepEqual( collide.solids(), [ nearby, distant ] );
+	const collision = collide.collision;
+	let concatenations = 0;
+	const concat = Game.Room.tiles.platforms.concat.bind( Game.Room.tiles.platforms );
+	Game.Room.tiles.platforms.concat = ( ...args ) => {
+		concatenations++;
+
+		return concat( ...args );
+	};
 	collide.listen( { x: 1 } );
 	assert.equal( contacts, 1 );
+	assert.equal( concatenations, 0 );
+	assert.equal( collide.collision, collision );
 	collide.debug = true;
 	collide.render( moving );
 	assert.equal( drawings, 1 );

@@ -21,6 +21,13 @@ export default class Collide {
 	}
 
 	/**
+	 * Reusable narrow-phase overlap detector.
+	 *
+	 * @type {Collision}
+	 */
+	collision = new Collision();
+
+	/**
 	 * Construct the Collide mechanic.
 	 *
 	 * @param {Tile} tile The moving tile.
@@ -58,6 +65,7 @@ export default class Collide {
 		this.listening = true;
 		this.debug     = Settings?.debug ?? Collide.defaults.debug;
 		this.distance  = Collide.defaults.distance;
+		this.collision.reset();
 
 		// Hook into tile render for debug visualization.
 		Game.Hooks.add( 'Tile.render', this.render );
@@ -134,18 +142,45 @@ export default class Collide {
 	 * Check collisions against solid tiles with optimized distance check.
 	 *
 	 * @param {Object} velocity Partial velocity {x?, y?, z?} for axis resolution context.
+	 * @returns {void}
 	 */
 	check = (
 		velocity = { x: 0, y: 0, z: 0 }
 	) => {
 		const contact = this.tile.physics?.contact;
-		const solids  = this.solids();
-		const len     = solids.length;
+
+		this.scan( Game.Room.tiles.platforms, velocity, contact );
+		this.scan( Game.Room.tiles.walls, velocity, contact );
+	}
+
+	/**
+	 * Resolve collisions against one existing Tile collection.
+	 *
+	 * Empty Tiles are skipped before the distance and overlap checks. The
+	 * reusable Collision instance avoids allocating a detector per candidate.
+	 *
+	 * @protected
+	 * @param {Array}  solids Existing Tile collection to inspect.
+	 * @param {Object} velocity Partial velocity {x?, y?, z?} for axis resolution context.
+	 * @param {Contact} contact Moving Tile's contact resolver.
+	 * @returns {void}
+	 */
+	scan = (
+		solids   = [],
+		velocity = { x: 0, y: 0, z: 0 },
+		contact  = null
+	) => {
+		const len = solids.length;
 
 		for ( let i = 0; i < len; i++ ) {
 
 			// Get the collidable tile.
-			let s = solids[ i ];
+			const s = solids[ i ];
+
+			// Skip Tiles that do not currently participate in collision.
+			if ( ! s.density ) {
+				continue;
+			}
 
 			// Broad-phase: Quick distance rejection.
 			// Skip tiles that are too far away to possibly collide.
@@ -160,10 +195,10 @@ export default class Collide {
 			}
 
 			// Narrow-phase: Check for collision with AABB.
-			let check = new Collision( this.tile, s );
+			this.collision.set( this.tile, s );
 
 			// Skip if not collided.
-			if ( ! check.detect() ) {
+			if ( ! this.collision.detect() ) {
 				continue;
 			}
 

@@ -332,7 +332,9 @@ test( 'Frame lifecycle, measurement, clamping, smoothing, and visibility remain 
 	Time.diff = 3;
 	assert.equal( frame.emaDiff( 0.5 ), 2 );
 	frame.history = [ Time.now - 2000, Time.now ];
+	const history = frame.history;
 	frame.counter();
+	assert.equal( frame.history, history );
 	assert.ok( frame.history.every( value => value > Time.now - frame.settings.second ) );
 
 	document.hidden = true;

@@ -157,7 +157,12 @@ export default class Frame {
 	}
 
 	/**
-	 * Update the Frame history.
+	 * Record the current engine time in the rolling FPS history.
+	 *
+	 * Expired timestamps are removed in place so references to the history
+	 * remain valid and the animation loop does not allocate a replacement array.
+	 *
+	 * @returns {void}
 	 */
 	counter = () => {
 
@@ -166,9 +171,38 @@ export default class Frame {
 
 		// Add now frame to history.
 		this.history.push( Time.now );
+		this.prune( expired );
+	}
 
-		// Remove expired frames from history.
-		this.history = this.history.filter( frame => ( frame > expired ) );
+	/**
+	 * Remove the expired prefix from the chronological FPS history.
+	 *
+	 * The existing Array is mutated so callers retain the same history reference
+	 * and the animation loop does not allocate a replacement each frame.
+	 *
+	 * @protected
+	 * @param {Number} expired Oldest allowed monotonic timestamp in milliseconds.
+	 * @returns {void}
+	 */
+	prune = (
+		expired = ( Time.now - this.settings.second )
+	) => {
+
+		// Find the expired prefix in the chronologically ordered history.
+		let first = 0;
+
+		while (
+			first < this.history.length
+			&&
+			this.history[ first ] <= expired
+		) {
+			first++;
+		}
+
+		// Remove expired frames without replacing the history array.
+		if ( first ) {
+			this.history.splice( 0, first );
+		}
 	}
 
 	/**
