@@ -365,7 +365,7 @@ export default class Room {
 
 		// Tiles.
 		for ( const group in this.tiles ) {
-			if ( ! Object.hasOwn( this.tiles, group ) ) {
+			if ( ! Object.prototype.hasOwnProperty.call( this.tiles, group ) ) {
 				continue;
 			}
 
