@@ -15,6 +15,9 @@ export default class Hooks {
 	/** @type {Map<String, Map<Number, Array<Function>>>} Active callbacks. */
 	#queued = new Map();
 
+	/** @type {Map<String, Array<Number>>} Cached ascending priorities by hook. */
+	#ordered = new Map();
+
 	/** @type {Array<Object>} Bounded callback execution history. */
 	#done = [];
 
@@ -33,6 +36,7 @@ export default class Hooks {
 	reset = () => {
 		this.#current = '';
 		this.#queued.clear();
+		this.#ordered.clear();
 		this.#done = [];
 		this.#suspended = [];
 
@@ -64,6 +68,7 @@ export default class Hooks {
 
 		if ( ! priorities.has( priority ) ) {
 			priorities.set( priority, [] );
+			this.#ordered.delete( name );
 		}
 
 		const callbacks = priorities.get( priority );
@@ -103,6 +108,7 @@ export default class Hooks {
 
 		callbacks.splice( index, 1 );
 		this.#prune( name, priority );
+		this.#ordered.delete( name );
 
 		return true;
 	}
@@ -113,9 +119,15 @@ export default class Hooks {
 	 * @param {String} name Hook name.
 	 * @returns {Boolean} Whether a named hook queue existed and was cleared.
 	 */
-	clear = ( name = '' ) => name
-		? this.#queued.delete( name )
-		: false;
+	clear = ( name = '' ) => {
+		if ( ! name ) {
+			return false;
+		}
+
+		this.#ordered.delete( name );
+
+		return this.#queued.delete( name );
+	}
 
 	/** @returns {String} The hook currently executing, or an empty string. */
 	current = () => this.#current;
@@ -150,7 +162,14 @@ export default class Hooks {
 
 		try {
 			if ( priorities ) {
-				const ordered = [ ...priorities.keys() ].sort( ( a, b ) => a - b );
+				if ( ! this.#ordered.has( name ) ) {
+					this.#ordered.set(
+						name,
+						[ ...priorities.keys() ].sort( ( a, b ) => a - b )
+					);
+				}
+
+				const ordered = this.#ordered.get( name );
 
 				for ( const priority of ordered ) {
 					for ( const callback of [ ...priorities.get( priority ) ] ) {

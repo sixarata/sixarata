@@ -43,10 +43,22 @@ test( 'Tile initializes physics, emits lifecycle hooks, renders, and destroys it
 	assert.equal( Number( tile.physics.mass ), 3 );
 	assert.equal( tile.density, 0.5 );
 	assert.deepEqual( [ tile.physics.position.x, tile.physics.position.y ], [ 32, 64 ] );
+	const collision = tile.collision;
+	const position = tile.renderPosition;
+	const offset = tile.offset;
+	let offsets = 0;
+	tile.offset = ( ...args ) => {
+		offsets++;
+
+		return offset( ...args );
+	};
 	tile.resize();
 	tile.tick();
 	tile.update();
 	tile.render();
+	assert.equal( offsets, 1 );
+	assert.equal( tile.collision, collision );
+	assert.equal( tile.renderPosition, position );
 	assert.deepEqual( Game.View.buffer.canvas.fillRectArgs, [ 32, 64, 32, 32 ] );
 	assert.equal( Game.View.buffer.context.fillStyle, 'Blue' );
 	assert.equal( Game.View.buffer.context.globalAlpha, 0.75 );

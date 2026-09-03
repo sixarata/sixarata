@@ -351,7 +351,8 @@ export default class Room {
 	/**
 	 * Loop through tile objects, and call one of their methods.
 	 *
-	 * @param {Function} callback
+	 * @param {String} callback Tile lifecycle method name.
+	 * @returns {void}
 	 */
 	loopTiles = (
 		callback = ''
@@ -363,30 +364,31 @@ export default class Room {
 		}
 
 		// Tiles.
-		Object.values( this.tiles ).forEach(
-			items => {
-
-				// Defaults.
-				let l = items.length;
-
-				// Skip if empty.
-				if ( ! l ) {
-					return;
-				}
-
-				// Callback.
-				for ( let i = 0; i < l; i++ ) {
-
-					// Skip if missing.
-					if ( ! items[ i ] ) {
-						continue;
-					}
-
-					// Do the callback.
-					items[ i ][ callback ]();
-				}
+		for ( const group in this.tiles ) {
+			if ( ! Object.hasOwn( this.tiles, group ) ) {
+				continue;
 			}
-		);
+
+			const items = this.tiles[ group ];
+			const l = items.length;
+
+			// Skip if empty.
+			if ( ! l ) {
+				continue;
+			}
+
+			// Callback.
+			for ( let i = 0; i < l; i++ ) {
+
+				// Skip if missing.
+				if ( ! items[ i ] ) {
+					continue;
+				}
+
+				// Do the callback.
+				items[ i ][ callback ]();
+			}
+		}
 	}
 
 	/**

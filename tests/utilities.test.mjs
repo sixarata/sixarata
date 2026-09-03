@@ -29,6 +29,33 @@ test( 'Hooks run callbacks by numeric priority and reject duplicates', () => {
 	assert.deepEqual( hooks.queued(), [ 'test' ] );
 } );
 
+/** Contract: Hooks reuse priority ordering until registration changes invalidate it. */
+test( 'Hooks cache priority ordering between executions', t => {
+	const hooks = new Hooks();
+	const order = [];
+	const originalSort = Array.prototype.sort;
+	let sorts = 0;
+
+	t.after( () => {
+		Array.prototype.sort = originalSort;
+	} );
+	Array.prototype.sort = function( ...args ) {
+		sorts++;
+
+		return originalSort.apply( this, args );
+	};
+	hooks.add( 'cached', () => order.push( 20 ), 20 );
+	hooks.add( 'cached', () => order.push( 10 ), 10 );
+	hooks.do( 'cached' );
+	hooks.do( 'cached' );
+
+	assert.equal( sorts, 1 );
+	hooks.add( 'cached', () => order.push( 5 ), 5 );
+	hooks.do( 'cached' );
+	assert.equal( sorts, 2 );
+	assert.deepEqual( order, [ 10, 20, 10, 20, 5, 10, 20 ] );
+} );
+
 /** Contract: Hooks remove and clear exact zero-argument callbacks. */
 test( 'Hooks remove and clear exact zero-argument callbacks', () => {
 	const hooks = new Hooks();

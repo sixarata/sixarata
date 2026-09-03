@@ -122,12 +122,15 @@ test( 'Gamepad polls, maps, connects, and disconnects controllers', () => {
 		value: { getGamepads: () => [ pad ] },
 	} );
 	const gamepad = new Gamepad();
+	const map = gamepad.map;
+	gamepad.actions = () => assert.fail( 'pressed() rebuilt the action map' );
 	gamepad.connect( { gamepad: pad } );
 	gamepad.tick();
 	assert.equal( gamepad.pressed( 'jump' ), true );
 	assert.equal( gamepad.pressed( 'left' ), true );
 	assert.equal( gamepad.pressed( 'down' ), true );
 	assert.equal( gamepad.pressed( 'missing' ), false );
+	assert.equal( gamepad.map, map );
 	assert.deepEqual( gamepad.axes(), [ -0.75, 0.8 ] );
 	gamepad.disconnect( { gamepad: pad } );
 	assert.equal( gamepad.connected, false );
