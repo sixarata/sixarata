@@ -52,14 +52,14 @@ export default class Enemy extends Tile {
 	}
 
 	/**
-	 * Advance the shooting clock and emit a projectile at each interval.
+	 * Advance the millisecond shooting clock and emit a projectile at each interval.
 	 *
 	 * @returns {void}
 	 */
 	update = () => {
-		this.shootElapsed += Time.seconds();
+		this.shootElapsed += Time.step;
 
-		if ( this.shootElapsed >= Settings.enemies.shotIntervalSeconds ) {
+		if ( this.shootElapsed >= Settings.enemies.shotInterval ) {
 
 			let group  = Game.Room.tiles.projectiles,
 				target = Game.Room.tiles.players[ 0 ];

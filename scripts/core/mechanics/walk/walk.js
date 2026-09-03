@@ -4,9 +4,10 @@ import Game from '../../game.js';
 /**
  * The Walk mechanic.
  *
- * Smoothly grows horizontal velocity from base speed toward max speed while
- * an exclusive direction is held. Growth is linear: duration/accel window.
- * Runs before Sprint so Sprint can overwrite velocity when that tier engages.
+ * Smoothly grows horizontal velocity from a tile-relative base speed toward a
+ * tile-relative maximum while an exclusive direction is held. Screen converts
+ * both rates to logical pixels per second before they enter Velocity. Growth is
+ * linear across the millisecond accel window. Runs before Sprint.
  */
 export default class Walk {
 
@@ -16,8 +17,8 @@ export default class Walk {
 	 * @type {Object}
 	 */
 	static defaults = {
-		base: 30,
-		speed: 480,
+		base: 1,
+		speed: 10,
 		accel: 250,
 	}
 
@@ -83,7 +84,9 @@ export default class Walk {
 
 		// Calculate target speed based on hold duration within accel window.
 		const ratio  = Math.min( dur, this.settings.accel ) / this.settings.accel;
-		const target = this.settings.base + ( this.settings.speed - this.settings.base ) * ratio;
+		const base   = Game.Screen.unit( this.settings.base );
+		const speed  = Game.Screen.unit( this.settings.speed );
+		const target = base + ( speed - base ) * ratio;
 
 		if ( l?.down && ! r?.down ) {
 			v.x = -Math.max( Math.abs( v.x ), target );

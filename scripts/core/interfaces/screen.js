@@ -116,18 +116,22 @@ export default class Screen {
 	unpx = ( n = 0 ) => ( n / this.dpr );
 
 	/**
-	 * Convert world units (tiles) to pixels.
+	 * Convert world units to logical pixels using the configured tile size.
 	 *
-	 * @param {Number} n
-	 * @returns {Number}
+	 * Speeds and accelerations may use this same linear conversion: tiles per
+	 * second become logical pixels per second, while tiles per second squared
+	 * become logical pixels per second squared. DPR is deliberately excluded.
+	 *
+	 * @param {Number} n Distance or rate expressed in tile-relative units.
+	 * @returns {Number} Equivalent distance or rate in logical pixels.
 	 */
 	unit = ( n = 0 ) => ( n * this.tile );
 
 	/**
-	 * Convert pixels to world units (tiles).
+	 * Convert logical pixels to world units using the configured tile size.
 	 *
-	 * @param {Number} n
-	 * @returns {Number}
+	 * @param {Number} n Distance or rate expressed in logical pixels.
+	 * @returns {Number} Equivalent distance or rate in tile-relative units.
 	 */
 	world = ( n = 0 ) => ( n / this.tile );
 

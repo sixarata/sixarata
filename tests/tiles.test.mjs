@@ -97,6 +97,7 @@ test( 'Projectile trajectories move in two dimensions without artificial depth d
 	const target = new Tile( [], { x: 4, y: 1, z: 0 }, { w: 1, h: 1, d: 1 } );
 	const direct = new Projectile( [], source, target );
 	const start = { ...direct.physics.position };
+	assert.equal( direct.speed, Game.Screen.unit( Settings.projectiles.speed ) );
 	Time.step = 100;
 	direct.tick();
 
@@ -120,10 +121,12 @@ test( 'Particle movement, lifetime, and minimum size govern destruction', () => 
 	const group = [];
 	Time.now = 100;
 	Time.step = 100;
-	const particle = new Particle( group, source, 'White', { w: 0.1, h: 0.1, d: 0.1 }, { x: 10, y: -20, z: 0 }, 1000, 500 );
+	const particle = new Particle( group, source, 'White', { w: 0.1, h: 0.1, d: 0.1 }, { x: 1, y: -2, z: 0 }, 1000, 500 );
 	const startX = particle.physics.position.x;
+	assert.equal( particle.physics.velocity.x, Game.Screen.unit( 1 ) );
+	assert.equal( particle.physics.velocity.y, Game.Screen.unit( -2 ) );
 	particle.tick();
-	assert.equal( particle.physics.position.x, startX + 1 );
+	assert.equal( particle.physics.position.x, startX + 3.2 );
 	Time.now = 1100;
 	assert.equal( particle.tick(), true );
 	assert.equal( group.includes( particle ), false );
@@ -143,7 +146,7 @@ test( 'Enemy shooting respects elapsed time and viewport eligibility', () => {
 	const enemy = new Enemy( enemies, { x: 1, y: 1 } );
 	const player = new Tile( [], { x: 5, y: 1 }, { w: 1, h: 1, d: 1 } );
 	Game.Room.tiles = { projectiles: [], players: [ player ] };
-	Time.step = Settings.enemies.shotIntervalSeconds * 1000;
+	Time.step = Settings.enemies.shotInterval;
 	enemy.update();
 	assert.equal( Game.Room.tiles.projectiles.length, 1 );
 	assert.equal( enemy.shootElapsed, 0 );

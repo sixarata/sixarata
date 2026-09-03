@@ -7,7 +7,9 @@ import Timer from '../../utilities/timer.js';
  *
  * Responsible for determining whether a tile is eligible to perform a wall jump
  * and, when invoked, applying BOTH the vertical and horizontal impulses
- * required for the maneuver (making this mechanic self‑sufficient).
+ * required for the maneuver (making this mechanic self‑sufficient). Configured
+ * power and lateral impulses are expressed in tiles per second and converted to
+ * logical pixels per second through Screen before application.
  *
  * NOTE: WallJump can be performed from a WallGrab state, launching the player
  * away from the wall.
@@ -20,8 +22,8 @@ export default class WallJump {
 	 * @type {Object}
 	 */
 	static defaults = {
-		power: 540,
-		lateral: 540,
+		power: 17,
+		lateral: 17,
 		time: 100,
 	}
 
@@ -145,7 +147,7 @@ export default class WallJump {
 	 * Called AFTER the Jump mechanic supplies the vertical impulse.
 	 *
 	 * Behavior:
-	 * - Magnitude: 40% of vertical jump power
+	 * - Magnitudes: configured lateral and vertical tile-relative rates
 	 * - Direction: Opposite the contacting wall. If both sides somehow reported,
 	 *   left contact is prioritized.
 	 *
@@ -156,16 +158,18 @@ export default class WallJump {
 		// Various values, for maths.
 		const velocity = this.tile.physics.velocity;
 		const contact  = this.tile.physics.contact;
+		const lateral  = Game.Screen.unit( this.settings.lateral );
+		const power    = Game.Screen.unit( this.settings.power );
 
 		// Horizontal.
 		if ( contact.left ) {
-			velocity.x = this.settings.lateral;
+			velocity.x = lateral;
 		} else if ( contact.right ) {
-			velocity.x = -this.settings.lateral;
+			velocity.x = -lateral;
 		}
 
 		// Vertical (slightly boosted for wall jump flair).
-		velocity.y = -this.settings.power;
+		velocity.y = -power;
 
 		// Set the impulse timer.
 		this.impulse.set( this.settings.time );

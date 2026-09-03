@@ -14,6 +14,8 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Changed
 
+- Restored tile-relative spatial settings and routed motion through `Screen.unit()` so tile-size changes scale geometry and gameplay together.
+- Standardized enemy shot intervals on the engine's default millisecond duration unit.
 - Limited the pre-commit semicolon check to staged JavaScript modules, included `.mjs` tests, and made the lint wrapper honor command-line arguments.
 - Centralized simulation timing on the shared `Time` source and made movement independent of refresh rate and device pixel ratio.
 - Documented physics units, value objects, mechanics, hooks, audio, drawing, and weather lifecycle contracts.

@@ -10,7 +10,8 @@ import Game from '../../game.js';
  *
  * Responsibilities:
  * - Detect left / right edge via History.edge().
- * - Apply +/- base speed (from Settings.player.move.base) exactly once per press.
+ * - Convert Settings.player.move.base from tiles per second through Screen.
+ * - Apply the resulting +/- logical-pixel speed exactly once per press.
  * - Defer sustained speed evolution to later movement mechanics.
  */
 export default class Nudge {
@@ -21,7 +22,7 @@ export default class Nudge {
 	 * @type {Object}
 	 */
 	static defaults = {
-		base: 30,
+		base: 1,
 	}
 
 	/**
@@ -75,10 +76,12 @@ export default class Nudge {
 		}
 
 		// Apply exactly on edge frame.
+		const base = Game.Screen.unit( this.settings.base );
+
 		if ( Game.History.edge( 'left' ) ) {
-			v.x = -this.settings.base;
+			v.x = -base;
 		} else if ( Game.History.edge( 'right' ) ) {
-			v.x = this.settings.base;
+			v.x = base;
 		}
 	}
 }

@@ -4,8 +4,9 @@ import Settings from '../../../content/settings.js';
 /**
  * The Jump mechanic.
  *
- * Handles jump triggering (input -> upward impulse) and hook filtering.
- * Gravity logic is managed by the Fall mechanic.
+ * Handles jump triggering, converts tile-per-second jump power into a logical-
+ * pixel velocity impulse, and filters the jump hook. Gravity logic is managed
+ * by the Fall mechanic.
  */
 export default class Jump {
 
@@ -16,8 +17,8 @@ export default class Jump {
 	 */
 	static defaults = {
 		power: {
-			min: 480,
-			max: 960,
+			min: 15,
+			max: 30,
 		},
 		count: {
 			max: 2,
@@ -127,7 +128,7 @@ export default class Jump {
 		this.count++;
 
 		// Apply jump impulse to velocity.
-		velocity.y = -this.settings.power.min;
+		velocity.y = -Game.Screen.unit( this.settings.power.min );
 
 		// Hook.
 		Game.Hooks.do( 'Player.jump', this.tile );

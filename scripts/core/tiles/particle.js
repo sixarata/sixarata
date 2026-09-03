@@ -32,7 +32,7 @@ export default class Particle extends Tile {
 	 * @param {Tile}     tile
 	 * @param {String}   color
 	 * @param {Size}     size
-	 * @param {Velocity} velocity
+	 * @param {Velocity} velocity Velocity expressed in tiles per second.
 	 * @param {Number}   life
 	 * @param {Number}   fade
 	 * @returns {Particle}
@@ -65,7 +65,7 @@ export default class Particle extends Tile {
 	/**
 	 * Set the Particle.
 	 *
-	 * @param {Velocity} velocity
+	 * @param {Velocity} velocity Velocity expressed in tiles per second.
 	 * @param {Number}   life
 	 * @param {Number}   fade
 	 * @returns {Particle}
@@ -78,9 +78,9 @@ export default class Particle extends Tile {
 
 		// Velocity.
 		this.physics.velocity = new Velocity(
-			velocity.x,
-			velocity.y,
-			velocity.z
+			Game.Screen.unit( velocity.x ),
+			Game.Screen.unit( velocity.y ),
+			Game.Screen.unit( velocity.z )
 		);
 
 		// Attributes.

@@ -8,7 +8,9 @@ import Time from '../../utilities/time.js';
  * Applies a reduced gravity (vertical velocity dampening) while the player is
  * holding toward a wall they are currently in lateral contact with. This
  * creates a controllable descent (wall slide) prior to performing a wall jump
- * or releasing to free‑fall.
+ * or releasing to free‑fall. Gravity is configured in tiles per second squared
+ * and maximum descent in tiles per second; Screen converts both to logical
+ * pixel rates before they affect velocity.
  *
  * NOTE: WallSlide requires an active WallGrab as its base state.
  * Sliding occurs as a result of gravity/friction acting on the grab,
@@ -23,7 +25,7 @@ export default class WallSlide {
 	 */
 	static defaults = {
 		factor: 0.35,
-		max: 450,
+		max: 6,
 	}
 
 	/**
@@ -156,19 +158,20 @@ export default class WallSlide {
 		}
 
 		const inc = Game.Kinematics.displacement(
-			Game.Gravity.acceleration * this.settings.factor,
+			Game.Screen.unit( Game.Gravity.acceleration ) * this.settings.factor,
 			Time.seconds()
 		);
+		const max = Game.Screen.unit( this.settings.max );
 
-		if ( velocity.y < this.settings.max ) {
+		if ( velocity.y < max ) {
 			velocity.y += inc;
 
-			if ( velocity.y > this.settings.max ) {
-				velocity.y = this.settings.max;
+			if ( velocity.y > max ) {
+				velocity.y = max;
 			}
 
-		} else if ( velocity.y > this.settings.max ) {
-			velocity.y = this.settings.max;
+		} else if ( velocity.y > max ) {
+			velocity.y = max;
 		}
 	}
 }

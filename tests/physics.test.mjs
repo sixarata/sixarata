@@ -171,9 +171,9 @@ test( 'Scale follows the configured logical tile size', () => {
 	assert.equal( scale.down( 64 ), 2 );
 } );
 
-/** Contract: Gravity and damping expose conventional, readable settings. */
-test( 'Gravity and damping expose conventional, readable settings', () => {
-	assert.equal( new Gravity().acceleration, 1440 );
+/** Contract: Gravity and damping expose tile-relative and dimensionless settings. */
+test( 'Gravity and damping expose readable world settings', () => {
+	assert.equal( new Gravity().acceleration, 45 );
 	assert.equal( new Damping().retention, 0.65 );
 	assert.equal( new Damping().stepsPerSecond, 60 );
 } );

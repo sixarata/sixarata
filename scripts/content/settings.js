@@ -53,16 +53,15 @@ export default {
 
 	// Player.
 	//
-	// Motion values use logical pixels per second (px/s), acceleration values
-	// use logical pixels per second squared (px/s²), and durations use
-	// milliseconds. A room tile is 32 logical pixels, so 480 px/s is 15
-	// tiles per second regardless of display refresh rate or device pixel ratio.
+	// Spatial distances use tiles, speeds use tiles per second, acceleration
+	// uses tiles per second squared, and durations use milliseconds. Screen.unit()
+	// converts tile-relative values to logical pixels without involving DPR.
 	player: {
 		invincible: false,
 		move: {
-			base:       30,
-			speed:      300,
-			run:        480,
+			base:       1,
+			speed:      10,
+			run:        15,
 			accel:      100,
 			runHold:    100,
 			multiplier: 0.4,
@@ -82,25 +81,25 @@ export default {
 				time: 300,
 			},
 			knievel: {
-				distance: 64,
-				lift:     240,
+				distance: 2,
+				lift:     8,
 			},
 			fall: {
-				speed:    480,
-				terminal: 480,
+				speed:    15,
+				terminal: 15,
 			},
 			ground: {
 				power: {
-					min: 480,
-					max: 960,
+					min: 15,
+					max: 30,
 				},
 				count: {
 					max: 2,
 				},
 			},
 			wall: {
-				power:   540,
-				lateral: 540,
+				power:   17,
+				lateral: 17,
 				max:     1,
 				time:    100,
 			},
@@ -118,8 +117,8 @@ export default {
 				wall:   true,
 			},
 			power: {
-				x: 2250,
-				y: 2250,
+				x: 70,
+				y: 70,
 			},
 			reset: {
 				ground: true,
@@ -137,12 +136,12 @@ export default {
 			},
 			slide: {
 				factor: 0.5,
-				max:    180,
+				max:    6,
 			},
 			climb: {
-				speed: 300,
+				speed: 10,
 				accel: 0.25,
-				max:   300,
+				max:   10,
 			},
 		},
 		retries: {
@@ -186,7 +185,7 @@ export default {
 
 	// Physics.
 	physics: {
-		gravity: 1440, // 45 tiles/s².
+		gravity: 45,
 		damping: {
 			retention:      0.65, // Retain 65% per calibrated step.
 			stepsPerSecond: 60,
@@ -195,12 +194,12 @@ export default {
 
 	// Enemies.
 	enemies: {
-		shotIntervalSeconds: ( 5 / 3 ),
+		shotInterval: ( 5000 / 3 ),
 	},
 
 	// Projectiles.
 	projectiles: {
-		speed: 480, // 15 tiles/s.
+		speed: 15,
 	},
 
 	// Tiles.
