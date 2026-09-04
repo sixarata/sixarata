@@ -32,8 +32,9 @@ Sixarata's unit tests use Node's built-in test runner and have no dependencies.
 sh tools/test.sh
 ```
 
-Profile Room parsing, reconstruction, drawing submission, and composition using
-the same deterministic workload before and after an engine change:
+Profile Room parsing, cached-layout reconstruction, full drawing submission,
+and a fixed-camera static-layer experiment using the same deterministic workload
+before and after an engine change:
 
 ```bash
 node tools/profile.mjs
@@ -41,6 +42,10 @@ node tools/profile.mjs
 
 Reported durations are diagnostic and intentionally have no machine-dependent
 pass threshold. The test suite verifies the workload and operation counts.
+
+For real Canvas timings, open `/?profile=renderer`. The result is logged and
+retained as `globalThis.SixarataProfile`; use `frames` to change the default 300
+recorded frames per strategy.
 
 ## physics units
 

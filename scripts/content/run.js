@@ -30,3 +30,16 @@ Sixarata.Hooks.do( 'Run.content' );
 
 // End.
 Sixarata.Hooks.do( 'Run.end' );
+
+// Optional development profiling.
+const parameters = new URLSearchParams( location.search );
+
+if ( parameters.get( 'profile' ) === 'renderer' ) {
+	import( './profile.js' ).then( async module => {
+		const frames = Number( parameters.get( 'frames' ) ) || 300;
+		const report = await module.default( Sixarata, frames );
+
+		globalThis.SixarataProfile = report;
+		console.info( 'Sixarata renderer profile ' + JSON.stringify( report ) );
+	} );
+}
