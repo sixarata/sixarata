@@ -10,23 +10,47 @@ import Time from './time.js';
  */
 export default class Cache {
 
-	/** @type {Boolean} Whether the derived result must be rebuilt. */
-	dirty = true;
+	/**
+	 * Whether the derived result must be rebuilt.
+	 *
+	 * @type {Boolean}
+	 */
+	dirty;
 
-	/** @type {Number} Latest safe-integer source generation. */
-	revision = 0;
+	/**
+	 * Latest safe-integer source generation.
+	 *
+	 * @type {Number}
+	 */
+	revision;
 
-	/** @type {Number} Source revision represented by the derived result. */
-	built = -1;
+	/**
+	 * Source revision represented by the derived result.
+	 *
+	 * @type {Number}
+	 */
+	built;
 
-	/** @type {Number} Shared monotonic millisecond time of invalidation. */
-	changedAt = 0;
+	/**
+	 * Shared monotonic millisecond time of invalidation.
+	 *
+	 * @type {Number}
+	 */
+	changedAt;
 
-	/** @type {Number|null} Shared monotonic millisecond time of validation. */
-	builtAt = null;
+	/**
+	 * Shared monotonic millisecond time of validation, or null before validation.
+	 *
+	 * @type {Number|null}
+	 */
+	builtAt;
 
-	/** @type {String} Most recent diagnostic invalidation reason. */
-	reason = 'reset';
+	/**
+	 * Most recent diagnostic invalidation reason.
+	 *
+	 * @type {String}
+	 */
+	reason;
 
 	/**
 	 * Construct an invalid Cache that requires its first build.

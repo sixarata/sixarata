@@ -18,38 +18,76 @@ export default class Hooks {
 		history: 1000,
 	}
 
-	/** @type {String} Name of the hook currently executing. */
-	#current = '';
+	/**
+	 * Name of the hook currently executing, or an empty string while idle.
+	 *
+	 * @type {String}
+	 */
+	#current;
 
-	/** @type {Map<String, Map<Number, Array<Function>>>} Active callbacks. */
-	#queued = new Map();
+	/**
+	 * Active callbacks grouped by hook name and numeric priority.
+	 *
+	 * @type {Map<String, Map<Number, Array<Function>>>}
+	 */
+	#queued;
 
-	/** @type {Map<String, Array<Number>>} Cached ascending priorities by hook. */
-	#ordered = new Map();
+	/**
+	 * Cached ascending priorities for each registered hook name.
+	 *
+	 * @type {Map<String, Array<Number>>}
+	 */
+	#ordered;
 
-	/** @type {Array<Object>} Bounded callback execution history. */
-	#done = [];
+	/**
+	 * Bounded callback execution history stored as a circular array.
+	 *
+	 * @type {Array<Object>}
+	 */
+	#done;
 
-	/** @type {Number} Next execution-history slot to replace after capacity. */
-	#doneIndex = 0;
+	/**
+	 * Next execution-history slot to replace after reaching capacity.
+	 *
+	 * @type {Number}
+	 */
+	#doneIndex;
 
-	/** @type {Array<Object>} Callbacks awaiting automatic or manual resumption. */
-	#suspended = [];
+	/**
+	 * Callbacks awaiting automatic or manual resumption.
+	 *
+	 * @type {Array<Object>}
+	 */
+	#suspended;
 
-	/** @returns {Hooks} A reset hook registry. */
+	/**
+	 * Construct an empty hook registry.
+	 *
+	 * @returns {Hooks} A reset hook registry.
+	 */
 	constructor() {
 		return this.reset();
 	}
 
-	/** @returns {Hooks} this, reset for compatibility with other services. */
+	/**
+	 * Set the registry to its initial empty state.
+	 *
+	 * @returns {Hooks} this, reset for compatibility with other services.
+	 */
 	set = () => this.reset();
 
-	/** @returns {Hooks} this, with all queued and historical state cleared. */
+	/**
+	 * Replace all callback collections and clear current execution state.
+	 *
+	 * Registered, suspended, ordered, and historical callbacks are discarded.
+	 *
+	 * @returns {Hooks} this, with all queued and historical state cleared.
+	 */
 	reset = () => {
-		this.#current = '';
-		this.#queued.clear();
-		this.#ordered.clear();
-		this.#done = [];
+		this.#current   = '';
+		this.#queued    = new Map();
+		this.#ordered   = new Map();
+		this.#done      = [];
 		this.#doneIndex = 0;
 		this.#suspended = [];
 
@@ -142,7 +180,11 @@ export default class Hooks {
 		return this.#queued.delete( name );
 	}
 
-	/** @returns {String} The hook currently executing, or an empty string. */
+	/**
+	 * Return the name of the hook currently executing.
+	 *
+	 * @returns {String} The current hook name, or an empty string while idle.
+	 */
 	current = () => this.#current;
 
 	/**
@@ -157,10 +199,18 @@ export default class Hooks {
 		]
 		: [ ...this.#done ];
 
-	/** @returns {Array} Copies of callbacks waiting to resume. */
+	/**
+	 * Return callbacks waiting for manual, frame, or time-based resumption.
+	 *
+	 * @returns {Array} A shallow copy of the suspended callback records.
+	 */
 	suspended = () => [ ...this.#suspended ];
 
-	/** @returns {Array<String>} Names with registered callbacks. */
+	/**
+	 * Return the names that currently contain registered callbacks.
+	 *
+	 * @returns {Array<String>} Hook names in registration order.
+	 */
 	queued = () => [ ...this.#queued.keys() ];
 
 	/**

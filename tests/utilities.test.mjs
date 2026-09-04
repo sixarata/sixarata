@@ -177,6 +177,27 @@ test( 'Hooks expose current, completed, queued, and suspended state safely', () 
 	assert.equal( hooks.done().length, 1 );
 } );
 
+/** Contract: Hooks set and reset replace every owned callback collection with an empty lifecycle state. */
+test( 'Hooks reset their complete owned state', () => {
+	const hooks = new Hooks();
+	const callback = () => {};
+
+	hooks.add( 'queued', callback );
+	hooks.do( 'queued' );
+	hooks.add( 'suspended', callback );
+	hooks.suspend( 'suspended', callback, 10, { frames: 1 } );
+
+	assert.equal( hooks.reset(), hooks );
+	assert.equal( hooks.current(), '' );
+	assert.deepEqual( hooks.queued(), [] );
+	assert.deepEqual( hooks.done(), [] );
+	assert.deepEqual( hooks.suspended(), [] );
+
+	hooks.add( 'again', callback );
+	assert.equal( hooks.set(), hooks );
+	assert.deepEqual( hooks.queued(), [] );
+} );
+
 /** Contract: Audio resumes a suspended pipeline before playing its selected sound. */
 test( 'Audio resumes a suspended pipeline before playing its selected sound', async () => {
 	const calls = [];
