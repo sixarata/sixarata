@@ -179,7 +179,7 @@ test( 'Layer owns buffered presentation and explicit invalidation', t => {
 		tiles:     { items: [] },
 		viewpoint: { x: 0, y: 0, z: 0 },
 	};
-	const groups = [ 'items' ];
+	const groups = [ room.tiles.items ];
 	const layer = new Layer( room, 'test', groups );
 	let renders = 0;
 	let composites = 0;
@@ -193,7 +193,7 @@ test( 'Layer owns buffered presentation and explicit invalidation', t => {
 	output.context.drawImage = () => composites++;
 	groups.push( 'external-change' );
 
-	assert.deepEqual( layer.groups, [ 'items' ] );
+	assert.deepEqual( layer.groups, [ room.tiles.items ] );
 	assert.equal( layer.has( room.tiles.items ), true );
 	assert.equal( layer.has( [] ), false );
 	assert.equal( layer.resize( output.size ), layer );
@@ -204,7 +204,7 @@ test( 'Layer owns buffered presentation and explicit invalidation', t => {
 
 	room.viewpoint.x = 1;
 	assert.equal( layer.stale(), true );
-	assert.equal( layer.cache.reason, 'camera' );
+	assert.equal( layer.cache.reason, 'viewpoint' );
 	assert.equal( layer.rebuild(), layer );
 	assert.equal( layer.cache.valid(), true );
 	assert.equal( renders, 2 );
@@ -222,12 +222,52 @@ test( 'Layer owns buffered presentation and explicit invalidation', t => {
 	const canvas = layer.buffer.canvas;
 	assert.equal( layer.reset(), layer );
 	assert.equal( canvas.removed, true );
-	assert.equal( layer.room, null );
+	assert.equal( layer.parent, null );
 	assert.deepEqual( layer.groups, [] );
 	assert.equal( layer.render(), layer );
 	assert.equal( layer.rebuild(), layer );
 	layer.destroy();
-	assert.equal( layer.room, null );
+	assert.equal( layer.parent, null );
+} );
+
+/** Contract: Layers accept nonvisual content and direct screen-space rendering without a canvas. */
+test( 'Layer supports a generic parent and optional presentation', () => {
+	const parent = { buffer: new Buffer( { w: 20, h: 20 } ) };
+	let renders = 0;
+	const contents = [ {}, null, { render: 1 }, { render: () => renders++ } ];
+	const layer = new Layer( parent, 'overlay', [ contents ], false, false );
+	layer.resize( parent.buffer.size );
+	layer.render();
+	assert.equal( renders, 1 );
+	assert.equal( layer.buffer, null );
+	layer.visible = false;
+	layer.render();
+	assert.equal( renders, 1 );
+	assert.equal( contents.length, 4 );
+	layer.destroy();
+	layer.destroy();
+	assert.equal( contents.length, 4 );
+	parent.buffer.destroy();
+} );
+
+/** Contract: Failed Layer builds restore the parent and cannot validate partial output. */
+test( 'Layer restores its parent after a rendering failure', () => {
+	const parent = { buffer: new Buffer( { w: 20, h: 20 } ) };
+	const output = parent.buffer;
+	const contents = [];
+	const layer = new Layer( parent, 'overlay', [ contents ] );
+	layer.render();
+	assert.equal( layer.cache.valid(), true );
+	contents.push( { render: () => { throw new Error( 'drawing failed' ); } } );
+	assert.throws( () => layer.rebuild(), /drawing failed/ );
+	assert.equal( parent.buffer, output );
+	assert.equal( layer.cache.stale(), true );
+	contents.length = 0;
+	contents.push( { render: () => layer.invalidate() } );
+	layer.rebuild();
+	assert.equal( layer.cache.stale(), true );
+	layer.destroy();
+	output.destroy();
 } );
 
 /** Contract: Screen converts units and manages DPR-backed canvas state and listeners. */

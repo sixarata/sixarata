@@ -67,10 +67,11 @@ export default class Room {
 
 		// Buffer.
 		this.buffer = new Buffer();
+		this.clear();
 		this.layers = [
-			new Layer( this, 'background', [ 'backgrounds', 'platforms', 'doors' ] ),
-			new Layer( this, 'actors', [ 'enemies', 'particles', 'players', 'projectiles' ], false ),
-			new Layer( this, 'foreground', [ 'walls' ] ),
+			new Layer( this, 'background', [ this.tiles.backgrounds, this.tiles.platforms, this.tiles.doors ] ),
+			new Layer( this, 'actors', [ this.tiles.enemies, this.tiles.particles, this.tiles.players, this.tiles.projectiles ], false ),
+			new Layer( this, 'foreground', [ this.tiles.walls ] ),
 		];
 
 		// Size.
@@ -164,16 +165,16 @@ export default class Room {
 	}
 
 	/**
-	 * Destroy every existing Tile and restore empty Room tile collections.
+	 * Destroy every existing Tile and empty the persistent Room collections.
 	 *
-	 * Clearing invalidates every presentation Layer because collection identity
-	 * and derived pixels both change.
+	 * Clearing preserves array identity for presentation Layers and invalidates
+	 * their derived pixels.
 	 *
 	 * @returns {void}
 	 */
 	clear = () => {
 
-		// Let existing tiles release hooks and references before replacing groups.
+		// Snapshot membership because destruction removes Tiles from their groups.
 		const existing = this.tiles
 			? Object.values( this.tiles ).flat()
 			: [];
@@ -189,7 +190,7 @@ export default class Room {
 		this.playerDoor = false;
 
 		// Tiles.
-		this.tiles = {
+		this.tiles ??= {
 			backgrounds: [],
 			platforms:   [],
 			doors:       [],
@@ -199,6 +200,10 @@ export default class Room {
 			projectiles: [],
 			walls:       [],
 		};
+
+		for ( const group of Object.values( this.tiles ) ) {
+			group.length = 0;
+		}
 
 		this.invalidate( null, 'room cleared' );
 	}
@@ -315,7 +320,7 @@ export default class Room {
 		group  = null,
 		reason = 'changed'
 	) => {
-		for ( const layer of this.layers ) {
+		for ( const layer of this.layers ?? [] ) {
 			if ( group === null || layer.has( group ) ) {
 				layer.invalidate( reason );
 			}

@@ -32,6 +32,14 @@ Sixarata's unit tests use Node's built-in test runner and have no dependencies.
 sh tools/test.sh
 ```
 
+Layers reference ordered collections and a `parent` with an active `buffer`.
+Renderable members resolve that destination intrinsically; other data is ignored
+by rendering. `visible` controls presentation only. `buffered: false` (the fifth
+constructor argument) draws directly without allocating a canvas; buffered Layers
+allocate on resize or first render. Collection edits require `invalidate()`.
+Room preserves collection identities when clearing and loading rooms. An optional
+parent `viewpoint` supplies logical coordinates for cache invalidation.
+
 Profile Room parsing, cached-layout reconstruction, complete Layer redraws,
 production fixed-camera Layer caching, and moving-Camera invalidation using the
 same deterministic workload before and after an engine change:

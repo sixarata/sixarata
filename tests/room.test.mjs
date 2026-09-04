@@ -73,19 +73,10 @@ test( 'Room forwards tick, update, and render across tile groups', t => {
 	t.after( () => {
 		Object.values = originalValues;
 	} );
-	room.tiles = {
-		backgrounds: [
+	room.tiles.backgrounds.push(
 			{ tick: () => calls.push( 'tick' ), update: () => calls.push( 'update' ), render: () => calls.push( 'render' ) },
 			null,
-		],
-		platforms:   [],
-		doors:       [],
-		enemies:     [],
-		particles:   [],
-		players:     [],
-		projectiles: [],
-		walls:       [],
-	};
+	);
 	room.buffer.put = () => calls.push( 'put' );
 	Object.values = ( ...args ) => {
 		valueCalls++;
@@ -99,6 +90,18 @@ test( 'Room forwards tick, update, and render across tile groups', t => {
 
 	assert.deepEqual( calls, [ 'tick', 'update', 'render', 'put' ] );
 	assert.equal( valueCalls, 0 );
+} );
+
+/** Contract: Room clearing retains the collections referenced by its presentation Layers. */
+test( 'Room preserves presentation collection identity on clear', () => {
+	const room = new Room();
+	const group = room.tiles.backgrounds;
+	group.push( { destroy: () => group.pop() } );
+	room.clear();
+	assert.equal( room.tiles.backgrounds, group );
+	assert.equal( room.layers[ 0 ].has( group ), true );
+	assert.equal( group.length, 0 );
+	assert.equal( room.layers[ 0 ].stale(), true );
 } );
 
 /** Contract: Room loops remain compatible without Object.hasOwn and skip inherited tile groups. */

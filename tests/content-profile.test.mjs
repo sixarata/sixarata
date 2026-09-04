@@ -48,9 +48,9 @@ test( 'Renderer profiler restores Layer policies and the live game loop', async 
 		},
 	};
 	game.Room.layers = [
-		new Layer( game.Room, 'background', [ 'backgrounds', 'platforms', 'doors' ] ),
-		new Layer( game.Room, 'actors', [ 'enemies', 'particles', 'players', 'projectiles' ], false ),
-		new Layer( game.Room, 'foreground', [ 'walls' ] ),
+		new Layer( game.Room, 'background', [ game.Room.tiles.backgrounds, game.Room.tiles.platforms, game.Room.tiles.doors ] ),
+		new Layer( game.Room, 'actors', [ game.Room.tiles.enemies, game.Room.tiles.particles, game.Room.tiles.players, game.Room.tiles.projectiles ], false ),
+		new Layer( game.Room, 'foreground', [ game.Room.tiles.walls ] ),
 	];
 	game.Room.render = () => {
 		for ( const layer of game.Room.layers ) {

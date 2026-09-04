@@ -2,22 +2,22 @@ import Cache from '../utilities/cache.js';
 import Buffer from './buffer.js';
 
 /**
- * One ordered presentation layer owned by a Room.
+ * One ordered presentation layer owned by a parent.
  *
- * A Layer groups existing Room tile collections without changing their
- * simulation or collision behavior. It renders those Tiles into an intrinsic
- * off-screen Buffer and composites that Buffer into its Room. Cached layers
- * rebuild after source, viewport, or Camera changes; live layers rebuild every
- * frame.
+ * Collections retain their simulation ownership. Members with a render method
+ * draw through their intrinsic destination, which must resolve parent.buffer.
+ * Other members are ignored. Buffered drawing temporarily activates this Layer's
+ * surface on the parent and restores it even after failure. Direct drawing uses
+ * the parent's current surface. Visibility never controls simulation.
  */
 export default class Layer {
 
 	/**
-	 * Room that owns this presentation layer.
+	 * Parent exposing the active drawing Buffer and optional viewpoint.
 	 *
-	 * @type {Room|null}
+	 * @type {Object|null}
 	 */
-	room;
+	parent;
 
 	/**
 	 * Concise diagnostic name for this layer.
@@ -27,9 +27,9 @@ export default class Layer {
 	name;
 
 	/**
-	 * Ordered Room tile-group names rendered by this layer.
+	 * Ordered collection references rendered by this layer.
 	 *
-	 * @type {Array<String>}
+	 * @type {Array<Array>}
 	 */
 	groups;
 
@@ -41,9 +41,22 @@ export default class Layer {
 	cached;
 
 	/**
+	 * Whether this Layer contributes pixels; hiding it does not affect simulation.
+	 * @type {Boolean}
+	 */
+	visible;
+
+	/**
+	 * Whether rendering uses a private Buffer. False draws directly to parent.
+	 * Change through set(); direct Layers always render their contents afresh.
+	 * @type {Boolean}
+	 */
+	buffered;
+
+	/**
 	 * Off-screen drawing surface owned by this layer.
 	 *
-	 * @type {Buffer}
+	 * @type {Buffer|null}
 	 */
 	buffer;
 
@@ -55,56 +68,61 @@ export default class Layer {
 	cache;
 
 	/**
-	 * Camera coordinates represented by the current buffered pixels.
+	 * Viewpoint coordinates represented by the current buffered pixels.
 	 *
 	 * @type {Object}
 	 */
-	camera;
+	viewpoint;
 
 	/**
-	 * Construct a Room presentation layer.
+	 * Construct an ordered presentation layer.
 	 *
-	 * @param {Room|null} room Room that owns the layer and its output Buffer.
+	 * @param {Object|null} parent Destination with a Buffer and optional logical-pixel viewpoint.
 	 * @param {String} name Diagnostic layer name.
-	 * @param {Array<String>} groups Ordered Room tile-group names.
+	 * @param {Array<Array>} groups Ordered collection references.
 	 * @param {Boolean} cached Whether unchanged pixels persist between frames.
+	 * @param {Boolean} buffered Use a private surface; defaults to true.
 	 * @returns {Layer} this
 	 */
 	constructor(
-		room   = null,
-		name   = '',
-		groups = [],
-		cached = true
+		parent   = null,
+		name     = '',
+		groups   = [],
+		cached   = true,
+		buffered = true
 	) {
-		return this.set( room, name, groups, cached );
+		return this.set( parent, name, groups, cached, buffered );
 	}
 
 	/**
 	 * Configure this layer after restoring its complete default state.
 	 *
-	 * Group names are copied so external array mutations cannot silently change
-	 * layer membership without invalidating its Cache.
+	 * The outer collection list is copied; member arrays retain their identities.
+	 * Changes to member arrays require explicit Cache invalidation.
 	 *
-	 * @param {Room|null} room Room that owns the layer and its output Buffer.
+	 * @param {Object|null} parent Destination with a Buffer and optional logical-pixel viewpoint.
 	 * @param {String} name Diagnostic layer name.
-	 * @param {Array<String>} groups Ordered Room tile-group names.
+	 * @param {Array<Array>} groups Ordered collection references.
 	 * @param {Boolean} cached Whether unchanged pixels persist between frames.
+	 * @param {Boolean} buffered Use a private surface; defaults to true.
 	 * @returns {Layer} this
 	 */
 	set = (
-		room   = null,
-		name   = '',
-		groups = [],
-		cached = true
+		parent   = null,
+		name     = '',
+		groups   = [],
+		cached   = true,
+		buffered = true
 	) => {
 		this.reset();
 
-		this.room   = room;
-		this.name   = String( name );
-		this.groups = Array.isArray( groups )
-			? [ ...groups ]
+		this.parent   = parent;
+		this.name     = String( name );
+		this.groups   = Array.isArray( groups )
+			? groups.filter( Array.isArray )
 			: [];
-		this.cached = Boolean( cached );
+		this.cached   = Boolean( cached );
+		this.buffered = Boolean( buffered );
 
 		return this;
 	}
@@ -112,8 +130,9 @@ export default class Layer {
 	/**
 	 * Restore an unowned, unnamed, empty, cacheable presentation layer.
 	 *
-	 * Existing Buffer resources are released before a clean Buffer and Cache are
-	 * created. The Camera snapshot starts empty so the first render always builds.
+	 * Existing Buffer resources are released and fresh Cache metadata is
+	 * created. Buffer allocation is deferred until resize or rendering. The
+	 * viewpoint snapshot starts empty so the first render always builds.
 	 *
 	 * @returns {Layer} this
 	 */
@@ -123,13 +142,15 @@ export default class Layer {
 			this.buffer.destroy();
 		}
 
-		this.room   = null;
-		this.name   = '';
-		this.groups = [];
-		this.cached = true;
-		this.buffer = new Buffer();
-		this.cache  = new Cache();
-		this.camera = {
+		this.parent    = null;
+		this.name      = '';
+		this.groups    = [];
+		this.cached    = true;
+		this.visible   = true;
+		this.buffered  = true;
+		this.buffer    = null;
+		this.cache     = new Cache();
+		this.viewpoint = {
 			x: null,
 			y: null,
 			z: null,
@@ -139,17 +160,13 @@ export default class Layer {
 	}
 
 	/**
-	 * Determine whether this layer owns a specific Room tile collection.
+	 * Determine whether this layer references a collection.
 	 *
-	 * @param {Array} group Existing Room tile collection.
-	 * @returns {Boolean} Whether one configured group name resolves to the array.
+	 * @param {Array} group Collection to locate by identity.
+	 * @returns {Boolean} Whether the collection is included.
 	 */
 	has = ( group = [] ) => {
-		if ( ! this.room?.tiles ) {
-			return false;
-		}
-
-		return this.groups.some( name => this.room.tiles[ name ] === group );
+		return this.groups.includes( group );
 	}
 
 	/**
@@ -162,6 +179,10 @@ export default class Layer {
 	 * @returns {Layer} this
 	 */
 	resize = ( size = { w: 0, h: 0, d: 0 } ) => {
+		if ( ! this.buffered ) {
+			return this;
+		}
+		this.buffer ??= new Buffer();
 		const changed = (
 			( this.buffer.size?.w ?? 0 ) !== ( size.w ?? 0 )
 			||
@@ -192,137 +213,156 @@ export default class Layer {
 	}
 
 	/**
-	 * Determine whether this layer needs to redraw its Tiles.
+	 * Determine whether this layer needs to redraw its contents.
 	 *
 	 * Live layers are always stale. Cached viewport layers additionally compare
-	 * the shared Camera position so scrolling cannot reuse incorrectly offset
+	 * the shared viewpoint position so scrolling cannot reuse incorrectly offset
 	 * pixels.
 	 *
 	 * @returns {Boolean} Whether the layer Buffer must be rebuilt.
 	 */
 	stale = () => {
-		if ( ! this.cached ) {
+		if ( ! this.cached || ! this.buffered ) {
 			return true;
 		}
 
-		if ( this.#cameraChanged() && ! this.cache.dirty ) {
-			this.invalidate( 'camera' );
+		if ( this.#viewpointChanged() && ! this.cache.dirty ) {
+			this.invalidate( 'viewpoint' );
 		}
 
 		return this.cache.stale();
 	}
 
 	/**
-	 * Draw this layer when stale and composite it into the owning Room Buffer.
+	 * Draw this layer when stale and composite it into the owning parent Buffer.
 	 *
-	 * The Room Buffer remains the intrinsic Tile drawing destination while a
-	 * rebuild is active; it is restored before the layer is composited.
+	 * Hidden or unbound Layers are inert. Direct Layers redraw every call.
+	 * Buffered Layers temporarily activate their surface on the parent while
+	 * rebuilding, then restore the destination before compositing.
 	 *
 	 * @returns {Layer} this
 	 */
 	render = () => {
-		if ( ! this.room?.buffer ) {
+		if ( ! this.visible || ! this.parent?.buffer ) {
 			return this;
 		}
+
+		if ( ! this.buffered ) {
+			this.#renderContents();
+			return this;
+		}
+		this.resize( this.parent.buffer.size );
 
 		if ( this.stale() ) {
 			this.rebuild();
 		}
 
-		this.room.buffer.context.globalAlpha = 1;
-		this.buffer.put( this.room.buffer );
+		this.parent.buffer.context.globalAlpha = 1;
+		this.buffer.put( this.parent.buffer );
 
 		return this;
 	}
 
 	/**
-	 * Rebuild this layer from its current Room tile collections.
+	 * Rebuild this layer from its referenced collections.
 	 *
 	 * Validation uses the revision captured before drawing so a synchronous
-	 * invalidation raised by a Tile hook keeps the result stale for the next frame.
+	 * invalidation raised by a render callback keeps the result stale for the next frame.
 	 *
 	 * @returns {Layer} this
 	 */
 	rebuild = () => {
-		if ( ! this.room?.buffer ) {
+		if ( ! this.parent?.buffer ) {
 			return this;
 		}
+		if ( ! this.buffered ) {
+			this.#renderContents();
+			return this;
+		}
+		this.resize( this.parent.buffer.size );
 
-		const output = this.room.buffer;
+		const output = this.parent.buffer;
 		const revision = this.cache.revision;
+		// Failed or interrupted builds must never leave reusable partial pixels.
+		this.cache.dirty = true;
 
 		this.buffer.update();
-		this.room.buffer = this.buffer;
+		this.parent.buffer = this.buffer;
 
 		try {
-			this.#renderTiles();
+			this.#renderContents();
 		} finally {
-			this.room.buffer = output;
+			this.parent.buffer = output;
 		}
 
-		this.#captureCamera();
+		this.#captureViewpoint();
 		this.cache.validate( revision );
 
 		return this;
 	}
 
 	/**
-	 * Release the owned Buffer and sever Room and group references.
+	 * Release the owned Buffer and sever parent and group references.
 	 *
 	 * @returns {void}
 	 */
 	destroy = () => {
-		this.buffer.screen.ignore();
-		this.buffer.destroy();
-		this.room   = null;
-		this.groups = [];
+		if ( this.buffer ) {
+			this.buffer.screen.ignore();
+			this.buffer.destroy();
+		}
+		this.buffer = null;
+		this.cache.invalidate( 'destroyed' );
+		this.parent   = null;
+		this.groups   = [];
 	}
 
 	/**
-	 * Determine whether the shared Camera moved after the last successful build.
+	 * Determine whether the shared viewpoint moved after the last successful build.
 	 *
-	 * @returns {Boolean} Whether any logical Camera coordinate changed.
+	 * @returns {Boolean} Whether any logical viewpoint coordinate changed.
 	 */
-	#cameraChanged = () => {
-		const position = this.room?.viewpoint ?? { x: 0, y: 0, z: 0 };
+	#viewpointChanged = () => {
+		const position = this.parent?.viewpoint ?? { x: 0, y: 0, z: 0 };
 
 		return (
-			this.camera.x !== position.x
+			this.viewpoint.x !== position.x
 			||
-			this.camera.y !== position.y
+			this.viewpoint.y !== position.y
 			||
-			this.camera.z !== position.z
+			this.viewpoint.z !== position.z
 		);
 	}
 
 	/**
-	 * Capture the logical Camera coordinates represented by buffered pixels.
+	 * Capture the logical Viewpoint coordinates represented by buffered pixels.
 	 *
 	 * @returns {void}
 	 */
-	#captureCamera = () => {
-		const position = this.room?.viewpoint ?? { x: 0, y: 0, z: 0 };
+	#captureViewpoint = () => {
+		const position = this.parent?.viewpoint ?? { x: 0, y: 0, z: 0 };
 
-		this.camera.x = position.x;
-		this.camera.y = position.y;
-		this.camera.z = position.z;
+		this.viewpoint.x = position.x;
+		this.viewpoint.y = position.y;
+		this.viewpoint.z = position.z;
 	}
 
 	/**
-	 * Render configured Room tile groups in their declared order.
+	 * Render configured referenced collections in their declared order.
 	 *
-	 * Missing groups and sparse entries are ignored. Tile rendering remains
-	 * intrinsic because each Tile resolves the temporarily active Room Buffer.
+	 * Sparse entries and nonrenderable data are ignored. Renderers resolve the
+	 * temporarily active parent Buffer through their own intrinsic destination.
 	 *
 	 * @returns {void}
 	 */
-	#renderTiles = () => {
-		for ( const name of this.groups ) {
-			const tiles = this.room.tiles?.[ name ] ?? [];
-			const length = tiles.length;
+	#renderContents = () => {
+		for ( const contents of this.groups ) {
+			const length = contents.length;
 
 			for ( let i = 0; i < length; i++ ) {
-				tiles[ i ]?.render?.();
+				if ( typeof contents[ i ]?.render === 'function' ) {
+					contents[ i ].render();
+				}
 			}
 		}
 	}
