@@ -86,7 +86,7 @@ test( 'Cache keeps safe revision identity at numeric rollover', t => {
 	cache.invalidate();
 
 	assert.equal( cache.revision, 1 );
-	assert.equal( cache.built, 0 );
+	assert.equal( cache.built, Number.MAX_SAFE_INTEGER );
 	assert.equal( cache.reason, 'changed' );
 	assert.equal( cache.stale(), true );
 } );

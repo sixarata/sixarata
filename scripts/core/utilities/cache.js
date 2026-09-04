@@ -78,11 +78,9 @@ export default class Cache {
 		reason = 'changed'
 	) => {
 		if ( this.revision >= Number.MAX_SAFE_INTEGER ) {
-			this.revision = 1;
-			this.built    = 0;
-		} else {
-			this.revision++;
+			this.revision = 0;
 		}
+		this.revision++;
 
 		this.dirty     = true;
 		this.changedAt = Time.now;
