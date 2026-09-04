@@ -14,6 +14,7 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Changed
 
+- Restored Room as the intrinsic rendering surface for world Tiles and collision-debug drawing before Room composites into View.
 - Reduced per-frame allocations by retaining Frame history, scanning collision groups directly with one reusable detector, and caching Hook priority order until registration changes.
 - Cached gamepad mappings, reused Tile visibility objects, and traversed Room groups without allocating intermediate arrays during each frame.
 - Replaced Hook execution-history shifting with a fixed-size circular history.

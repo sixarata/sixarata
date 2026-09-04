@@ -191,7 +191,7 @@ export default class Tile extends Entity {
 		}
 
 		// Draw the rectangle.
-		Game.View.buffer.rect(
+		Game.Room.buffer.rect(
 			this.color,
 			position,
 			this.physics.size,

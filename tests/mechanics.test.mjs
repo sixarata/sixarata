@@ -315,12 +315,12 @@ test( 'Collide resolves nearby solid tiles and renders debug bounds', () => {
 	const empty = body();
 	empty.density = 0;
 	const originalTiles = Game.Room.tiles;
-	const originalRect = Game.View.buffer.rect;
+	const originalRect = Game.Room.buffer.rect;
 	const originalCameraPosition = Game.Camera.position;
 	let drawings = 0;
 	Game.Room.tiles = { platforms: [ nearby, empty ], walls: [ distant ] };
 	Game.Camera.position = { x: 0, y: 0, z: 0 };
-	Game.View.buffer.rect = () => drawings++;
+	Game.Room.buffer.rect = () => drawings++;
 	const collide = new Collide( moving );
 	assert.deepEqual( collide.solids(), [ nearby, distant ] );
 	const collision = collide.collision;
@@ -340,6 +340,6 @@ test( 'Collide resolves nearby solid tiles and renders debug bounds', () => {
 	assert.equal( drawings, 1 );
 	collide.unhooks();
 	Game.Room.tiles = originalTiles;
-	Game.View.buffer.rect = originalRect;
+	Game.Room.buffer.rect = originalRect;
 	Game.Camera.position = originalCameraPosition;
 } );

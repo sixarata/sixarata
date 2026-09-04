@@ -251,7 +251,7 @@ export default class Collide {
 		};
 
 		// Draw the detection area as a semi-transparent rectangle.
-		Game.View.buffer.rect(
+		Game.Room.buffer.rect(
 			'#ff00ff',
 			offsetPos,
 			detectionSize,
