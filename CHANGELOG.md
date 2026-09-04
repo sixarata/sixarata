@@ -6,6 +6,7 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Added
 
+- Added a repeatable Room layout and rendering profiler with deterministic workload tests and operation counts.
 - Added a reusable Cache lifecycle with explicit invalidation, revision-safe validation, shared-clock diagnostics, and stale asynchronous-result protection.
 - Added documented tests across every engine class, with explicit coverage gates for lines, branches, and functions.
 - Added GitHub Actions for Node.js testing, repository linting, CodeQL analysis, and signed-commit verification.

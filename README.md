@@ -32,6 +32,16 @@ Sixarata's unit tests use Node's built-in test runner and have no dependencies.
 sh tools/test.sh
 ```
 
+Profile Room parsing, reconstruction, drawing submission, and composition using
+the same deterministic workload before and after an engine change:
+
+```bash
+node tools/profile.mjs
+```
+
+Reported durations are diagnostic and intentionally have no machine-dependent
+pass threshold. The test suite verifies the workload and operation counts.
+
 ## physics units
 
 Game settings express spatial design values in tiles, tiles per second, and
