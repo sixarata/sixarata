@@ -285,6 +285,21 @@ export default class Tile extends Entity {
 	}
 
 	/**
+	 * Publish a membership change for the previous owning group.
+	 *
+	 * Runs after removal, including reconfiguration and destruction, before
+	 * the group reference changes. The Tile identifies the affected group
+	 * even when the removed item is another member.
+	 *
+	 * @protected
+	 * @param {*} item Removed item; defaults to this Tile.
+	 * @returns {void}
+	 */
+	removed = ( item = this ) => {
+		Game.Hooks.do( 'Tile.removed', this );
+	}
+
+	/**
 	 * Publish the Tile.destroy hook after Entity removes the Tile.
 	 *
 	 * @protected

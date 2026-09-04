@@ -599,3 +599,54 @@ test( 'Timer covers aliases, boundaries, pause expiry, repeat, extension, and re
 test( 'The browser test environment captures registered global listeners', () => {
 	assert.ok( browser.listeners.has( 'visibilitychange' ) );
 } );
+
+/** Contract: Entity reports successful removals before changing groups and preserves destruction ordering. */
+test( 'Entity notifies removal across its lifecycle', () => {
+	const group = [];
+	const entity = new Entity( group );
+	const events = [];
+	entity.removed = item => events.push( [ item, entity.group, entity.group.includes( item ) ] );
+	assert.equal( entity.remove( {} ), false );
+	assert.equal( events.length, 0 );
+	entity.reset( [] );
+	assert.deepEqual( events, [ [ entity, group, false ] ] );
+	entity.set( group );
+	entity.destroyed = () => events.push( 'destroyed' );
+	entity.destroy();
+	assert.deepEqual( events.slice( 1 ), [ [ entity, group, false ], 'destroyed' ] );
+	assert.equal( entity.destroy(), false );
+	assert.equal( events.length, 3 );
+} );
+
+/** Contract: Layer defers additions, skips removed members, visits survivors, and rejects changed cached output. */
+test( 'Layer handles membership changes during rendering', () => {
+	for ( const buffered of [ true, false ] ) {
+		const parent = { buffer: new Buffer() };
+		const group = [];
+		const calls = [];
+		const first = new Entity( group );
+		const removed = new Entity( group );
+		const survivor = new Entity( group );
+		const added = { render: () => calls.push( 'added' ) };
+		first.render = () => {
+			calls.push( 'first' );
+			first.remove();
+			removed.remove();
+			group.push( added );
+		};
+		removed.render = () => calls.push( 'removed' );
+		survivor.render = () => calls.push( 'survivor' );
+		const layer = new Layer( parent, 'test', [ group ], true, buffered );
+		layer.render();
+		assert.deepEqual( calls, [ 'first', 'survivor' ] );
+		assert.equal( layer.cache.stale(), true );
+		assert.equal( layer.cache.reason, 'membership' );
+		calls.length = 0;
+		layer.render();
+		assert.deepEqual( calls, [ 'survivor', 'added' ] );
+		assert.equal( layer.cache.valid(), buffered );
+		layer.destroy();
+		parent.buffer.screen.ignore();
+		parent.buffer.destroy();
+	}
+} );

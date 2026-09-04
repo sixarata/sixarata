@@ -36,9 +36,15 @@ Layers reference ordered collections and a `parent` with an active `buffer`.
 Renderable members resolve that destination intrinsically; other data is ignored
 by rendering. `visible` controls presentation only. `buffered: false` (the fifth
 constructor argument) draws directly without allocating a canvas; buffered Layers
-allocate on resize or first render. Collection edits require `invalidate()`.
-Room preserves collection identities when clearing and loading rooms. An optional
-parent `viewpoint` supplies logical coordinates for cache invalidation.
+allocate on resize or first render.
+Room preserves collection identities when clearing and loading rooms.
+Room lifecycle and Layer rendering passes snapshot each group when reached:
+surviving starting members run once, removed members are skipped, and additions
+wait until that group's next pass. Membership changes during rendering keep the
+Layer cache stale. `Tile.removed` invalidates the previous group's Room layer on
+removal, reassignment, or destruction; `Tile.destroy` remains a destruction event.
+Direct collection edits outside rendering still require explicit invalidation.
+An optional parent `viewpoint` supplies logical coordinates for cache invalidation.
 
 Profile Room parsing, cached-layout reconstruction, complete Layer redraws,
 production fixed-camera Layer caching, and moving-Camera invalidation using the

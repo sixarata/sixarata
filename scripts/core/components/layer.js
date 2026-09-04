@@ -350,18 +350,36 @@ export default class Layer {
 	/**
 	 * Render configured referenced collections in their declared order.
 	 *
-	 * Sparse entries and nonrenderable data are ignored. Renderers resolve the
-	 * temporarily active parent Buffer through their own intrinsic destination.
+	 * Each group snapshots its starting members. Removed members are skipped,
+	 * additions wait until the next pass, and changed membership invalidates
+	 * cached pixels. Sparse entries and nonrenderable data are ignored. Renderers
+	 * resolve the active parent Buffer through their own intrinsic destination.
 	 *
 	 * @returns {void}
 	 */
 	#renderContents = () => {
 		for ( const contents of this.groups ) {
-			const length = contents.length;
+			const members = contents.slice();
 
-			for ( let i = 0; i < length; i++ ) {
-				if ( typeof contents[ i ]?.render === 'function' ) {
-					contents[ i ].render();
+			try {
+				for ( let i = 0; i < members.length; i++ ) {
+					const member = members[ i ];
+
+					if (
+						typeof member?.render === 'function'
+						&&
+						( contents[ i ] === member || contents.includes( member ) )
+					) {
+						member.render();
+					}
+				}
+			} finally {
+				if (
+					contents.length !== members.length
+					||
+					members.some( ( member, index ) => contents[ index ] !== member )
+				) {
+					this.invalidate( 'membership' );
 				}
 			}
 		}

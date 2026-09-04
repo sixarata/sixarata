@@ -249,7 +249,7 @@ export default class Room {
 
 		// Layers.
 		Game.Hooks.add( 'Tile.added',   this.changed );
-		Game.Hooks.add( 'Tile.destroy', this.changed );
+		Game.Hooks.add( 'Tile.removed', this.changed );
 	}
 
 	/**
@@ -450,7 +450,11 @@ export default class Room {
 	}
 
 	/**
-	 * Loop through tile objects, and call one of their methods.
+	 * Call a lifecycle method once for each starting member of each group.
+	 *
+	 * Each group is snapshotted when reached. Removed members are skipped;
+	 * additions to that group wait until its next pass. Membership checks keep
+	 * swap removal from skipping or revisiting surviving members.
 	 *
 	 * @param {String} callback Tile lifecycle method name.
 	 * @returns {void}
@@ -471,23 +475,15 @@ export default class Room {
 			}
 
 			const items = this.tiles[ group ];
-			const l = items.length;
 
-			// Skip if empty.
-			if ( ! l ) {
-				continue;
-			}
+			const members = items.slice();
 
-			// Callback.
-			for ( let i = 0; i < l; i++ ) {
+			for ( let i = 0; i < members.length; i++ ) {
+				const item = members[ i ];
 
-				// Skip if missing.
-				if ( ! items[ i ] ) {
-					continue;
+				if ( item && ( items[ i ] === item || items.includes( item ) ) ) {
+					item[ callback ]();
 				}
-
-				// Do the callback.
-				items[ i ][ callback ]();
 			}
 		}
 	}

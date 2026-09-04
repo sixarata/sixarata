@@ -156,7 +156,7 @@ export default class Entity {
 	 * Remove an item from the owning collection without preserving its order.
 	 *
 	 * Removal may reorder the collection by swapping its final item into the
-	 * removed slot.
+	 * removed slot. Successful removal invokes removed() before returning.
 	 *
 	 * @param {*} item Item to remove; defaults to this Entity.
 	 * @returns {Boolean} True when an item was removed, otherwise false.
@@ -175,9 +175,22 @@ export default class Entity {
 		}
 
 		this.group.pop();
+		this.removed( item );
 
 		return true;
 	}
+
+	/**
+	 * Respond after an item leaves the owning collection.
+	 *
+	 * Runs for removal, reconfiguration, and destruction while group still
+	 * references the previous collection. Missing items do not notify.
+	 *
+	 * @protected
+	 * @param {*} item Removed item; defaults to this Entity.
+	 * @returns {void}
+	 */
+	removed = ( item = this ) => {}
 
 	/**
 	 * Release subclass-owned resources immediately before destruction.
@@ -226,6 +239,7 @@ export default class Entity {
 		}
 
 		this.group.pop();
+		this.removed( this );
 		this.destroyed();
 
 		return true;
