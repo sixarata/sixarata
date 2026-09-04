@@ -543,7 +543,7 @@ test( 'Timer covers aliases, boundaries, pause expiry, repeat, extension, and re
 	assert.equal( timer.done(), true );
 	assert.equal( timer.extend( 25 ).duration, 25 );
 	timer.repeat( 10 );
-	Time.now = timer.expires;
+	Time.now = timer.expiresAt;
 	assert.equal( timer.ping(), true );
 	assert.equal( timer.ping(), false );
 	timer.pause();

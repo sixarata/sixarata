@@ -138,6 +138,11 @@ test( 'Particle movement, lifetime, and minimum size govern destruction', () => 
 	Time.step = 100;
 	const particle = new Particle( group, source, 'White', { w: 0.1, h: 0.1, d: 0.1 }, { x: 1, y: -2, z: 0 }, 1000, 500 );
 	const startX = particle.physics.position.x;
+	assert.equal( particle.bornAt, 100 );
+	assert.equal( particle.born, particle.bornAt );
+	particle.born = 99;
+	assert.equal( particle.bornAt, 99 );
+	particle.bornAt = 100;
 	assert.equal( particle.physics.velocity.x, Game.Screen.unit( 1 ) );
 	assert.equal( particle.physics.velocity.y, Game.Screen.unit( -2 ) );
 	particle.tick();

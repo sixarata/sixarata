@@ -13,9 +13,92 @@ import Time from './time.js';
 export default class Timer {
 
 	/**
-	 * Timer constructor.
+	 * Shared monotonic millisecond timestamp when the current window starts.
 	 *
-	 * @param {Number} ms Duration in ms (<=0 clears).
+	 * @type {Number}
+	 */
+	startsAt;
+
+	/**
+	 * Total length of the current timing window in milliseconds.
+	 *
+	 * @type {Number}
+	 */
+	duration;
+
+	/**
+	 * Shared monotonic millisecond timestamp when the current window expires.
+	 *
+	 * @type {Number}
+	 */
+	expiresAt;
+
+	/**
+	 * Milliseconds retained while the Timer is paused.
+	 *
+	 * @type {Number}
+	 */
+	remains;
+
+	/**
+	 * Whether countdown progress is suspended.
+	 *
+	 * @type {Boolean}
+	 */
+	paused;
+
+	/**
+	 * Repeating window duration in milliseconds, or zero when disabled.
+	 *
+	 * @type {Number}
+	 */
+	interval;
+
+	/**
+	 * Read the legacy start timestamp.
+	 *
+	 * @deprecated Use startsAt.
+	 * @returns {Number} Shared monotonic start time in milliseconds.
+	 */
+	get starts() {
+		return this.startsAt;
+	}
+
+	/**
+	 * Update the start timestamp through its legacy property.
+	 *
+	 * @deprecated Use startsAt.
+	 * @param {Number} timestamp Shared monotonic start time in milliseconds.
+	 */
+	set starts( timestamp ) {
+		this.startsAt = timestamp;
+	}
+
+	/**
+	 * Read the legacy expiration timestamp.
+	 *
+	 * @deprecated Use expiresAt.
+	 * @returns {Number} Shared monotonic expiration time in milliseconds.
+	 */
+	get expires() {
+		return this.expiresAt;
+	}
+
+	/**
+	 * Update the expiration timestamp through its legacy property.
+	 *
+	 * @deprecated Use expiresAt.
+	 * @param {Number} timestamp Shared monotonic expiration time in milliseconds.
+	 */
+	set expires( timestamp ) {
+		this.expiresAt = timestamp;
+	}
+
+	/**
+	 * Construct and immediately start a timing window.
+	 *
+	 * @param {Number} ms Duration in milliseconds. Non-positive values are inert.
+	 * @returns {Timer} this
 	 */
 	constructor(
 		ms = 0
@@ -24,9 +107,9 @@ export default class Timer {
 	}
 
 	/**
-	 * Set with duration.
+	 * Reset and start a timing window from the shared monotonic clock.
 	 *
-	 * @param {Number} ms Duration in ms (<=0 clears).
+	 * @param {Number} ms Duration in milliseconds. Non-positive values are inert.
 	 * @returns {Timer} this
 	 */
 	set = (
@@ -37,94 +120,96 @@ export default class Timer {
 		this.reset();
 
 		// Apply new timing window.
-		this.starts   = Time.now;
-		this.duration = ms;
-		this.expires  = this.starts + ms;
+		this.startsAt  = Time.now;
+		this.duration  = ms;
+		this.expiresAt = this.startsAt + ms;
 
 		// Return.
 		return this;
 	}
 
 	/**
-	 * Internal reset (use clear() externally for semantics).
+	 * Restore an inactive Timer with no repeating interval.
+	 *
+	 * Call clear() when expressing external cancellation semantics.
 	 *
 	 * @returns {Timer} this
 	 */
 	reset = () => {
 
 		// Defaults.
-		this.starts   = 0;
-		this.duration = 0;
-		this.expires  = 0;
-		this.remains  = 0;
-		this.paused   = false;
-		this.interval = 0;
+		this.startsAt  = 0;
+		this.duration  = 0;
+		this.expiresAt = 0;
+		this.remains   = 0;
+		this.paused    = false;
+		this.interval  = 0;
 
 		// Return.
 		return this;
 	}
 
 	/**
-	 * Alias for set().
+	 * Start a new timing window as an alias for set().
 	 *
-	 * @param {Number} ms Duration ms.
+	 * @param {Number} ms Duration in milliseconds. Defaults to zero.
 	 * @returns {Timer} this
 	 */
 	start = ( ms = 0 ) => this.set( ms );
 
 	/**
-	 * Clear / deactivate.
+	 * Clear the active window, pause state, and repeating interval.
 	 *
 	 * @returns {Timer} this
 	 */
 	clear = () => this.reset();
 
 	/**
-	 * Alias for clear().
+	 * Stop timing as an alias for clear().
 	 *
 	 * @returns {Timer} this
 	 */
 	stop = () => this.clear();
 
 	/**
-	 * True while counting down.
+	 * Determine whether an unpaused timing window is counting down.
 	 *
-	 * @returns {Boolean}
+	 * @returns {Boolean} Whether the expiration timestamp is in the future.
 	 */
-	active = () => ( ! this.paused && this.expires > 0 && Time.now < this.expires );
+	active = () => ( ! this.paused && this.expiresAt > 0 && Time.now < this.expiresAt );
 
 	/**
-	 * True when expired (and not paused).
+	 * Determine whether an unpaused timing window reached its expiration.
 	 *
-	 * @returns {Boolean}
+	 * @returns {Boolean} Whether an active expiration timestamp was reached.
 	 */
-	done = () => ( ! this.paused && this.expires > 0 && Time.now >= this.expires );
+	done = () => ( ! this.paused && this.expiresAt > 0 && Time.now >= this.expiresAt );
 
 	/**
-	 * Remaining milliseconds.
+	 * Calculate the remaining duration of an active timing window.
 	 *
-	 * @returns {Number}
+	 * @returns {Number} Remaining milliseconds, or zero when inactive or paused.
 	 */
 	left = () => ( this.active()
-		? ( this.expires - Time.now )
+		? ( this.expiresAt - Time.now )
 		: 0 );
 
 	/**
-	 * Alias for left().
+	 * Return remaining milliseconds as an alias for left().
 	 *
-	 * @returns {Number}
+	 * @returns {Number} Remaining milliseconds, or zero when inactive or paused.
 	 */
 	remain = () => this.left();
 
 	/**
-	 * Elapsed milliseconds (clamped to duration).
+	 * Calculate elapsed milliseconds clamped to the configured duration.
 	 *
-	 * @returns {Number}
+	 * @returns {Number} Elapsed milliseconds, including captured paused progress.
 	 */
 	elapsed = () => {
 
 		// Return 0 if no time.
-		if ( ! this.expires ) {
+		if ( ! this.expiresAt ) {
 			return 0;
 		}
 
@@ -134,7 +219,7 @@ export default class Timer {
 		}
 
 		// Compute elapsed.
-		const e = Time.now - this.starts;
+		const e = Time.now - this.startsAt;
 
 		// Clamp.
 		return ( e < 0
@@ -146,26 +231,26 @@ export default class Timer {
 	}
 
 	/**
-	 * Progress ratio 0..1.
+	 * Calculate completed progress through the current timing window.
 	 *
-	 * @returns {Number}
+	 * @returns {Number} Ratio from zero through one, or zero without a duration.
 	 */
 	ratio = () => ( this.duration > 0
 		? ( this.elapsed() / this.duration )
 		: 0 );
 
 	/**
-	 * Pause (capture remaining).
+	 * Pause an active Timer after capturing its remaining milliseconds.
 	 *
 	 * @returns {Timer} this
 	 */
 	pause = () => {
 
 		// Only if running.
-		if ( ! this.paused && this.expires > 0 ) {
+		if ( ! this.paused && this.expiresAt > 0 ) {
 
 			// Capture remaining time.
-			this.remains = this.expires - Time.now;
+			this.remains = this.expiresAt - Time.now;
 
 			// Clamp.
 			if ( this.remains < 0 ) {
@@ -181,7 +266,7 @@ export default class Timer {
 	}
 
 	/**
-	 * Resume (recompute expiry from remaining).
+	 * Resume a paused Timer without counting time spent paused.
 	 *
 	 * @returns {Timer} this
 	 */
@@ -192,13 +277,13 @@ export default class Timer {
 
 			// Restore expiry from remaining time.
 			if ( this.remains > 0 ) {
-				this.starts  = Time.now - ( this.duration - this.remains );
-				this.expires = Time.now + this.remains;
+				this.startsAt  = Time.now - ( this.duration - this.remains );
+				this.expiresAt = Time.now + this.remains;
 
 			// Clear if no remaining time.
 			} else {
-				this.expires  = 0;
-				this.duration = 0;
+				this.expiresAt = 0;
+				this.duration  = 0;
 			}
 
 			// Clear remaining and paused flag.
@@ -211,9 +296,9 @@ export default class Timer {
 	}
 
 	/**
-	 * Set / update repeat interval (ms).
+	 * Set or update the repeating interval.
 	 *
-	 * @param   {Number} ms Interval in ms (0 disables).
+	 * @param {Number} ms Interval in milliseconds. Zero disables repetition.
 	 * @returns {Timer} this
 	 */
 	repeat = (
@@ -225,9 +310,9 @@ export default class Timer {
 
 		// Start immediately if interval active and done
 		if ( this.interval > 0 && this.done() ) {
-			this.starts   = Time.now;
-			this.duration = this.interval;
-			this.expires  = this.starts + this.interval;
+			this.startsAt  = Time.now;
+			this.duration  = this.interval;
+			this.expiresAt = this.startsAt + this.interval;
 		}
 
 		// Return.
@@ -235,19 +320,19 @@ export default class Timer {
 	}
 
 	/**
-	 * Advance repeat cycle if expired.
+	 * Advance an expired repeating Timer to its next interval.
 	 *
 	 * True exactly once per interval boundary.
 	 *
-	 * @returns {Boolean}
+	 * @returns {Boolean} Whether a new repeat interval began.
 	 */
 	ping = () => {
 
 		// Check if interval is active and done
 		if ( this.interval > 0 && this.done() ) {
-			this.starts   = Time.now;
-			this.duration = this.interval;
-			this.expires  = this.starts + this.interval;
+			this.startsAt  = Time.now;
+			this.duration  = this.interval;
+			this.expiresAt = this.startsAt + this.interval;
 
 			// Done.
 			return true;
@@ -258,9 +343,9 @@ export default class Timer {
 	}
 
 	/**
-	 * Extend remaining time by ms (restarts if previously done).
+	 * Extend an active or paused Timer, or restart an expired Timer.
 	 *
-	 * @param   {Number} ms Additional milliseconds.
+	 * @param {Number} ms Additional milliseconds. Non-positive values are inert.
 	 * @returns {Timer} this
 	 */
 	extend = (
@@ -278,7 +363,7 @@ export default class Timer {
 
 		// Extend active timer.
 		} else if ( this.active() ) {
-			this.expires += ms;
+			this.expiresAt += ms;
 			this.duration += ms;
 
 		// Restart if done.
@@ -291,9 +376,9 @@ export default class Timer {
 	}
 
 	/**
-	 * Reduce remaining time by ms (clamped to zero).
+	 * Reduce active or paused time without passing the current clock.
 	 *
-	 * @param   {Number} ms Milliseconds to remove.
+	 * @param {Number} ms Milliseconds to remove. Non-positive values are inert.
 	 * @returns {Timer} this
 	 */
 	reduce = (
@@ -311,12 +396,12 @@ export default class Timer {
 
 		// Reduce active timer.
 		} else if ( this.active() ) {
-			this.expires -= ms;
+			this.expiresAt -= ms;
 			this.duration = Math.max( 0, this.duration - ms );
 
 			// Clamp expiry.
-			if ( this.expires <= Time.now ) {
-				this.expires = Time.now;
+			if ( this.expiresAt <= Time.now ) {
+				this.expiresAt = Time.now;
 			}
 		}
 
@@ -325,9 +410,9 @@ export default class Timer {
 	}
 
 	/**
-	 * Shift entire timing window by ms (positive or negative).
+	 * Shift both absolute window boundaries by a signed duration.
 	 *
-	 * @param   {Number} ms Offset in ms.
+	 * @param {Number} ms Signed offset in milliseconds. Zero is inert.
 	 * @returns {Timer} this
 	 */
 	shift = (
@@ -340,13 +425,13 @@ export default class Timer {
 		}
 
 		// Skip if no time.
-		if ( ! this.expires ) {
+		if ( ! this.expiresAt ) {
 			return this;
 		}
 
 		// Add time.
-		this.starts  += ms;
-		this.expires += ms;
+		this.startsAt  += ms;
+		this.expiresAt += ms;
 
 		// Return.
 		return this;

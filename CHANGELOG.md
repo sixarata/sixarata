@@ -17,6 +17,7 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Changed
 
+- Standardized monotonic timestamp properties on the established `*At` naming convention while preserving legacy Particle and Timer aliases.
 - Restored Room as the intrinsic rendering surface for world Tiles and collision-debug drawing before Room composites into View.
 - Reduced per-frame allocations by retaining Frame history, scanning collision groups directly with one reusable detector, and caching Hook priority order until registration changes.
 - Cached gamepad mappings, reused Tile visibility objects, and traversed Room groups without allocating intermediate arrays during each frame.
@@ -31,6 +32,7 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Fixed
 
+- Simplified Orient's facing debounce state and removed an unused pending timestamp.
 - Normalized Hook execution-history limits so disabled, invalid, fractional, and changed capacities remain bounded and chronological.
 - Kept Room tile traversal compatible with browser engines that do not provide `Object.hasOwn()`.
 - Avoided duplicate collection scans during Entity destruction while preserving its lifecycle callback order and reusable collection association.

@@ -175,10 +175,23 @@ test( 'Orient debounces requested face changes', () => {
 	orient.listen();
 	assert.equal( tile.physics.orientation.x, 270 );
 	assert.equal( tile.physics.orientation.y, 0 );
+	assert.equal( orient.changedAt, 100 );
+	assert.equal( orient.pending, null );
 	Time.now += 1;
 	input( { right: { down: true, duration: 0 } }, { right: true } );
 	orient.listen();
 	assert.equal( tile.physics.orientation.x, 270 );
+	assert.equal( orient.pending, 90 );
+	Time.now = 110;
+	input( { right: { down: true, duration: orient.settings.debounce } } );
+	orient.listen();
+	assert.equal( tile.physics.orientation.x, 90 );
+	assert.equal( orient.changedAt, 110 );
+	assert.equal( orient.pending, null );
+	Time.now = 111;
+	input( { right: { down: true, duration: orient.settings.debounce + 1 } } );
+	orient.listen();
+	assert.equal( orient.changedAt, 110 );
 } );
 
 /** Contract: Stamina drains, delays, recharges, reports state, and refills safely. */
