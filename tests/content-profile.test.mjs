@@ -13,10 +13,11 @@ globalThis.requestAnimationFrame = callback => {
 };
 
 const { default: Buffer } = await import( '../scripts/core/components/buffer.js' );
+const { default: Layer } = await import( '../scripts/core/components/layer.js' );
 const { default: profileRenderer } = await import( '../scripts/content/profile.js' );
 
-/** Contract: Renderer profiling compares redraw and cached strategies before restoring the live game loop. */
-test( 'Renderer profiler restores ownership after measuring isolated static output', async () => {
+/** Contract: Renderer profiling compares redraw, cached, and moving strategies before restoring the live game loop. */
+test( 'Renderer profiler restores Layer policies and the live game loop', async () => {
 	const output = new Buffer( { w: 320, h: 240, d: 1 } );
 	const view = new Buffer( { w: 320, h: 240, d: 1 } );
 	const calls = [];
@@ -25,6 +26,9 @@ test( 'Renderer profiler restores ownership after measuring isolated static outp
 			paused: false,
 			cancel: () => calls.push( 'cancel' ),
 			request: () => calls.push( 'request' ),
+		},
+		Camera: {
+			position: { x: 0, y: 0, z: 0 },
 		},
 		Room: {
 			buffer: output,
@@ -38,28 +42,41 @@ test( 'Renderer profiler restores ownership after measuring isolated static outp
 				players:     [ { render: () => game.Room.buffer.rect( '#333' ) } ],
 				projectiles: [],
 			},
-			render: () => {
-				for ( const group of Object.values( game.Room.tiles ) ) {
-					for ( const tile of group ) {
-						tile.render();
-					}
-				}
-
-				game.Room.buffer.put( view );
-			},
 		},
 		View: {
 			buffer: view,
 		},
 	};
+	game.Room.layers = [
+		new Layer( game.Room, 'background', [ 'backgrounds', 'platforms', 'doors' ] ),
+		new Layer( game.Room, 'actors', [ 'enemies', 'particles', 'players', 'projectiles' ], false ),
+		new Layer( game.Room, 'foreground', [ 'walls' ] ),
+	];
+	game.Room.render = () => {
+		for ( const layer of game.Room.layers ) {
+			layer.render();
+		}
+
+		game.Room.buffer.put( view );
+	};
+	for ( const layer of game.Room.layers ) {
+		layer.resize( output.size );
+	}
 
 	const report = await profileRenderer( game, 2 );
 
 	assert.equal( report.redraw.count, 2 );
 	assert.equal( report.cached.count, 2 );
+	assert.equal( report.moving.count, 2 );
 	assert.ok( report.redraw.min >= 0 );
 	assert.ok( report.cached.p95 >= report.cached.median );
 	assert.equal( game.Room.buffer, output );
 	assert.equal( game.Frame.paused, false );
+	assert.deepEqual( game.Camera.position, { x: 0, y: 0, z: 0 } );
 	assert.deepEqual( calls, [ 'cancel', 'request' ] );
+	assert.deepEqual( game.Room.layers.map( layer => layer.cached ), [ true, false, true ] );
+
+	for ( const layer of game.Room.layers ) {
+		layer.destroy();
+	}
 } );

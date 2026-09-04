@@ -1,5 +1,3 @@
-import Buffer from '../core/components/buffer.js';
-
 /**
  * Summarize unordered duration samples.
  *
@@ -60,12 +58,12 @@ const measure = async (
 };
 
 /**
- * Compare complete Room redraws with an experimental fixed-camera static cache.
+ * Compare complete Room redraws with production Layer caching.
  *
- * The experiment pauses and restores the live Frame loop. Static groups are
- * drawn once into an isolated Buffer, while live groups continue drawing into
- * Room. The Camera remains fixed because Camera-aware invalidation and cropping
- * are deliberately not implemented by this measurement.
+ * The profiler pauses and restores the live Frame loop. The redraw strategy
+ * temporarily makes every Layer live. The cached strategy restores each Layer's
+ * production policy, where static layers persist and actors redraw every frame.
+ * A final strategy alternates the Camera to measure cache invalidation overhead.
  *
  * @param {Object} game Running Sixarata game singleton.
  * @param {Number} frames Positive number of recorded frames per strategy.
@@ -77,45 +75,54 @@ const profileRenderer = async (
 ) => {
 	const room = game.Room;
 	const output = room.buffer;
-	const layer = new Buffer( output.size );
-	const staticGroups = [ 'backgrounds', 'platforms', 'doors', 'walls' ];
-	const liveGroups = [ 'enemies', 'particles', 'players', 'projectiles' ];
+	const policies = room.layers.map( layer => layer.cached );
+	const position = {
+		x: game.Camera.position.x,
+		y: game.Camera.position.y,
+		z: game.Camera.position.z,
+	};
 	let redraw;
 	let cached;
+	let moving;
 
 	game.Frame.cancel();
 	game.Frame.paused = true;
 
 	try {
+		for ( const layer of room.layers ) {
+			layer.cached = false;
+		}
 		redraw = await measure( () => {
 			output.update();
 			room.render();
 		}, frames );
 
-		room.buffer = layer;
-		for ( const group of staticGroups ) {
-			for ( const tile of room.tiles[ group ] ?? [] ) {
-				tile.render();
-			}
+		for ( let i = 0; i < room.layers.length; i++ ) {
+			room.layers[ i ].cached = policies[ i ];
+			room.layers[ i ].invalidate( 'profile' );
 		}
-		room.buffer = output;
 
 		cached = await measure( () => {
 			output.update();
-			layer.put( output );
+			room.render();
+		}, frames );
 
-			for ( const group of liveGroups ) {
-				for ( const tile of room.tiles[ group ] ?? [] ) {
-					tile.render();
-				}
-			}
+		let frame = 0;
 
-			output.put( game.View.buffer );
+		moving = await measure( () => {
+			output.update();
+			game.Camera.position.x = position.x + ( ++frame % 2 );
+			room.render();
 		}, frames );
 	} finally {
-		room.buffer = output;
-		layer.screen.ignore();
-		layer.destroy();
+		game.Camera.position.x = position.x;
+		game.Camera.position.y = position.y;
+		game.Camera.position.z = position.z;
+
+		for ( let i = 0; i < room.layers.length; i++ ) {
+			room.layers[ i ].cached = policies[ i ];
+			room.layers[ i ].invalidate( 'profile restored' );
+		}
 		game.Frame.paused = false;
 		game.Frame.request();
 	}
@@ -123,6 +130,7 @@ const profileRenderer = async (
 	return {
 		redraw,
 		cached,
+		moving,
 	};
 };
 

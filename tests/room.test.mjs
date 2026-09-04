@@ -74,10 +74,17 @@ test( 'Room forwards tick, update, and render across tile groups', t => {
 		Object.values = originalValues;
 	} );
 	room.tiles = {
-		items: [
+		backgrounds: [
 			{ tick: () => calls.push( 'tick' ), update: () => calls.push( 'update' ), render: () => calls.push( 'render' ) },
 			null,
 		],
+		platforms:   [],
+		doors:       [],
+		enemies:     [],
+		particles:   [],
+		players:     [],
+		projectiles: [],
+		walls:       [],
 	};
 	room.buffer.put = () => calls.push( 'put' );
 	Object.values = ( ...args ) => {
@@ -116,6 +123,36 @@ test( 'Room loops own tile groups without Object.hasOwn', t => {
 	room.loopTiles( 'tick' );
 
 	assert.deepEqual( calls, [ 'owned' ] );
+} );
+
+/** Contract: Room invalidates only the presentation Layer owning a changed Tile group. */
+test( 'Room routes Tile changes to their owning Layers', () => {
+	const room = new Room();
+
+	room.clear();
+	for ( const layer of room.layers ) {
+		layer.cache.validate();
+	}
+
+	room.changed( { group: room.tiles.players } );
+	assert.deepEqual(
+		room.layers.map( layer => layer.cache.stale() ),
+		[ false, true, false ]
+	);
+	assert.equal( room.layers[ 1 ].cache.reason, 'tile changed' );
+
+	for ( const layer of room.layers ) {
+		layer.cache.validate();
+	}
+	room.invalidate( null, 'layout changed' );
+	assert.deepEqual(
+		room.layers.map( layer => layer.cache.stale() ),
+		[ true, true, true ]
+	);
+	assert.deepEqual(
+		room.layers.map( layer => layer.cache.reason ),
+		[ 'layout changed', 'layout changed', 'layout changed' ]
+	);
 } );
 
 /** Contract: Room retry reloads the current room and reports that callers should bail. */

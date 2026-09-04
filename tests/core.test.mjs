@@ -15,6 +15,7 @@ const { default: Camera } = await import( '../scripts/core/components/camera.js'
 const { default: Clock } = await import( '../scripts/core/components/clock.js' );
 const { default: Frame } = await import( '../scripts/core/components/frame.js' );
 const { default: Hud } = await import( '../scripts/core/components/hud.js' );
+const { default: Layer } = await import( '../scripts/core/components/layer.js' );
 const { default: View } = await import( '../scripts/core/components/view.js' );
 const { default: Combos } = await import( '../scripts/core/controls/combo.js' );
 const { default: History } = await import( '../scripts/core/controls/history.js' );
@@ -130,10 +131,13 @@ test( 'Generic forwards attribute operations and exposes safe lifecycle defaults
 
 /** Contract: Buffer covers resizing, scaling, drawing, reading, clearing, and destruction. */
 test( 'Buffer covers resizing, scaling, drawing, reading, clearing, and destruction', () => {
+	const defaults = new Buffer();
 	const buffer = new Buffer( { w: 10, h: 5, d: 1 } );
 	const target = new Buffer( { w: 20, h: 10, d: 1 } );
 	const originalCanvas = buffer.canvas;
 
+	assert.deepEqual( defaults.size, { w: 0, h: 0, d: 0 } );
+	assert.deepEqual( defaults.scale, { x: 1, y: 1, z: 1 } );
 	assert.equal( buffer.resize( { w: 10, h: 5, d: 1 } ), undefined );
 	assert.equal( buffer.rescale( { x: 1, y: 1, z: 1 } ), undefined );
 	assert.equal( buffer.rescale( { x: 2, y: 3, z: 1 } ), buffer );
@@ -164,6 +168,66 @@ test( 'Buffer covers resizing, scaling, drawing, reading, clearing, and destruct
 	assert.deepEqual( buffer.canvas.clearRectArgs, [ 0, 0, 20, 10 ] );
 	buffer.destroy();
 	assert.equal( buffer.canvas.removed, true );
+	defaults.destroy();
+} );
+
+/** Contract: Layer caches ordered Room pixels until its source, viewport, or Camera changes. */
+test( 'Layer owns buffered presentation and explicit invalidation', t => {
+	const output = new Buffer( { w: 320, h: 240, d: 1 } );
+	const room = {
+		buffer:    output,
+		tiles:     { items: [] },
+		viewpoint: { x: 0, y: 0, z: 0 },
+	};
+	const groups = [ 'items' ];
+	const layer = new Layer( room, 'test', groups );
+	let renders = 0;
+	let composites = 0;
+
+	room.tiles.items.push( {
+		render: () => {
+			renders++;
+			room.buffer.rect( '#123', { x: 0, y: 0 }, { w: 1, h: 1 } );
+		},
+	} );
+	output.context.drawImage = () => composites++;
+	groups.push( 'external-change' );
+
+	assert.deepEqual( layer.groups, [ 'items' ] );
+	assert.equal( layer.has( room.tiles.items ), true );
+	assert.equal( layer.has( [] ), false );
+	assert.equal( layer.resize( output.size ), layer );
+	assert.equal( layer.render(), layer );
+	assert.equal( layer.render(), layer );
+	assert.deepEqual( [ renders, composites ], [ 1, 2 ] );
+	assert.equal( layer.cache.valid(), true );
+
+	room.viewpoint.x = 1;
+	assert.equal( layer.stale(), true );
+	assert.equal( layer.cache.reason, 'camera' );
+	assert.equal( layer.rebuild(), layer );
+	assert.equal( layer.cache.valid(), true );
+	assert.equal( renders, 2 );
+
+	layer.invalidate( 'tile changed' );
+	layer.render();
+	assert.equal( renders, 3 );
+	assert.equal( layer.cache.reason, 'tile changed' );
+
+	layer.cached = false;
+	layer.render();
+	layer.render();
+	assert.equal( renders, 5 );
+
+	const canvas = layer.buffer.canvas;
+	assert.equal( layer.reset(), layer );
+	assert.equal( canvas.removed, true );
+	assert.equal( layer.room, null );
+	assert.deepEqual( layer.groups, [] );
+	assert.equal( layer.render(), layer );
+	assert.equal( layer.rebuild(), layer );
+	layer.destroy();
+	assert.equal( layer.room, null );
 } );
 
 /** Contract: Screen converts units and manages DPR-backed canvas state and listeners. */

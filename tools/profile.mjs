@@ -5,7 +5,6 @@ import { installBrowserEnvironment } from '../tests/helpers/browser.mjs';
 installBrowserEnvironment();
 
 const { default: Game } = await import( '../scripts/core/game.js' );
-const { default: Buffer } = await import( '../scripts/core/components/buffer.js' );
 const { default: Room } = await import( '../scripts/core/components/room.js' );
 const { default: Size } = await import( '../scripts/core/physics/size.js' );
 const Rooms = await import( '../scripts/content/rooms/exports.js' );
@@ -223,117 +222,88 @@ const prepare = () => {
  * The Node browser spy measures JavaScript submission overhead rather than GPU
  * rasterization. Browser profiling remains necessary for final render choices.
  *
+ * @param {Boolean} cached Whether static Layer pixels persist between frames.
  * @param {Number} iterations Number of Room render samples.
+ * @param {Boolean} moving Whether to alternate the Camera position each frame.
  * @returns {Object} Render distribution and operations per frame.
  */
-const redraw = (
-	iterations = 1000
-) => {
-	prepare();
-
-	const originalRect = Game.Room.buffer.rect;
-	const originalPut = Game.Room.buffer.put;
-	let rectangles = 0;
-	let composites = 0;
-
-	Game.Room.buffer.rect = ( ...args ) => {
-		rectangles++;
-
-		return originalRect( ...args );
-	};
-	Game.Room.buffer.put = ( ...args ) => {
-		composites++;
-
-		return originalPut( ...args );
-	};
-
-	const result = measure( () => {
-		Game.Room.buffer.update();
-		Game.Room.render();
-	}, iterations );
-	const measured = result.count + 1;
-
-	Game.Room.buffer.rect = originalRect;
-	Game.Room.buffer.put = originalPut;
-	Game.Room.clear();
-
-	return {
-		...result,
-		rectanglesPerFrame: rectangles / measured,
-		compositesPerFrame: composites / measured,
-	};
-};
-
-/**
- * Measure an experimental fixed-camera static cache without changing runtime.
- *
- * Static Room groups are rendered once into a retained Buffer. Each measured
- * frame composites that Buffer, renders live groups, and composites Room into
- * View. This measures the best case before Camera invalidation is considered.
- *
- * @param {Number} iterations Number of experimental render samples.
- * @returns {Object} Render distribution and operations per frame.
- */
-const cached = (
-	iterations = 1000
+const renderStrategy = (
+	cached     = false,
+	iterations = 1000,
+	moving     = false
 ) => {
 	prepare();
 
 	const room = Game.Room;
-	const output = room.buffer;
-	const layer = new Buffer( output.size );
-	const staticGroups = [ 'backgrounds', 'platforms', 'doors', 'walls' ];
-	const liveGroups = [ 'enemies', 'particles', 'players', 'projectiles' ];
+	const policies = room.layers.map( layer => layer.cached );
+	const position = {
+		x: Game.Camera.position.x,
+		y: Game.Camera.position.y,
+		z: Game.Camera.position.z,
+	};
+	let frame = 0;
 
-	room.buffer = layer;
-	for ( const group of staticGroups ) {
-		for ( const tile of room.tiles[ group ] ) {
-			tile.render();
-		}
+	for ( const layer of room.layers ) {
+		layer.cached = cached
+			? layer.name !== 'actors'
+			: false;
+		layer.invalidate( 'profile' );
 	}
-	room.buffer = output;
 
-	const originalRect = output.rect;
-	const originalLayerPut = layer.put;
-	const originalOutputPut = output.put;
+	// Build retained pixels before instrumenting the steady-state cached path.
+	if ( cached ) {
+		room.buffer.update();
+		room.render();
+	}
+
+	const originals = room.layers.map( layer => ( {
+		rect: layer.buffer.rect,
+		put:  layer.buffer.put,
+	} ) );
+	const originalOutputPut = room.buffer.put;
 	let rectangles = 0;
 	let composites = 0;
 
-	output.rect = ( ...args ) => {
-		rectangles++;
+	for ( const layer of room.layers ) {
+		const rect = layer.buffer.rect;
+		const put = layer.buffer.put;
 
-		return originalRect( ...args );
-	};
-	layer.put = ( ...args ) => {
-		composites++;
+		layer.buffer.rect = ( ...args ) => {
+			rectangles++;
 
-		return originalLayerPut( ...args );
-	};
-	output.put = ( ...args ) => {
+			return rect( ...args );
+		};
+		layer.buffer.put = ( ...args ) => {
+			composites++;
+
+			return put( ...args );
+		};
+	}
+	room.buffer.put = ( ...args ) => {
 		composites++;
 
 		return originalOutputPut( ...args );
 	};
 
 	const result = measure( () => {
-		output.update();
-		layer.put( output );
-
-		for ( const group of liveGroups ) {
-			for ( const tile of room.tiles[ group ] ) {
-				tile.render();
-			}
+		room.buffer.update();
+		if ( moving ) {
+			Game.Camera.position.x = position.x + ( ++frame % 2 );
 		}
-
-		output.put( Game.View.buffer );
+		room.render();
 	}, iterations );
 	const measured = result.count + 1;
 
-	output.rect = originalRect;
-	layer.put = originalLayerPut;
-	output.put = originalOutputPut;
+	for ( let i = 0; i < room.layers.length; i++ ) {
+		room.layers[ i ].buffer.rect = originals[ i ].rect;
+		room.layers[ i ].buffer.put  = originals[ i ].put;
+		room.layers[ i ].cached      = policies[ i ];
+	}
+	room.buffer.put = originalOutputPut;
+	Game.Camera.position.x = position.x;
+	Game.Camera.position.y = position.y;
+	Game.Camera.position.z = position.z;
 	room.clear();
-	layer.destroy();
 
 	return {
 		...result,
@@ -343,13 +313,44 @@ const cached = (
 };
 
 /**
- * Compare complete redraw with the fixed-camera static-cache experiment.
+ * Measure complete Layer redraws with caching disabled.
  *
- * @returns {Object} Redraw and cached render measurements.
+ * @param {Number} iterations Number of Room render samples.
+ * @returns {Object} Redraw distribution and operations per frame.
+ */
+const redraw = (
+	iterations = 1000
+) => renderStrategy( false, iterations );
+
+/**
+ * Measure production Layer caching with a fixed Camera.
+ *
+ * @param {Number} iterations Number of Room render samples.
+ * @returns {Object} Cached distribution and operations per frame.
+ */
+const cached = (
+	iterations = 1000
+) => renderStrategy( true, iterations );
+
+/**
+ * Measure production Layer caching while Camera movement invalidates pixels.
+ *
+ * @param {Number} iterations Number of Room render samples.
+ * @returns {Object} Moving-Camera distribution and operations per frame.
+ */
+const moving = (
+	iterations = 1000
+) => renderStrategy( true, iterations, true );
+
+/**
+ * Compare complete Layer redraw with production fixed-Camera caching.
+ *
+ * @returns {Object} Redraw, fixed-Camera, and moving-Camera measurements.
  */
 const rendering = () => ( {
 	redraw: redraw(),
 	cached: cached(),
+	moving: moving(),
 } );
 
 const report = {

@@ -2,7 +2,8 @@ import Game from '../game.js';
 import Settings from '../../content/settings.js';
 
 import { Size } from '../physics/exports.js';
-import { Buffer } from './exports.js';
+import Buffer from './buffer.js';
+import Layer from './layer.js';
 import { Tile, Door, Enemy, Player, Platform, Wall } from '../tiles/exports.js';
 
 /**
@@ -14,6 +15,27 @@ import { Tile, Door, Enemy, Player, Platform, Wall } from '../tiles/exports.js';
  * @todo Break this up...
  */
 export default class Room {
+
+	/**
+	 * Per-frame compositing Buffer written into the visible View.
+	 *
+	 * @type {Buffer}
+	 */
+	buffer;
+
+	/**
+	 * Ordered presentation Layers composited from back to front.
+	 *
+	 * @type {Array<Layer>}
+	 */
+	layers;
+
+	/**
+	 * Logical Camera origin represented during the current render pass.
+	 *
+	 * @type {Object}
+	 */
+	viewpoint;
 
 	/**
 	 * Construct the Room.
@@ -39,17 +61,26 @@ export default class Room {
 	 * @returns {Room} this
 	 */
 	reset = () => {
+		for ( const layer of this.layers ?? [] ) {
+			layer.destroy();
+		}
 
 		// Buffer.
 		this.buffer = new Buffer();
+		this.layers = [
+			new Layer( this, 'background', [ 'backgrounds', 'platforms', 'doors' ] ),
+			new Layer( this, 'actors', [ 'enemies', 'particles', 'players', 'projectiles' ], false ),
+			new Layer( this, 'foreground', [ 'walls' ] ),
+		];
 
 		// Size.
 		this.size = new Size();
 
 		// Rooms.
-		this.id       = Settings.components.room.start;
-		this.previous = 0;
-		this.grid     = [];
+		this.id        = Settings.components.room.start;
+		this.previous  = 0;
+		this.grid      = [];
+		this.viewpoint = { x: 0, y: 0, z: 0 };
 
 		// Player.
 		this.playerGrid = false;
@@ -65,14 +96,24 @@ export default class Room {
 	}
 
 	/**
-	 * Resize the Map.
+	 * Resize the Room output and every Layer to the logical viewport.
+	 *
+	 * Device pixel ratio backing dimensions remain owned by each Buffer.
+	 *
+	 * @returns {void}
 	 */
 	resize = () => {
-		this.buffer.resize( {
+		const size = {
 			w: innerWidth,
 			h: innerHeight,
 			d: 1,
-		} );
+		};
+
+		this.buffer.resize( size );
+
+		for ( const layer of this.layers ) {
+			layer.resize( size );
+		}
 	}
 
 	/**
@@ -123,7 +164,12 @@ export default class Room {
 	}
 
 	/**
-	 * Clear the Room.
+	 * Destroy every existing Tile and restore empty Room tile collections.
+	 *
+	 * Clearing invalidates every presentation Layer because collection identity
+	 * and derived pixels both change.
+	 *
+	 * @returns {void}
 	 */
 	clear = () => {
 
@@ -153,6 +199,8 @@ export default class Room {
 			projectiles: [],
 			walls:       [],
 		};
+
+		this.invalidate( null, 'room cleared' );
 	}
 
 	/**
@@ -170,7 +218,9 @@ export default class Room {
 	}
 
 	/**
-	 * Early events.
+	 * Register Room lifecycle and Layer invalidation hooks.
+	 *
+	 * @returns {void}
 	 */
 	hooks = () => {
 
@@ -191,6 +241,10 @@ export default class Room {
 		Game.Hooks.add( 'Room.tick',   this.resize );
 		Game.Hooks.add( 'Room.loaded', this.parse );
 		Game.Hooks.add( 'Room.loaded', this.player );
+
+		// Layers.
+		Game.Hooks.add( 'Tile.added',   this.changed );
+		Game.Hooks.add( 'Tile.destroy', this.changed );
 	}
 
 	/**
@@ -214,16 +268,58 @@ export default class Room {
 	}
 
 	/**
-	 * Render the Room.
+	 * Composite every ordered Layer and publish the Room Buffer to View.
+	 *
+	 * The current Camera position becomes the presentation viewpoint used by
+	 * cached Layers to detect scrolling.
+	 *
+	 * @returns {void}
 	 */
 	render = () => {
 		Game.Hooks.do( 'Room.render' );
+		this.viewpoint = Game.Camera.position ?? { x: 0, y: 0, z: 0 };
 
-		// Render all tiles.
-		this.loopTiles( 'render' );
+		// Render and composite presentation layers in their declared order.
+		for ( const layer of this.layers ) {
+			layer.render();
+		}
 
 		// Output the Buffer.
 		this.buffer.put( Game.View.buffer );
+	}
+
+	/**
+	 * Invalidate the presentation layer containing a changed Tile.
+	 *
+	 * Tile collections remain authoritative for simulation and collision. This
+	 * callback only marks their derived pixels stale.
+	 *
+	 * @param {Tile|null} tile Added or removed Tile, including its owning group.
+	 * @returns {void}
+	 */
+	changed = ( tile = null ) => {
+		this.invalidate( tile?.group, 'tile changed' );
+	}
+
+	/**
+	 * Invalidate matching presentation layers after Room state changes.
+	 *
+	 * Omitting a group invalidates every layer. Supplying a group limits the
+	 * change to the Layer that owns that exact Room tile collection.
+	 *
+	 * @param {Array|null} group Optional Room tile collection.
+	 * @param {String} reason Concise diagnostic invalidation reason.
+	 * @returns {void}
+	 */
+	invalidate = (
+		group  = null,
+		reason = 'changed'
+	) => {
+		for ( const layer of this.layers ) {
+			if ( group === null || layer.has( group ) ) {
+				layer.invalidate( reason );
+			}
+		}
 	}
 
 	/**

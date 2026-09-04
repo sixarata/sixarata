@@ -32,9 +32,9 @@ Sixarata's unit tests use Node's built-in test runner and have no dependencies.
 sh tools/test.sh
 ```
 
-Profile Room parsing, cached-layout reconstruction, full drawing submission,
-and a fixed-camera static-layer experiment using the same deterministic workload
-before and after an engine change:
+Profile Room parsing, cached-layout reconstruction, complete Layer redraws,
+production fixed-camera Layer caching, and moving-Camera invalidation using the
+same deterministic workload before and after an engine change:
 
 ```bash
 node tools/profile.mjs

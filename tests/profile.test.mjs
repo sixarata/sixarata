@@ -25,10 +25,16 @@ test( 'Profiler reports deterministic workload dimensions and operation counts',
 	assert.equal( report.layouts.cached.count, 50 );
 	assert.equal( report.rendering.redraw.count, 1000 );
 	assert.equal( report.rendering.cached.count, 1000 );
+	assert.equal( report.rendering.moving.count, 1000 );
 	assert.equal( report.rendering.redraw.rectanglesPerFrame, 60 );
-	assert.equal( report.rendering.redraw.compositesPerFrame, 1 );
+	assert.equal( report.rendering.redraw.compositesPerFrame, 4 );
 	assert.equal( report.rendering.cached.rectanglesPerFrame, 1 );
-	assert.equal( report.rendering.cached.compositesPerFrame, 2 );
+	assert.equal( report.rendering.cached.compositesPerFrame, 4 );
+	assert.ok(
+		report.rendering.moving.rectanglesPerFrame
+		>= report.rendering.redraw.rectanglesPerFrame
+	);
+	assert.equal( report.rendering.moving.compositesPerFrame, 4 );
 	assert.ok( report.layouts.parsed.min >= 0 );
 	assert.ok( report.rendering.redraw.p95 >= report.rendering.redraw.median );
 } );

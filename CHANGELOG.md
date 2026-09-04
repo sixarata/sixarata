@@ -6,6 +6,7 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Added
 
+- Added Room-owned presentation Layers with intrinsic off-screen Buffers, explicit Cache invalidation, preserved draw ordering, and live actor isolation.
 - Added repeatable Node and opt-in browser Room profilers with compiled-layout and static-layer experiments, deterministic workload tests, and operation counts.
 - Added a reusable Cache lifecycle with explicit invalidation, revision-safe validation, shared-clock diagnostics, and stale asynchronous-result protection.
 - Added documented tests across every engine class, with explicit coverage gates for lines, branches, and functions.
