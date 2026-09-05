@@ -1,3 +1,4 @@
+import Draw from '../utilities/draw.js';
 import Settings from '../../content/settings.js';
 import Game from '../game.js';
 import { Collision } from '../physics/exports.js';
@@ -101,7 +102,8 @@ export default class Collide {
 	/**
 	 * Render debug visualization.
 	 *
-	 * Should be called during the render phase, not during update.
+	 * Uses the active Draw buffer and viewpoint during Tile rendering.
+	 * Outside a drawing pass this is inert.
 	 *
 	 * @param {Tile} tile The tile being rendered.
 	 * @returns {Void}
@@ -111,7 +113,7 @@ export default class Collide {
 	) => {
 
 		// Skip if not debugging.
-		if ( ! this.debug ) {
+		if ( ! this.debug || ! Draw.buffer ) {
 			return;
 		}
 
@@ -215,6 +217,10 @@ export default class Collide {
 	 * @returns {Void}
 	 */
 	visualize = () => {
+		if ( ! Draw.buffer ) {
+			return;
+		}
+
 
 		// Skip if no tile.
 		if ( ! this.tile ) {
@@ -243,7 +249,7 @@ export default class Collide {
 		};
 
 		// Get camera offset position.
-		const camera = Game.Camera.position;
+		const camera = Draw.viewpoint ?? Game.Camera.position;
 		const offsetPos = {
 			x: detectionPos.x - camera.x,
 			y: detectionPos.y - camera.y,
@@ -251,7 +257,7 @@ export default class Collide {
 		};
 
 		// Draw the detection area as a semi-transparent rectangle.
-		Game.Room.buffer.rect(
+		Draw.buffer.rect(
 			'#ff00ff',
 			offsetPos,
 			detectionSize,

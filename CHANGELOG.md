@@ -25,7 +25,7 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 - Generalized Layer to reference collections and a compositing parent, with optional buffering and presentation-only visibility. Layer constructors now take collection arrays instead of Room group names; Room retains those arrays across loads.
 - Standardized monotonic timestamp properties on the established `*At` naming convention. Rename `Timer.starts` to `startsAt`, `Timer.expires` to `expiresAt`, and `Particle.born` to `bornAt`; the old names have no compatibility aliases.
-- Restored Room as the intrinsic rendering surface for world Tiles and collision-debug drawing before Room composites into View.
+- Moved Tile and collision-debug drawing into the shared synchronous `Draw` scope. Room no longer owns a Buffer; its ordered Layers composite directly into View. Replace `Room.buffer` drawing with `Draw.buffer` inside a rendering pass, and use the shared Draw instance instead of `new Draw()`. Scoped viewpoints and viewport bounds now follow the active presentation destination. Removed Room buffer lifecycle hooks and the extra Room-to-View composite.
 - Reduced per-frame allocations by retaining Frame history, scanning collision groups directly with one reusable detector, and caching Hook priority order until registration changes.
 - Cached gamepad mappings, reused Tile visibility objects, and avoided intermediate group lists during Room traversal.
 - Replaced Hook execution-history shifting with a fixed-size circular history.

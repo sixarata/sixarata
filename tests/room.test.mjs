@@ -77,7 +77,7 @@ test( 'Room forwards tick, update, and render across tile groups', t => {
 			{ tick: () => calls.push( 'tick' ), update: () => calls.push( 'update' ), render: () => calls.push( 'render' ) },
 			null,
 	);
-	room.buffer.put = () => calls.push( 'put' );
+	assert.equal( 'buffer' in room, false );
 	Object.values = ( ...args ) => {
 		valueCalls++;
 
@@ -88,7 +88,7 @@ test( 'Room forwards tick, update, and render across tile groups', t => {
 	room.render();
 	room.loopTiles();
 
-	assert.deepEqual( calls, [ 'tick', 'update', 'render', 'put' ] );
+	assert.deepEqual( calls, [ 'tick', 'update', 'render' ] );
 	assert.equal( valueCalls, 0 );
 } );
 

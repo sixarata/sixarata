@@ -252,7 +252,7 @@ const renderStrategy = (
 
 	// Build retained pixels before instrumenting the steady-state cached path.
 	if ( cached ) {
-		room.buffer.update();
+		Game.View.buffer.update();
 		room.render();
 	}
 
@@ -260,7 +260,6 @@ const renderStrategy = (
 		rect: layer.buffer.rect,
 		put:  layer.buffer.put,
 	} ) );
-	const originalOutputPut = room.buffer.put;
 	let rectangles = 0;
 	let composites = 0;
 
@@ -279,14 +278,9 @@ const renderStrategy = (
 			return put( ...args );
 		};
 	}
-	room.buffer.put = ( ...args ) => {
-		composites++;
-
-		return originalOutputPut( ...args );
-	};
 
 	const result = measure( () => {
-		room.buffer.update();
+		Game.View.buffer.update();
 		if ( moving ) {
 			Game.Camera.position.x = position.x + ( ++frame % 2 );
 		}
@@ -299,7 +293,6 @@ const renderStrategy = (
 		room.layers[ i ].buffer.put  = originals[ i ].put;
 		room.layers[ i ].cached      = policies[ i ];
 	}
-	room.buffer.put = originalOutputPut;
 	Game.Camera.position.x = position.x;
 	Game.Camera.position.y = position.y;
 	Game.Camera.position.z = position.z;

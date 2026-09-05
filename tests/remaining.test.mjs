@@ -21,7 +21,7 @@ const { default: Audio } = await import( '../scripts/core/interfaces/audio.js' )
 test( 'Shape, Draw, and Rain expose consistent lifecycle contracts', () => {
 	Game.Hooks.reset();
 	const shape = new Shape();
-	const draw = new Draw();
+	const draw = Draw;
 	const rain = new Rain();
 
 	assert.equal( shape.set().reset(), shape );

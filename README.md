@@ -32,10 +32,9 @@ Sixarata's unit tests use Node's built-in test runner and have no dependencies.
 sh tools/test.sh
 ```
 
-Layers present one ordered list of child Layers and live collection references,
-with a `parent` exposing the active `buffer`.
-Renderable members resolve that destination intrinsically; other data is ignored
-by rendering. `visible` controls presentation only. `buffered: false` (the fifth
+Layers present one ordered list of child Layers and live collection references.
+The shared `Draw` service exposes the active `buffer` and logical `viewpoint`
+while each synchronous rendering pass runs; other data is ignored by rendering. `visible` controls presentation only. `buffered: false` (the fifth
 constructor argument) draws directly without allocating a canvas; buffered Layers
 allocate on resize or first render.
 Room preserves collection identities when clearing and loading rooms.
@@ -45,7 +44,7 @@ wait until that group's next pass. Membership changes during rendering keep the
 Layer cache stale. `Tile.removed` invalidates the previous group's Room layer on
 removal, reassignment, or destruction; `Tile.destroy` remains a destruction event.
 Direct collection edits outside rendering still require explicit invalidation.
-An optional parent `viewpoint` supplies logical coordinates for cache invalidation.
+An optional drawing host can override the inherited `viewpoint`.
 
 Build a presentation tree through `add()` and `remove()`. Each Layer has one
 managed parent and ordered children. `add()` accepts a Layer or a collection,
@@ -60,8 +59,8 @@ scene.render();
 scene.remove( actors );
 ```
 
-Only root Layers receive a drawing host such as View through the constructor or
-`set()`. Initial `children` (the third argument) use the same attachment rules as
+Root Layers may receive a drawing host such as View through the constructor or
+`set()`, or inherit the current Draw scope when their host is null. Initial `children` (the third argument) use the same attachment rules as
 `add()`. `parent` is read-only; `children` returns an ordered snapshot whose
 collection references remain live. Layers and collections render in insertion
 order, so they can be interleaved without additional wrappers.
@@ -78,8 +77,22 @@ recursive traversal of arbitrary arrays.
 
 Direct Layers borrow the active destination during rendering and allocate no
 canvas. Buffered Layers compose their own surfaces into that destination.
-Content renderers must still resolve their immediate parent's active `buffer`;
-nesting alone does not rebind a Room or Tile's intrinsic destination.
+Tiles and collision-debug drawing use `Draw.buffer` and `Draw.viewpoint`;
+they have no permanent Layer reference and need no Buffer argument. Drawing a
+Tile outside a Draw scope is inert. `Draw.use( buffer, viewpoint, callback )`
+selects a synchronous scope and restores the previous state even after failure.
+Draw is a shared instance, like Time; replace `new Draw()` with the imported Draw.
+
+Room parses layouts and owns simulation collections plus its ordered presentation
+Layers. It owns no Buffer: `Room.render()` scopes the View destination and Camera
+viewpoint, then composites each Layer directly into View from back to front.
+Each buffered Layer owns an independent surface. View clears its own destination
+during update. Replace custom `Room.buffer` drawing with scoped `Draw.buffer`
+drawing; the former Room buffer lifecycle hooks have been removed.
+
+Scoped viewpoints separate rendering from the simulation Camera and provide the
+basis for future per-Layer parallax. Parallax factors and room-layout declarations
+for them are not implemented yet.
 Invalidation bubbles through managed Layer parents. Cached ancestors check visible
 children before reusing pixels, so live or direct descendants require ancestor
 redraws. Hiding a child invalidates the old composition, then allows reuse while

@@ -2,7 +2,7 @@ import Game from '../game.js';
 import Settings from '../../content/settings.js';
 
 import { Size } from '../physics/exports.js';
-import Buffer from './buffer.js';
+import Draw from '../utilities/draw.js';
 import Layer from './layer.js';
 import { Tile, Door, Enemy, Player, Platform, Wall } from '../tiles/exports.js';
 
@@ -17,25 +17,11 @@ import { Tile, Door, Enemy, Player, Platform, Wall } from '../tiles/exports.js';
 export default class Room {
 
 	/**
-	 * Per-frame compositing Buffer written into the visible View.
-	 *
-	 * @type {Buffer}
-	 */
-	buffer;
-
-	/**
 	 * Ordered presentation Layers composited from back to front.
 	 *
 	 * @type {Array<Layer>}
 	 */
 	layers;
-
-	/**
-	 * Logical Camera origin represented during the current render pass.
-	 *
-	 * @type {Object}
-	 */
-	viewpoint;
 
 	/**
 	 * Construct the Room.
@@ -65,13 +51,11 @@ export default class Room {
 			layer.destroy();
 		}
 
-		// Buffer.
-		this.buffer = new Buffer();
 		this.clear();
 		this.layers = [
-			new Layer( this, 'background', [ this.tiles.backgrounds, this.tiles.platforms, this.tiles.doors ] ),
-			new Layer( this, 'actors', [ this.tiles.enemies, this.tiles.particles, this.tiles.players, this.tiles.projectiles ], false ),
-			new Layer( this, 'foreground', [ this.tiles.walls ] ),
+			new Layer( null, 'background', [ this.tiles.backgrounds, this.tiles.platforms, this.tiles.doors ] ),
+			new Layer( null, 'actors', [ this.tiles.enemies, this.tiles.particles, this.tiles.players, this.tiles.projectiles ], false ),
+			new Layer( null, 'foreground', [ this.tiles.walls ] ),
 		];
 
 		// Size.
@@ -81,7 +65,6 @@ export default class Room {
 		this.id        = Settings.components.room.start;
 		this.previous  = 0;
 		this.grid      = [];
-		this.viewpoint = { x: 0, y: 0, z: 0 };
 
 		// Player.
 		this.playerGrid = false;
@@ -97,7 +80,7 @@ export default class Room {
 	}
 
 	/**
-	 * Resize the Room output and every Layer to the logical viewport.
+	 * Resize every presentation Layer to the logical viewport.
 	 *
 	 * Device pixel ratio backing dimensions remain owned by each Buffer.
 	 *
@@ -109,8 +92,6 @@ export default class Room {
 			h: innerHeight,
 			d: 1,
 		};
-
-		this.buffer.resize( size );
 
 		for ( const layer of this.layers ) {
 			layer.resize( size );
@@ -237,11 +218,6 @@ export default class Room {
 		Game.Hooks.add( 'View.update', this.update );
 		Game.Hooks.add( 'View.render', this.render );
 
-		// Buffer.
-		Game.Hooks.add( 'Room.tick',   this.buffer.tick );
-		Game.Hooks.add( 'Room.update', this.buffer.update );
-		Game.Hooks.add( 'Room.render', this.buffer.render );
-
 		// Self.
 		Game.Hooks.add( 'Room.tick',   this.resize );
 		Game.Hooks.add( 'Room.loaded', this.parse );
@@ -273,24 +249,21 @@ export default class Room {
 	}
 
 	/**
-	 * Composite every ordered Layer and publish the Room Buffer to View.
-	 *
-	 * The current Camera position becomes the presentation viewpoint used by
-	 * cached Layers to detect scrolling.
+	 * Render ordered Room Layers directly into View, back to front.
+	 * Room owns parsing and simulation collections, not a drawing surface.
+	 * The scoped Camera origin is inherited by each Layer's drawing pass.
+	 * View owns clearing its destination during update; this method only draws.
 	 *
 	 * @returns {void}
 	 */
 	render = () => {
-		Game.Hooks.do( 'Room.render' );
-		this.viewpoint = Game.Camera.position ?? { x: 0, y: 0, z: 0 };
+		Draw.use( Game.View.buffer, Game.Camera.position, () => {
+			Game.Hooks.do( 'Room.render' );
 
-		// Render and composite presentation layers in their declared order.
-		for ( const layer of this.layers ) {
-			layer.render();
-		}
-
-		// Output the Buffer.
-		this.buffer.put( Game.View.buffer );
+			for ( const layer of this.layers ) {
+				layer.render();
+			}
+		} );
 	}
 
 	/**

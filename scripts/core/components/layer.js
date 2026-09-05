@@ -1,11 +1,12 @@
 import Cache from '../utilities/cache.js';
+import Draw from '../utilities/draw.js';
 import Buffer from './buffer.js';
 
 /**
  * One ordered presentation layer owned by a parent.
  *
  * Collections retain their simulation ownership. Members with a render method
- * draw through their intrinsic destination, which must resolve parent.buffer.
+ * draw through the shared Draw scope for this pass.
  * Other members are ignored. Buffered drawing temporarily activates this Layer's
  * surface on the parent and restores it even after failure. Direct drawing uses
  * the parent's current surface. Visibility never controls simulation.
@@ -372,7 +373,9 @@ export default class Layer {
 	/**
 	 * Draw this layer when stale and composite it into the owning parent Buffer.
 	 *
-	 * Hidden or unbound Layers are inert. Direct Layers redraw every call.
+	 * Hidden Layers or passes without a destination are inert. An explicit host
+	 * supplies the destination; otherwise the enclosing Draw scope supplies it.
+	 * Direct Layers redraw every call.
 	 * Buffered Layers temporarily activate their surface on the parent while
 	 * rebuilding, then restore the destination before compositing. Children moved
 	 * or detached during rebuilding do not composite into their old destination.
@@ -381,8 +384,9 @@ export default class Layer {
 	 */
 	render = () => {
 		const parent = this.parent;
+		const output = parent?.buffer ?? Draw.buffer;
 
-		if ( ! this.visible || ! parent?.buffer ) {
+		if ( ! this.visible || ! output ) {
 			return this;
 		}
 
@@ -390,15 +394,15 @@ export default class Layer {
 			this.#renderDirect();
 			return this;
 		}
-		this.resize( this.parent.buffer.size );
+		this.resize( output.size );
 
 		if ( this.stale() ) {
 			this.rebuild();
 		}
 
 		if ( this.parent === parent ) {
-			parent.buffer.context.globalAlpha = 1;
-			this.buffer.put( parent.buffer );
+			output.context.globalAlpha = 1;
+			this.buffer.put( output );
 		}
 
 		return this;
@@ -414,28 +418,32 @@ export default class Layer {
 	 */
 	rebuild = () => {
 		const parent = this.parent;
+		const output = parent?.buffer ?? Draw.buffer;
 
-		if ( ! parent?.buffer ) {
+		if ( ! output ) {
 			return this;
 		}
 		if ( ! this.buffered ) {
 			this.#renderDirect();
 			return this;
 		}
-		this.resize( this.parent.buffer.size );
+		this.resize( output.size );
 
-		const output = parent.buffer;
 		const revision = this.cache.revision;
 		// Failed or interrupted builds must never leave reusable partial pixels.
 		this.cache.dirty = true;
 
 		this.buffer.update();
-		parent.buffer = this.buffer;
+		if ( parent ) {
+			parent.buffer = this.buffer;
+		}
 
 		try {
-			this.#renderContents();
+			Draw.use( this.buffer, this.#position(), this.#renderContents );
 		} finally {
-			parent.buffer = output;
+			if ( parent ) {
+				parent.buffer = output;
+			}
 		}
 
 		this.#captureViewpoint();
@@ -502,7 +510,8 @@ export default class Layer {
 
 	/**
 	 * Resolve the logical viewpoint from the enclosing presentation host.
-	 * Layer viewpoint properties are cache snapshots, not camera owners.
+	 * Layer viewpoint properties are cache snapshots, not camera owners. An
+	 * enclosing Draw scope supplies the viewpoint when no host overrides it.
 	 *
 	 * @returns {Object} Host coordinates in logical pixels, defaulting to zero.
 	 */
@@ -513,7 +522,7 @@ export default class Layer {
 			parent = parent.parent;
 		}
 
-		return parent?.viewpoint ?? { x: 0, y: 0, z: 0 };
+		return parent?.viewpoint ?? Draw.viewpoint ?? { x: 0, y: 0, z: 0 };
 	}
 
 	/**
@@ -524,10 +533,10 @@ export default class Layer {
 	 */
 	#renderDirect = () => {
 		const buffer = this.buffer;
-		this.buffer = this.parent.buffer;
+		this.buffer = this.parent?.buffer ?? Draw.buffer;
 
 		try {
-			this.#renderContents();
+			Draw.use( this.buffer, this.#position(), this.#renderContents );
 		} finally {
 			this.buffer = buffer;
 		}

@@ -74,7 +74,7 @@ const profileRenderer = async (
 	frames = 300
 ) => {
 	const room = game.Room;
-	const output = room.buffer;
+	const output = game.View.buffer;
 	const policies = room.layers.map( layer => layer.cached );
 	const position = {
 		x: game.Camera.position.x,

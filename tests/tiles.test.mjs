@@ -6,6 +6,7 @@ import { installBrowserEnvironment } from './helpers/browser.mjs';
 installBrowserEnvironment();
 
 const { default: Game } = await import( '../scripts/core/game.js' );
+const { default: Draw } = await import( '../scripts/core/utilities/draw.js' );
 const { default: Buffer } = await import( '../scripts/core/components/buffer.js' );
 const { default: Entity } = await import( '../scripts/core/abstractions/entity.js' );
 const { default: Door } = await import( '../scripts/core/tiles/door.js' );
@@ -30,7 +31,7 @@ const prepareView = () => {
 /** Contract: Tile initializes physics, emits lifecycle hooks, renders, and destroys itself. */
 test( 'Tile initializes physics, emits lifecycle hooks, renders, and destroys itself', () => {
 	prepareView();
-	Game.Room.buffer.resize( { w: 320, h: 240, d: 1 } );
+	Game.View.buffer.resize( { w: 320, h: 240, d: 1 } );
 	Game.Hooks.reset();
 	const events = [];
 	for ( const name of [ 'Tile.added', 'Tile.resize', 'Tile.tick', 'Tile.update', 'Tile.render', 'Tile.destroy' ] ) {
@@ -56,13 +57,13 @@ test( 'Tile initializes physics, emits lifecycle hooks, renders, and destroys it
 	tile.resize();
 	tile.tick();
 	tile.update();
-	tile.render();
+	Draw.use( Game.View.buffer, Game.Camera.position, tile.render );
 	assert.equal( offsets, 1 );
 	assert.equal( tile.collision, collision );
 	assert.equal( tile.renderPosition, position );
-	assert.deepEqual( Game.Room.buffer.canvas.fillRectArgs, [ 32, 64, 32, 32 ] );
-	assert.equal( Game.Room.buffer.context.fillStyle, 'Blue' );
-	assert.equal( Game.Room.buffer.context.globalAlpha, 0.75 );
+	assert.deepEqual( Game.View.buffer.canvas.fillRectArgs, [ 32, 64, 32, 32 ] );
+	assert.equal( Game.View.buffer.context.fillStyle, 'Blue' );
+	assert.equal( Game.View.buffer.context.globalAlpha, 0.75 );
 	assert.ok( events.some( event => event[ 0 ] === 'Tile.render' ) );
 	assert.equal( tile.destroy(), true );
 	assert.equal( group.includes( tile ), false );

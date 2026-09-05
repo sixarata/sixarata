@@ -5,6 +5,7 @@ import { installBrowserEnvironment } from './helpers/browser.mjs';
 
 installBrowserEnvironment();
 
+const { default: Draw } = await import( '../scripts/core/utilities/draw.js' );
 const { default: Game } = await import( '../scripts/core/game.js' );
 const { default: Time } = await import( '../scripts/core/utilities/time.js' );
 const { default: Settings } = await import( '../scripts/content/settings.js' );
@@ -328,12 +329,12 @@ test( 'Collide resolves nearby solid tiles and renders debug bounds', () => {
 	const empty = body();
 	empty.density = 0;
 	const originalTiles = Game.Room.tiles;
-	const originalRect = Game.Room.buffer.rect;
+	const originalRect = Game.View.buffer.rect;
 	const originalCameraPosition = Game.Camera.position;
 	let drawings = 0;
 	Game.Room.tiles = { platforms: [ nearby, empty ], walls: [ distant ] };
 	Game.Camera.position = { x: 0, y: 0, z: 0 };
-	Game.Room.buffer.rect = () => drawings++;
+	Game.View.buffer.rect = () => drawings++;
 	const collide = new Collide( moving );
 	assert.deepEqual( collide.solids(), [ nearby, distant ] );
 	const collision = collide.collision;
@@ -349,10 +350,10 @@ test( 'Collide resolves nearby solid tiles and renders debug bounds', () => {
 	assert.equal( concatenations, 0 );
 	assert.equal( collide.collision, collision );
 	collide.debug = true;
-	collide.render( moving );
+	Draw.use( Game.View.buffer, Game.Camera.position, () => collide.render( moving ) );
 	assert.equal( drawings, 1 );
 	collide.unhooks();
 	Game.Room.tiles = originalTiles;
-	Game.Room.buffer.rect = originalRect;
+	Game.View.buffer.rect = originalRect;
 	Game.Camera.position = originalCameraPosition;
 } );

@@ -1,3 +1,4 @@
+import Draw from '../utilities/draw.js';
 import Game from '../game.js';
 import Entity from '../abstractions/entity.js';
 
@@ -178,11 +179,15 @@ export default class Tile extends Entity {
 	}
 
 	/**
-	 * Render the Tile.
+	 * Render the Tile into the active Draw buffer using the scoped viewpoint.
+	 * Outside a drawing pass this is inert; no permanent Layer binding is needed.
 	 *
 	 * @returns {void}
 	 */
 	render = () => {
+		if ( ! Draw.buffer ) {
+			return;
+		}
 		const position = this.renderPosition;
 
 		// Skip if unviewable.
@@ -191,7 +196,7 @@ export default class Tile extends Entity {
 		}
 
 		// Draw the rectangle.
-		Game.Room.buffer.rect(
+		Draw.buffer.rect(
 			this.color,
 			position,
 			this.physics.size,
@@ -205,7 +210,8 @@ export default class Tile extends Entity {
 	/**
 	 * Get the offset position of the Tile.
 	 *
-	 * Relative to the Game Camera.
+	 * Relative to the active Draw viewpoint, falling back to Game Camera for
+	 * queries outside a rendering pass.
 	 *
 	 * @param {Position|null} position Optional Position to update in place.
 	 * @returns {Position} Camera-relative position in logical pixels. A new
@@ -216,7 +222,7 @@ export default class Tile extends Entity {
 	) => {
 
 		// Get camera and position.
-		const camera = Game.Camera.position;
+		const camera = Draw.viewpoint ?? Game.Camera.position;
 		const pos    = this.physics.position;
 		const offset = position instanceof Position
 			? position
@@ -230,7 +236,8 @@ export default class Tile extends Entity {
 	}
 
 	/**
-	 * Check if the Tile is within the Game View.
+	 * Check if the Tile intersects the active drawing viewport, falling back
+	 * to Game View for queries outside rendering.
 	 *
 	 * @param {Position|null} position Optional reusable camera-relative Position.
 	 * @returns {Boolean|undefined} Whether the Tile intersects the viewport, or
@@ -261,8 +268,8 @@ export default class Tile extends Entity {
 			// Viewport.
 			viewport = {
 				physics: {
-					position: Game.View.buffer.position,
-					size:     Game.View.buffer.size,
+					position: ( Draw.buffer ?? Game.View.buffer ).position,
+					size:     ( Draw.buffer ?? Game.View.buffer ).size,
 				}
 			},
 
