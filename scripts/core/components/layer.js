@@ -13,12 +13,38 @@ import Buffer from './buffer.js';
 export default class Layer {
 
 	/**
-	 * Parent exposing the active drawing Buffer and optional viewpoint.
-	 * Configure through set(); Layer ancestry must be acyclic.
+	 * Immediate Layer parent or root drawing host, managed through membership.
+	 * Root hosts are configured by set(); Layer parents are assigned by add().
 	 *
 	 * @type {Object|null}
+	 * @returns {Object|null} Current destination owner, or null when detached.
 	 */
-	parent;
+	get parent() {
+		return this.#parent;
+	}
+
+	/**
+	 * Stored drawing host or managed Layer parent.
+	 * @type {Object|null}
+	 */
+	#parent = null;
+
+	/**
+	 * Snapshot of ordered child Layers. Editing it cannot alter membership.
+	 * Own content groups render before these children.
+	 *
+	 * @type {Array<Layer>}
+	 * @returns {Array<Layer>} Children in presentation order.
+	 */
+	get children() {
+		return this.#children.slice();
+	}
+
+	/**
+	 * Authoritative ordered child membership, changed only by add/remove.
+	 * @type {Array<Layer>}
+	 */
+	#children = [];
 
 	/**
 	 * Concise diagnostic name for this layer.
@@ -104,23 +130,25 @@ export default class Layer {
 	viewpoint;
 
 	/**
-	 * Construct an ordered presentation layer.
+	 * Construct an ordered presentation Layer, optionally bound to a root host.
+	 * Layer children are attached afterward through add().
 	 *
-	 * @param {Object|null} parent Destination with a Buffer and optional logical-pixel viewpoint.
+	 * @param {Object|null} host Root destination with a Buffer and optional logical-pixel viewpoint; not a Layer.
 	 * @param {String} name Diagnostic layer name.
 	 * @param {Array<Array>} groups Ordered collection references.
 	 * @param {Boolean} cached Whether unchanged pixels persist between frames.
 	 * @param {Boolean} buffered Use a private surface; defaults to true.
 	 * @returns {Layer} this
+	 * @throws {TypeError} When host is a Layer; use add() for child membership.
 	 */
 	constructor(
-		parent   = null,
+		host     = null,
 		name     = '',
 		groups   = [],
 		cached   = true,
 		buffered = true
 	) {
-		return this.set( parent, name, groups, cached, buffered );
+		return this.set( host, name, groups, cached, buffered );
 	}
 
 	/**
@@ -128,36 +156,31 @@ export default class Layer {
 	 *
 	 * The outer collection list is copied; member arrays retain their identities.
 	 * Reconfiguration and cleanup must occur outside this Layer's render pass.
-	 * Changes to member arrays require explicit Cache invalidation. Child Layers
-	 * must name this Layer as parent; detached Layer references are ignored.
-	 * Cyclic ancestry throws TypeError before altering existing configuration.
+	 * Changes to member arrays require explicit Cache invalidation. Layer children
+	 * must be attached through add(); Layer references in groups are ignored.
+	 * Reconfiguration detaches this Layer and its children without destroying them.
 	 *
-	 * @param {Object|null} parent Destination with a Buffer and optional logical-pixel viewpoint.
+	 * @param {Object|null} host Root destination with a Buffer and optional logical-pixel viewpoint; not a Layer.
 	 * @param {String} name Diagnostic layer name.
 	 * @param {Array<Array>} groups Ordered collection references.
 	 * @param {Boolean} cached Whether unchanged pixels persist between frames.
 	 * @param {Boolean} buffered Use a private surface; defaults to true.
 	 * @returns {Layer} this
-	 * @throws {TypeError} When the requested Layer ancestry contains a cycle.
+	 * @throws {TypeError} When host is a Layer; membership must use add().
 	 */
 	set = (
-		parent   = null,
+		host     = null,
 		name     = '',
 		groups   = [],
 		cached   = true,
 		buffered = true
 	) => {
-		const ancestors = new Set( [ this ] );
-
-		for ( let ancestor = parent; ancestor instanceof Layer; ancestor = ancestor.parent ) {
-			if ( ancestors.has( ancestor ) ) {
-				throw new TypeError( 'Layer ancestry must be acyclic.' );
-			}
-			ancestors.add( ancestor );
+		if ( host instanceof Layer ) {
+			throw new TypeError( 'Use Layer.add() to attach a child.' );
 		}
 		this.reset();
 
-		this.parent   = parent;
+		this.#parent  = host;
 		this.name     = String( name );
 		this.groups   = Array.isArray( groups )
 			? groups.filter( Array.isArray )
@@ -175,7 +198,7 @@ export default class Layer {
 	 * Existing Buffer resources are released and fresh Cache metadata is
 	 * created. Buffer allocation is deferred until resize or rendering. The
 	 * viewpoint snapshot starts empty so the first render always builds. Call
-	 * outside rendering; child membership and lifetimes remain caller-owned.
+	 * outside rendering; existing children are detached without destruction.
 	 *
 	 * @returns {Layer} this
 	 */
@@ -188,7 +211,7 @@ export default class Layer {
 			this.buffer.destroy();
 		}
 
-		this.parent    = null;
+		this.#detach();
 		this.name      = '';
 		this.groups    = [];
 		this.cached    = true;
@@ -203,6 +226,62 @@ export default class Layer {
 		};
 
 		return this;
+	}
+
+	/**
+	 * Append a child Layer, moving it from its previous Layer parent if needed.
+	 *
+	 * Duplicate adds are inert and preserve order. Invalid input and cycles are
+	 * rejected before mutation. Both old and new compositions are invalidated.
+	 * Child buffers, content groups, and simulation membership are retained.
+	 *
+	 * @param {Layer} child Layer to attach; required.
+	 * @returns {Layer} this, for chained membership additions.
+	 * @throws {TypeError} When child is not a Layer or would create a cycle.
+	 */
+	add = child => {
+		if ( ! ( child instanceof Layer ) ) {
+			throw new TypeError( 'Layer children must be Layers.' );
+		}
+
+		for ( let ancestor = this; ancestor instanceof Layer; ancestor = ancestor.parent ) {
+			if ( ancestor === child ) {
+				throw new TypeError( 'Layer ancestry must be acyclic.' );
+			}
+		}
+		if ( child.parent === this ) {
+			return this;
+		}
+		if ( child.parent instanceof Layer ) {
+			child.parent.remove( child );
+		}
+		this.#children.push( child );
+		child.#parent = this;
+		child.invalidate( 'attached' );
+
+		return this;
+	}
+
+	/**
+	 * Detach a child while preserving sibling order and the child's resources.
+	 *
+	 * Detachment invalidates the old composition and the child's cached pixels.
+	 * It does not destroy descendants or change any simulation collection.
+	 *
+	 * @param {Layer} child Child to detach; missing or unrelated values are inert.
+	 * @returns {Boolean} Whether this Layer contained and detached the child.
+	 */
+	remove = child => {
+		const index = this.#children.indexOf( child );
+
+		if ( index < 0 ) {
+			return false;
+		}
+		child.invalidate( 'detached' );
+		this.#children.splice( index, 1 );
+		child.#parent = null;
+
+		return true;
 	}
 
 	/**
@@ -281,11 +360,9 @@ export default class Layer {
 			this.invalidate( 'viewpoint' );
 		}
 
-		for ( const group of this.groups ) {
-			for ( const child of group ) {
-				if ( child instanceof Layer && child.parent === this && child.visible && child.stale() ) {
-					return true;
-				}
+		for ( const child of this.#children ) {
+			if ( child.visible && child.stale() ) {
+				return true;
 			}
 		}
 
@@ -297,12 +374,15 @@ export default class Layer {
 	 *
 	 * Hidden or unbound Layers are inert. Direct Layers redraw every call.
 	 * Buffered Layers temporarily activate their surface on the parent while
-	 * rebuilding, then restore the destination before compositing.
+	 * rebuilding, then restore the destination before compositing. Children moved
+	 * or detached during rebuilding do not composite into their old destination.
 	 *
 	 * @returns {Layer} this
 	 */
 	render = () => {
-		if ( ! this.visible || ! this.parent?.buffer ) {
+		const parent = this.parent;
+
+		if ( ! this.visible || ! parent?.buffer ) {
 			return this;
 		}
 
@@ -316,8 +396,10 @@ export default class Layer {
 			this.rebuild();
 		}
 
-		this.parent.buffer.context.globalAlpha = 1;
-		this.buffer.put( this.parent.buffer );
+		if ( this.parent === parent ) {
+			parent.buffer.context.globalAlpha = 1;
+			this.buffer.put( parent.buffer );
+		}
 
 		return this;
 	}
@@ -331,7 +413,9 @@ export default class Layer {
 	 * @returns {Layer} this
 	 */
 	rebuild = () => {
-		if ( ! this.parent?.buffer ) {
+		const parent = this.parent;
+
+		if ( ! parent?.buffer ) {
 			return this;
 		}
 		if ( ! this.buffered ) {
@@ -340,18 +424,18 @@ export default class Layer {
 		}
 		this.resize( this.parent.buffer.size );
 
-		const output = this.parent.buffer;
+		const output = parent.buffer;
 		const revision = this.cache.revision;
 		// Failed or interrupted builds must never leave reusable partial pixels.
 		this.cache.dirty = true;
 
 		this.buffer.update();
-		this.parent.buffer = this.buffer;
+		parent.buffer = this.buffer;
 
 		try {
 			this.#renderContents();
 		} finally {
-			this.parent.buffer = output;
+			parent.buffer = output;
 		}
 
 		this.#captureViewpoint();
@@ -362,7 +446,7 @@ export default class Layer {
 
 	/**
 	 * Invalidate ancestor pixels, release the owned Buffer, and sever references.
-	 * Referenced child Layers and their collection membership remain caller-owned.
+	 * This Layer and its children are detached; child resources remain reusable.
 	 * Call outside rendering so active drawing destinations remain valid.
 	 *
 	 * @returns {void}
@@ -374,8 +458,25 @@ export default class Layer {
 		}
 		this.buffer = null;
 		this.invalidate( 'destroyed' );
-		this.parent   = null;
+		this.#detach();
 		this.groups   = [];
+	}
+
+	/**
+	 * Sever managed links during reset or destruction without destroying children.
+	 * Root hosts have no Layer membership to release.
+	 *
+	 * @returns {void}
+	 */
+	#detach = () => {
+		if ( this.parent instanceof Layer ) {
+			this.parent.remove( this );
+		}
+		this.#parent = null;
+
+		for ( const child of this.#children.slice() ) {
+			this.remove( child );
+		}
 	}
 
 	/**
@@ -442,16 +543,20 @@ export default class Layer {
 	}
 
 	/**
-	 * Render configured referenced collections in their declared order.
+	 * Render content groups, then managed children in their declared order.
 	 *
 	 * Each group snapshots its starting members. Removed members are skipped,
 	 * additions wait until the next pass, and changed membership invalidates
 	 * cached pixels. Sparse entries and nonrenderable data are ignored. Renderers
 	 * resolve the active parent Buffer through their own intrinsic destination.
+	 * Children snapshot at pass start; detached children are skipped and newly
+	 * attached children wait until the next pass.
 	 *
 	 * @returns {void}
 	 */
 	#renderContents = () => {
+		const children = this.#children.slice();
+
 		for ( const contents of this.groups ) {
 			const members = contents.slice();
 
@@ -462,7 +567,7 @@ export default class Layer {
 					if (
 						typeof member?.render === 'function'
 						&&
-						( ! ( member instanceof Layer ) || member.parent === this )
+						! ( member instanceof Layer )
 						&&
 						( contents[ i ] === member || contents.includes( member ) )
 					) {
@@ -477,6 +582,11 @@ export default class Layer {
 				) {
 					this.invalidate( 'membership' );
 				}
+			}
+		}
+		for ( const child of children ) {
+			if ( child.parent === this ) {
+				child.render();
 			}
 		}
 	}

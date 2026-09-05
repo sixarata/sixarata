@@ -19,6 +19,8 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Changed
 
+- Made Layer child membership authoritative through `add()` and `remove()`, with ordered children, automatic reparenting, cycle rejection, and invalidation. Layer parents are now read-only; constructors and `set()` accept only root drawing hosts. Migrate nested Layer constructor arguments and collection pushes to `parent.add( child )`. Reset and destruction detach children without destroying their resources.
+
 - Generalized Layer to reference collections and a compositing parent, with optional buffering and presentation-only visibility. Layer constructors now take collection arrays instead of Room group names; Room retains those arrays across loads.
 - Standardized monotonic timestamp properties on the established `*At` naming convention while preserving legacy Particle and Timer aliases.
 - Restored Room as the intrinsic rendering surface for world Tiles and collision-debug drawing before Room composites into View.
