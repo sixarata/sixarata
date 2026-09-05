@@ -2,7 +2,8 @@ import Game from '../game.js';
 import Settings from '../../content/settings.js';
 
 import { Size } from '../physics/exports.js';
-import { Buffer } from './exports.js';
+import Draw from '../utilities/draw.js';
+import Layer from './layer.js';
 import { Tile, Door, Enemy, Player, Platform, Wall } from '../tiles/exports.js';
 
 /**
@@ -14,6 +15,13 @@ import { Tile, Door, Enemy, Player, Platform, Wall } from '../tiles/exports.js';
  * @todo Break this up...
  */
 export default class Room {
+
+	/**
+	 * Ordered presentation Layers composited from back to front.
+	 *
+	 * @type {Array<Layer>}
+	 */
+	layers;
 
 	/**
 	 * Construct the Room.
@@ -39,17 +47,24 @@ export default class Room {
 	 * @returns {Room} this
 	 */
 	reset = () => {
+		for ( const layer of this.layers ?? [] ) {
+			layer.destroy();
+		}
 
-		// Buffer.
-		this.buffer = new Buffer();
+		this.clear();
+		this.layers = [
+			new Layer( null, 'background', [ this.tiles.backgrounds, this.tiles.platforms, this.tiles.doors ] ),
+			new Layer( null, 'actors', [ this.tiles.enemies, this.tiles.particles, this.tiles.players, this.tiles.projectiles ], false ),
+			new Layer( null, 'foreground', [ this.tiles.walls ] ),
+		];
 
 		// Size.
 		this.size = new Size();
 
 		// Rooms.
-		this.id       = Settings.components.room.start;
-		this.previous = 0;
-		this.grid     = [];
+		this.id        = Settings.components.room.start;
+		this.previous  = 0;
+		this.grid      = [];
 
 		// Player.
 		this.playerGrid = false;
@@ -65,14 +80,22 @@ export default class Room {
 	}
 
 	/**
-	 * Resize the Map.
+	 * Resize every presentation Layer to the logical viewport.
+	 *
+	 * Device pixel ratio backing dimensions remain owned by each Buffer.
+	 *
+	 * @returns {void}
 	 */
 	resize = () => {
-		this.buffer.resize( {
+		const size = {
 			w: innerWidth,
 			h: innerHeight,
 			d: 1,
-		} );
+		};
+
+		for ( const layer of this.layers ) {
+			layer.resize( size );
+		}
 	}
 
 	/**
@@ -123,11 +146,16 @@ export default class Room {
 	}
 
 	/**
-	 * Clear the Room.
+	 * Destroy every existing Tile and empty the persistent Room collections.
+	 *
+	 * Clearing preserves array identity for presentation Layers and invalidates
+	 * their derived pixels.
+	 *
+	 * @returns {void}
 	 */
 	clear = () => {
 
-		// Let existing tiles release hooks and references before replacing groups.
+		// Snapshot membership because destruction removes Tiles from their groups.
 		const existing = this.tiles
 			? Object.values( this.tiles ).flat()
 			: [];
@@ -143,7 +171,7 @@ export default class Room {
 		this.playerDoor = false;
 
 		// Tiles.
-		this.tiles = {
+		this.tiles ??= {
 			backgrounds: [],
 			platforms:   [],
 			doors:       [],
@@ -153,6 +181,12 @@ export default class Room {
 			projectiles: [],
 			walls:       [],
 		};
+
+		for ( const group of Object.values( this.tiles ) ) {
+			group.length = 0;
+		}
+
+		this.invalidate( null, 'room cleared' );
 	}
 
 	/**
@@ -170,7 +204,9 @@ export default class Room {
 	}
 
 	/**
-	 * Early events.
+	 * Register Room lifecycle and Layer invalidation hooks.
+	 *
+	 * @returns {void}
 	 */
 	hooks = () => {
 
@@ -182,15 +218,14 @@ export default class Room {
 		Game.Hooks.add( 'View.update', this.update );
 		Game.Hooks.add( 'View.render', this.render );
 
-		// Buffer.
-		Game.Hooks.add( 'Room.tick',   this.buffer.tick );
-		Game.Hooks.add( 'Room.update', this.buffer.update );
-		Game.Hooks.add( 'Room.render', this.buffer.render );
-
 		// Self.
 		Game.Hooks.add( 'Room.tick',   this.resize );
 		Game.Hooks.add( 'Room.loaded', this.parse );
 		Game.Hooks.add( 'Room.loaded', this.player );
+
+		// Layers.
+		Game.Hooks.add( 'Tile.added',   this.changed );
+		Game.Hooks.add( 'Tile.removed', this.changed );
 	}
 
 	/**
@@ -214,16 +249,55 @@ export default class Room {
 	}
 
 	/**
-	 * Render the Room.
+	 * Render ordered Room Layers directly into View, back to front.
+	 * Room owns parsing and simulation collections, not a drawing surface.
+	 * The scoped Camera origin is inherited by each Layer's drawing pass.
+	 * View owns clearing its destination during update; this method only draws.
+	 *
+	 * @returns {void}
 	 */
 	render = () => {
-		Game.Hooks.do( 'Room.render' );
+		Draw.use( Game.View.buffer, Game.Camera.position, () => {
+			Game.Hooks.do( 'Room.render' );
 
-		// Render all tiles.
-		this.loopTiles( 'render' );
+			for ( const layer of this.layers ) {
+				layer.render();
+			}
+		} );
+	}
 
-		// Output the Buffer.
-		this.buffer.put( Game.View.buffer );
+	/**
+	 * Invalidate the presentation layer containing a changed Tile.
+	 *
+	 * Tile collections remain authoritative for simulation and collision. This
+	 * callback only marks their derived pixels stale.
+	 *
+	 * @param {Tile|null} tile Added or removed Tile, including its owning group.
+	 * @returns {void}
+	 */
+	changed = ( tile = null ) => {
+		this.invalidate( tile?.group, 'tile changed' );
+	}
+
+	/**
+	 * Invalidate matching presentation layers after Room state changes.
+	 *
+	 * Omitting a group invalidates every layer. Supplying a group limits the
+	 * change to the Layer that owns that exact Room tile collection.
+	 *
+	 * @param {Array|null} group Optional Room tile collection.
+	 * @param {String} reason Concise diagnostic invalidation reason.
+	 * @returns {void}
+	 */
+	invalidate = (
+		group  = null,
+		reason = 'changed'
+	) => {
+		for ( const layer of this.layers ?? [] ) {
+			if ( group === null || layer.has( group ) ) {
+				layer.invalidate( reason );
+			}
+		}
 	}
 
 	/**
@@ -349,7 +423,11 @@ export default class Room {
 	}
 
 	/**
-	 * Loop through tile objects, and call one of their methods.
+	 * Call a lifecycle method once for each starting member of each group.
+	 *
+	 * Each group is snapshotted when reached. Removed members are skipped;
+	 * additions to that group wait until its next pass. Membership checks keep
+	 * swap removal from skipping or revisiting surviving members.
 	 *
 	 * @param {String} callback Tile lifecycle method name.
 	 * @returns {void}
@@ -370,23 +448,15 @@ export default class Room {
 			}
 
 			const items = this.tiles[ group ];
-			const l = items.length;
 
-			// Skip if empty.
-			if ( ! l ) {
-				continue;
-			}
+			const members = items.slice();
 
-			// Callback.
-			for ( let i = 0; i < l; i++ ) {
+			for ( let i = 0; i < members.length; i++ ) {
+				const item = members[ i ];
 
-				// Skip if missing.
-				if ( ! items[ i ] ) {
-					continue;
+				if ( item && ( items[ i ] === item || items.includes( item ) ) ) {
+					item[ callback ]();
 				}
-
-				// Do the callback.
-				items[ i ][ callback ]();
 			}
 		}
 	}

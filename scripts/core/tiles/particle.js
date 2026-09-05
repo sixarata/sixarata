@@ -12,16 +12,23 @@ import { Size, Velocity } from '../physics/exports.js';
 export default class Particle extends Tile {
 
 	/**
-	 * Life of the Particle.
+	 * Shared monotonic millisecond timestamp when this Particle was created.
 	 *
-	 * @var {Number} Default 1000.
+	 * @type {Number}
+	 */
+	bornAt;
+
+	/**
+	 * Maximum Particle lifetime in milliseconds.
+	 *
+	 * @type {Number}
 	 */
 	life = 1000;
 
 	/**
-	 * Fade of the Particle.
+	 * Particle fade duration in milliseconds.
 	 *
-	 * @var {Number} Default 1000.
+	 * @type {Number}
 	 */
 	fade = 1000;
 
@@ -63,12 +70,12 @@ export default class Particle extends Tile {
 	}
 
 	/**
-	 * Set the Particle.
+	 * Configure Particle velocity, lifetime, fade duration, and creation time.
 	 *
 	 * @param {Velocity} velocity Velocity expressed in tiles per second.
-	 * @param {Number}   life
-	 * @param {Number}   fade
-	 * @returns {Particle}
+	 * @param {Number} life Maximum lifetime in milliseconds. Defaults to 1000.
+	 * @param {Number} fade Reserved fade duration in milliseconds. Defaults to 1000.
+	 * @returns {Particle} this
 	 */
 	set = (
 		velocity = { x: 0, y: 0, z: 0 },
@@ -84,16 +91,21 @@ export default class Particle extends Tile {
 		);
 
 		// Attributes.
-		this.born = Time.now;
-		this.life = life;
-		this.fade = fade;
+		this.bornAt = Time.now;
+		this.life   = life;
+		this.fade   = fade;
 
 		// Return.
 		return this;
 	}
 
 	/**
-	 * Tick through time.
+	 * Advance the Particle and destroy it after its lifetime or minimum size.
+	 *
+	 * Movement uses the shared bounded gameplay step. Destruction removes the
+	 * Particle from its collection through the inherited Tile lifecycle.
+	 *
+	 * @returns {Boolean|void} Destruction result when removed; otherwise undefined.
 	 */
 	tick = () => {
 
@@ -102,7 +114,7 @@ export default class Particle extends Tile {
 		const smol = 0.01;
 
 		// Die if life is over.
-		if ( ( now - this.born ) >= this.life ) {
+		if ( ( now - this.bornAt ) >= this.life ) {
 			return this.destroy();
 		}
 

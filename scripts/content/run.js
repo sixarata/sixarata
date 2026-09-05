@@ -1,6 +1,7 @@
 // Imports.
 import Sixarata from '../core/game.js';
 import * as Rooms from '../content/rooms/exports.js';
+import Debug from './debug.js';
 
 //import './sunset.js';
 
@@ -16,6 +17,9 @@ Sixarata.Hooks.add( 'Run.init', Sixarata.Hud.hooks,     16 );
 Sixarata.Hooks.add( 'Run.init', Sixarata.History.hooks, 18 );
 Sixarata.Hooks.add( 'Run.init', Sixarata.Combos.hooks,  20 );
 
+// Optional process-lifetime diagnostics, enabled by Settings.debug.
+new Debug();
+
 // Set rooms.
 Sixarata.Room.rooms = Object.values( Rooms );
 
@@ -30,3 +34,16 @@ Sixarata.Hooks.do( 'Run.content' );
 
 // End.
 Sixarata.Hooks.do( 'Run.end' );
+
+// Optional development profiling.
+const parameters = new URLSearchParams( location.search );
+
+if ( parameters.get( 'profile' ) === 'renderer' ) {
+	import( './profile.js' ).then( async module => {
+		const frames = Number( parameters.get( 'frames' ) ) || 300;
+		const report = await module.default( Sixarata, frames );
+
+		globalThis.SixarataProfile = report;
+		console.info( 'Sixarata renderer profile ' + JSON.stringify( report ) );
+	} );
+}

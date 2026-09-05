@@ -6,6 +6,7 @@ import { installBrowserEnvironment } from './helpers/browser.mjs';
 installBrowserEnvironment();
 
 const { default: Game } = await import( '../scripts/core/game.js' );
+const { default: Draw } = await import( '../scripts/core/utilities/draw.js' );
 const { default: Buffer } = await import( '../scripts/core/components/buffer.js' );
 const { default: Entity } = await import( '../scripts/core/abstractions/entity.js' );
 const { default: Door } = await import( '../scripts/core/tiles/door.js' );
@@ -30,6 +31,7 @@ const prepareView = () => {
 /** Contract: Tile initializes physics, emits lifecycle hooks, renders, and destroys itself. */
 test( 'Tile initializes physics, emits lifecycle hooks, renders, and destroys itself', () => {
 	prepareView();
+	Game.View.buffer.resize( { w: 320, h: 240, d: 1 } );
 	Game.Hooks.reset();
 	const events = [];
 	for ( const name of [ 'Tile.added', 'Tile.resize', 'Tile.tick', 'Tile.update', 'Tile.render', 'Tile.destroy' ] ) {
@@ -55,7 +57,7 @@ test( 'Tile initializes physics, emits lifecycle hooks, renders, and destroys it
 	tile.resize();
 	tile.tick();
 	tile.update();
-	tile.render();
+	Draw.use( Game.View.buffer, Game.Camera.position, tile.render );
 	assert.equal( offsets, 1 );
 	assert.equal( tile.collision, collision );
 	assert.equal( tile.renderPosition, position );
@@ -137,6 +139,8 @@ test( 'Particle movement, lifetime, and minimum size govern destruction', () => 
 	Time.step = 100;
 	const particle = new Particle( group, source, 'White', { w: 0.1, h: 0.1, d: 0.1 }, { x: 1, y: -2, z: 0 }, 1000, 500 );
 	const startX = particle.physics.position.x;
+	assert.equal( particle.bornAt, 100 );
+	assert.equal( 'born' in particle, false );
 	assert.equal( particle.physics.velocity.x, Game.Screen.unit( 1 ) );
 	assert.equal( particle.physics.velocity.y, Game.Screen.unit( -2 ) );
 	particle.tick();

@@ -277,7 +277,6 @@ export default class Player extends Tile {
 	 * @returns {void}
 	 */
 	destroying = () => {
-		this.mechanics?.collide?.unhooks();
 		this.mechanics?.dash?.unhooks();
 	}
 

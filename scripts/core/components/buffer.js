@@ -92,11 +92,13 @@ export default class Buffer {
 
 		// Skip if not resizing.
 		if (
-			( size?.w ?? 0 ) === ( this.size?.w ?? 0 )
+			this.size
 			&&
-			( size?.h ?? 0 ) === ( this.size?.h ?? 0 )
+			( size?.w ?? 0 ) === ( this.size.w ?? 0 )
 			&&
-			( size?.d ?? 0 ) === ( this.size?.d ?? 0 )
+			( size?.h ?? 0 ) === ( this.size.h ?? 0 )
+			&&
+			( size?.d ?? 0 ) === ( this.size.d ?? 0 )
 		) {
 			return;
 		}
@@ -127,11 +129,13 @@ export default class Buffer {
 
 		// Skip if not resizing.
 		if (
-			( scale?.x ?? 1 ) === ( this.scale?.x ?? 1 )
+			this.scale
 			&&
-			( scale?.y ?? 1 ) === ( this.scale?.y ?? 1 )
+			( scale?.x ?? 1 ) === ( this.scale.x ?? 1 )
 			&&
-			( scale?.z ?? 1 ) === ( this.scale?.z ?? 1 )
+			( scale?.y ?? 1 ) === ( this.scale.y ?? 1 )
+			&&
+			( scale?.z ?? 1 ) === ( this.scale.z ?? 1 )
 		) {
 			return;
 		}

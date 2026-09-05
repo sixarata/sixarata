@@ -15,6 +15,7 @@ const { default: Camera } = await import( '../scripts/core/components/camera.js'
 const { default: Clock } = await import( '../scripts/core/components/clock.js' );
 const { default: Frame } = await import( '../scripts/core/components/frame.js' );
 const { default: Hud } = await import( '../scripts/core/components/hud.js' );
+const { default: Layer } = await import( '../scripts/core/components/layer.js' );
 const { default: View } = await import( '../scripts/core/components/view.js' );
 const { default: Combos } = await import( '../scripts/core/controls/combo.js' );
 const { default: History } = await import( '../scripts/core/controls/history.js' );
@@ -130,10 +131,13 @@ test( 'Generic forwards attribute operations and exposes safe lifecycle defaults
 
 /** Contract: Buffer covers resizing, scaling, drawing, reading, clearing, and destruction. */
 test( 'Buffer covers resizing, scaling, drawing, reading, clearing, and destruction', () => {
+	const defaults = new Buffer();
 	const buffer = new Buffer( { w: 10, h: 5, d: 1 } );
 	const target = new Buffer( { w: 20, h: 10, d: 1 } );
 	const originalCanvas = buffer.canvas;
 
+	assert.deepEqual( defaults.size, { w: 0, h: 0, d: 0 } );
+	assert.deepEqual( defaults.scale, { x: 1, y: 1, z: 1 } );
 	assert.equal( buffer.resize( { w: 10, h: 5, d: 1 } ), undefined );
 	assert.equal( buffer.rescale( { x: 1, y: 1, z: 1 } ), undefined );
 	assert.equal( buffer.rescale( { x: 2, y: 3, z: 1 } ), buffer );
@@ -164,6 +168,106 @@ test( 'Buffer covers resizing, scaling, drawing, reading, clearing, and destruct
 	assert.deepEqual( buffer.canvas.clearRectArgs, [ 0, 0, 20, 10 ] );
 	buffer.destroy();
 	assert.equal( buffer.canvas.removed, true );
+	defaults.destroy();
+} );
+
+/** Contract: Layer caches ordered Room pixels until its source, viewport, or Camera changes. */
+test( 'Layer owns buffered presentation and explicit invalidation', t => {
+	const output = new Buffer( { w: 320, h: 240, d: 1 } );
+	const room = {
+		buffer:    output,
+		tiles:     { items: [] },
+		viewpoint: { x: 0, y: 0, z: 0 },
+	};
+	const groups = [ room.tiles.items ];
+	const layer = new Layer( room, 'test', groups );
+	let renders = 0;
+	let composites = 0;
+
+	room.tiles.items.push( {
+		render: () => {
+			renders++;
+			room.buffer.rect( '#123', { x: 0, y: 0 }, { w: 1, h: 1 } );
+		},
+	} );
+	output.context.drawImage = () => composites++;
+	groups.push( 'external-change' );
+
+	assert.deepEqual( layer.children, [ room.tiles.items ] );
+	assert.equal( layer.has( room.tiles.items ), true );
+	assert.equal( layer.has( [] ), false );
+	assert.equal( layer.resize( output.size ), layer );
+	assert.equal( layer.render(), layer );
+	assert.equal( layer.render(), layer );
+	assert.deepEqual( [ renders, composites ], [ 1, 2 ] );
+	assert.equal( layer.cache.valid(), true );
+
+	room.viewpoint.x = 1;
+	assert.equal( layer.stale(), true );
+	assert.equal( layer.cache.reason, 'viewpoint' );
+	assert.equal( layer.rebuild(), layer );
+	assert.equal( layer.cache.valid(), true );
+	assert.equal( renders, 2 );
+
+	layer.invalidate( 'tile changed' );
+	layer.render();
+	assert.equal( renders, 3 );
+	assert.equal( layer.cache.reason, 'tile changed' );
+
+	layer.cached = false;
+	layer.render();
+	layer.render();
+	assert.equal( renders, 5 );
+
+	const canvas = layer.buffer.canvas;
+	assert.equal( layer.reset(), layer );
+	assert.equal( canvas.removed, true );
+	assert.equal( layer.parent, null );
+	assert.deepEqual( layer.children, [] );
+	assert.equal( layer.render(), layer );
+	assert.equal( layer.rebuild(), layer );
+	layer.destroy();
+	assert.equal( layer.parent, null );
+} );
+
+/** Contract: Layers accept nonvisual content and direct screen-space rendering without a canvas. */
+test( 'Layer supports a generic parent and optional presentation', () => {
+	const parent = { buffer: new Buffer( { w: 20, h: 20 } ) };
+	let renders = 0;
+	const contents = [ {}, null, { render: 1 }, { render: () => renders++ } ];
+	const layer = new Layer( parent, 'overlay', [ contents ], false, false );
+	layer.resize( parent.buffer.size );
+	layer.render();
+	assert.equal( renders, 1 );
+	assert.equal( layer.buffer, null );
+	layer.visible = false;
+	layer.render();
+	assert.equal( renders, 1 );
+	assert.equal( contents.length, 4 );
+	layer.destroy();
+	layer.destroy();
+	assert.equal( contents.length, 4 );
+	parent.buffer.destroy();
+} );
+
+/** Contract: Failed Layer builds restore the parent and cannot validate partial output. */
+test( 'Layer restores its parent after a rendering failure', () => {
+	const parent = { buffer: new Buffer( { w: 20, h: 20 } ) };
+	const output = parent.buffer;
+	const contents = [];
+	const layer = new Layer( parent, 'overlay', [ contents ] );
+	layer.render();
+	assert.equal( layer.cache.valid(), true );
+	contents.push( { render: () => { throw new Error( 'drawing failed' ); } } );
+	assert.throws( () => layer.rebuild(), /drawing failed/ );
+	assert.equal( parent.buffer, output );
+	assert.equal( layer.cache.stale(), true );
+	contents.length = 0;
+	contents.push( { render: () => layer.invalidate() } );
+	layer.rebuild();
+	assert.equal( layer.cache.stale(), true );
+	layer.destroy();
+	output.destroy();
 } );
 
 /** Contract: Screen converts units and manages DPR-backed canvas state and listeners. */
@@ -479,7 +583,7 @@ test( 'Timer covers aliases, boundaries, pause expiry, repeat, extension, and re
 	assert.equal( timer.done(), true );
 	assert.equal( timer.extend( 25 ).duration, 25 );
 	timer.repeat( 10 );
-	Time.now = timer.expires;
+	Time.now = timer.expiresAt;
 	assert.equal( timer.ping(), true );
 	assert.equal( timer.ping(), false );
 	timer.pause();
@@ -494,4 +598,55 @@ test( 'Timer covers aliases, boundaries, pause expiry, repeat, extension, and re
 /** Contract: The browser test environment captures registered global listeners. */
 test( 'The browser test environment captures registered global listeners', () => {
 	assert.ok( browser.listeners.has( 'visibilitychange' ) );
+} );
+
+/** Contract: Entity reports successful removals before changing groups and preserves destruction ordering. */
+test( 'Entity notifies removal across its lifecycle', () => {
+	const group = [];
+	const entity = new Entity( group );
+	const events = [];
+	entity.removed = item => events.push( [ item, entity.group, entity.group.includes( item ) ] );
+	assert.equal( entity.remove( {} ), false );
+	assert.equal( events.length, 0 );
+	entity.reset( [] );
+	assert.deepEqual( events, [ [ entity, group, false ] ] );
+	entity.set( group );
+	entity.destroyed = () => events.push( 'destroyed' );
+	entity.destroy();
+	assert.deepEqual( events.slice( 1 ), [ [ entity, group, false ], 'destroyed' ] );
+	assert.equal( entity.destroy(), false );
+	assert.equal( events.length, 3 );
+} );
+
+/** Contract: Layer defers additions, skips removed members, visits survivors, and rejects changed cached output. */
+test( 'Layer handles membership changes during rendering', () => {
+	for ( const buffered of [ true, false ] ) {
+		const parent = { buffer: new Buffer() };
+		const group = [];
+		const calls = [];
+		const first = new Entity( group );
+		const removed = new Entity( group );
+		const survivor = new Entity( group );
+		const added = { render: () => calls.push( 'added' ) };
+		first.render = () => {
+			calls.push( 'first' );
+			first.remove();
+			removed.remove();
+			group.push( added );
+		};
+		removed.render = () => calls.push( 'removed' );
+		survivor.render = () => calls.push( 'survivor' );
+		const layer = new Layer( parent, 'test', [ group ], true, buffered );
+		layer.render();
+		assert.deepEqual( calls, [ 'first', 'survivor' ] );
+		assert.equal( layer.cache.stale(), true );
+		assert.equal( layer.cache.reason, 'membership' );
+		calls.length = 0;
+		layer.render();
+		assert.deepEqual( calls, [ 'survivor', 'added' ] );
+		assert.equal( layer.cache.valid(), buffered );
+		layer.destroy();
+		parent.buffer.screen.ignore();
+		parent.buffer.destroy();
+	}
 } );

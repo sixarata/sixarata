@@ -11,6 +11,41 @@ import Time from '../utilities/time.js';
 export default class Orient {
 
 	/**
+	 * Tile whose horizontal orientation is controlled by this mechanic.
+	 *
+	 * @type {Tile|null}
+	 */
+	tile;
+
+	/**
+	 * Debounce and opposite-direction grace settings in milliseconds.
+	 *
+	 * @type {Object}
+	 */
+	settings;
+
+	/**
+	 * Whether directional input may update the Tile orientation.
+	 *
+	 * @type {Boolean}
+	 */
+	listening;
+
+	/**
+	 * Shared monotonic millisecond timestamp of the last accepted facing change.
+	 *
+	 * @type {Number}
+	 */
+	changedAt;
+
+	/**
+	 * Pending horizontal orientation in degrees, or null when none is pending.
+	 *
+	 * @type {Number|null}
+	 */
+	pending;
+
+	/**
 	 * Default orient settings.
 	 *
 	 * @type {Object}
@@ -33,7 +68,7 @@ export default class Orient {
 	}
 
 	/**
-	 * Set the mechanic.
+	 * Restore default mechanic state and bind one Tile.
 	 *
 	 * @param {Tile} tile A Tile with an `orientation` property.
 	 * @returns {Orient} this
@@ -48,7 +83,7 @@ export default class Orient {
 	}
 
 	/**
-	 * Reset the mechanic.
+	 * Restore the unbound, listening state and clear pending orientation input.
 	 *
 	 * @returns {Orient} this
 	 */
@@ -56,12 +91,19 @@ export default class Orient {
 		this.tile      = null;
 		this.settings  = Settings.player?.orient ?? Orient.defaults;
 		this.listening = true;
+		this.changedAt = 0;
+		this.pending   = null;
 
 		return this;
 	}
 
 	/**
-	 * Listen for directional inputs and update orientation.
+	 * Apply debounced horizontal input to the bound Tile's orientation.
+	 *
+	 * Accepted changes record the shared monotonic millisecond time in changedAt.
+	 * Vertical orientation is reset even when no horizontal change is accepted.
+	 *
+	 * @returns {void}
 	 */
 	listen = () => {
 
@@ -81,54 +123,47 @@ export default class Orient {
 
 		const now = Time.now;
 
-		// Initialize trackers if missing.
-		if ( this.lastFaceTime == null ) this.lastFaceTime = 0;
-		if ( this.lastFaceDir  == null ) this.lastFaceDir  = orientation.x || 90;
-
 		// Edge attempts: record but maybe defer commit under grace.
 		if ( edgeL ) {
-			this.pendingDir = 270;
-			this.pendingTime = now;
+			this.pending = 270;
 		}
 		if ( edgeR ) {
-			this.pendingDir = 90;
-			this.pendingTime = now;
+			this.pending = 90;
 		}
 
-		// Opposite flick suppression: if trying to flip opposite of current within grace
+		// Suppress an opposite flick within the configured grace period.
 		if (
-			this.pendingDir != null
-			&& this.pendingDir !== this.lastFaceDir
-			&& ( now - this.lastFaceTime ) < grace
+			this.pending != null
+			&& this.pending !== orientation.x
+			&& ( now - this.changedAt ) < grace
 		) {
 			// Only allow if held past debounce threshold.
-			if ( this.pendingDir === 270 && holdL?.down && holdL.duration >= deb ) {
+			if ( this.pending === 270 && holdL?.down && holdL.duration >= deb ) {
 				orientation.x = 270;
-				this.lastFaceDir = 270;
-				this.lastFaceTime = now;
-			} else if ( this.pendingDir === 90 && holdR?.down && holdR.duration >= deb ) {
+				this.changedAt = now;
+				this.pending   = null;
+			} else if ( this.pending === 90 && holdR?.down && holdR.duration >= deb ) {
 				orientation.x = 90;
-				this.lastFaceDir = 90;
-				this.lastFaceTime = now;
+				this.changedAt = now;
+				this.pending   = null;
 			}
-		} else if ( this.pendingDir != null ) {
-			// Commit pending if direction held long enough OR no debounce required yet.
-			if ( this.pendingDir === 270 ) {
+		} else if ( this.pending != null ) {
+			// Commit a pending direction after its input survives debounce.
+			if ( this.pending === 270 ) {
 				if ( holdL?.down && holdL.duration >= deb ) {
 					orientation.x = 270;
-					this.lastFaceDir = 270;
-					this.lastFaceTime = now;
+					this.changedAt = now;
+					this.pending   = null;
 				}
-			} else if ( this.pendingDir === 90 ) {
+			} else if ( this.pending === 90 ) {
 				if ( holdR?.down && holdR.duration >= deb ) {
 					orientation.x = 90;
-					this.lastFaceDir = 90;
-					this.lastFaceTime = now;
+					this.changedAt = now;
+					this.pending   = null;
 				}
 			}
 		}
 
-		// Fallback: if neither direction held, keep lastFaceDir (no change).
 		// Reset Y each frame.
 		orientation.y = 0;
 	}

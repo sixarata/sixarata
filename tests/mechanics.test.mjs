@@ -175,10 +175,23 @@ test( 'Orient debounces requested face changes', () => {
 	orient.listen();
 	assert.equal( tile.physics.orientation.x, 270 );
 	assert.equal( tile.physics.orientation.y, 0 );
+	assert.equal( orient.changedAt, 100 );
+	assert.equal( orient.pending, null );
 	Time.now += 1;
 	input( { right: { down: true, duration: 0 } }, { right: true } );
 	orient.listen();
 	assert.equal( tile.physics.orientation.x, 270 );
+	assert.equal( orient.pending, 90 );
+	Time.now = 110;
+	input( { right: { down: true, duration: orient.settings.debounce } } );
+	orient.listen();
+	assert.equal( tile.physics.orientation.x, 90 );
+	assert.equal( orient.changedAt, 110 );
+	assert.equal( orient.pending, null );
+	Time.now = 111;
+	input( { right: { down: true, duration: orient.settings.debounce + 1 } } );
+	orient.listen();
+	assert.equal( orient.changedAt, 110 );
 } );
 
 /** Contract: Stamina drains, delays, recharges, reports state, and refills safely. */
@@ -302,8 +315,8 @@ test( 'Dash maps directional combos to bounded impulses', () => {
 	assert.equal( dash.maxed(), true );
 } );
 
-/** Contract: Collide filters solids, performs broad and narrow phases, and renders debug bounds. */
-test( 'Collide resolves nearby solid tiles and renders debug bounds', () => {
+/** Contract: Collide filters solids and resolves contacts without registering presentation hooks. */
+test( 'Collide resolves nearby solid tiles without presentation hooks', () => {
 	const moving = body();
 	let contacts = 0;
 	moving.physics.contact.check = () => contacts++;
@@ -315,13 +328,12 @@ test( 'Collide resolves nearby solid tiles and renders debug bounds', () => {
 	const empty = body();
 	empty.density = 0;
 	const originalTiles = Game.Room.tiles;
-	const originalRect = Game.View.buffer.rect;
 	const originalCameraPosition = Game.Camera.position;
-	let drawings = 0;
 	Game.Room.tiles = { platforms: [ nearby, empty ], walls: [ distant ] };
 	Game.Camera.position = { x: 0, y: 0, z: 0 };
-	Game.View.buffer.rect = () => drawings++;
+	const before = Game.Hooks.queued().slice();
 	const collide = new Collide( moving );
+	assert.deepEqual( Game.Hooks.queued(), before );
 	assert.deepEqual( collide.solids(), [ nearby, distant ] );
 	const collision = collide.collision;
 	let concatenations = 0;
@@ -335,11 +347,6 @@ test( 'Collide resolves nearby solid tiles and renders debug bounds', () => {
 	assert.equal( contacts, 1 );
 	assert.equal( concatenations, 0 );
 	assert.equal( collide.collision, collision );
-	collide.debug = true;
-	collide.render( moving );
-	assert.equal( drawings, 1 );
-	collide.unhooks();
 	Game.Room.tiles = originalTiles;
-	Game.View.buffer.rect = originalRect;
 	Game.Camera.position = originalCameraPosition;
 } );
