@@ -6,6 +6,8 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Added
 
+- Added nested presentation Layers with direct destination borrowing, ancestor invalidation, visibility updates, shared host viewpoints, and live descendant redraws beneath cached parents.
+
 - Added Room-owned presentation Layers with intrinsic off-screen Buffers, explicit Cache invalidation, preserved draw ordering, and live actor isolation.
 - Added repeatable Node and opt-in browser Room profilers with compiled-layout and static-layer experiments, deterministic workload tests, and operation counts.
 - Added a reusable Cache lifecycle with explicit invalidation, revision-safe validation, shared-clock diagnostics, and stale asynchronous-result protection.

@@ -46,6 +46,34 @@ removal, reassignment, or destruction; `Tile.destroy` remains a destruction even
 Direct collection edits outside rendering still require explicit invalidation.
 An optional parent `viewpoint` supplies logical coordinates for cache invalidation.
 
+Layers can also reference child Layers in those same collections. Give each child
+its immediate enclosing Layer as `parent`; give the outermost Layer its drawing
+host, such as View. For example:
+
+```javascript
+const children = [];
+const scene = new Layer( view, 'scene', [ children ], false, false );
+const scenery = new Layer( scene, 'scenery', [ backgrounds ] );
+const actors = new Layer( scene, 'actors', [ players, enemies ], false, false );
+children.push( scenery, actors );
+scene.render();
+```
+
+Direct Layers borrow the active destination during rendering and allocate no
+canvas. Buffered Layers compose their own surfaces into that destination.
+Content renderers must still resolve their immediate parent's active `buffer`;
+nesting alone does not rebind a Room or Tile's intrinsic destination.
+Invalidation bubbles through Layer parents. Cached ancestors check visible child
+Layers before reusing pixels, so live or direct descendants require ancestor
+redraws. Hiding a child invalidates the old composition, then allows reuse while
+that child stays hidden. Nested Layers inherit the host's logical viewpoint.
+
+Configure or reparent through `set()` outside rendering; cyclic ancestry is
+rejected. Child Layers render only under their configured parent. Collections
+and child lifetimes remain caller-owned: reset and destruction invalidate the
+old parent but do not destroy children. Remove stale references from collections
+when detaching children. Direct collection edits require explicit invalidation.
+
 Profile Room parsing, cached-layout reconstruction, complete Layer redraws,
 production fixed-camera Layer caching, and moving-Camera invalidation using the
 same deterministic workload before and after an engine change:

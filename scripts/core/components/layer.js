@@ -14,6 +14,7 @@ export default class Layer {
 
 	/**
 	 * Parent exposing the active drawing Buffer and optional viewpoint.
+	 * Configure through set(); Layer ancestry must be acyclic.
 	 *
 	 * @type {Object|null}
 	 */
@@ -42,9 +43,36 @@ export default class Layer {
 
 	/**
 	 * Whether this Layer contributes pixels; hiding it does not affect simulation.
+	 * Changes invalidate ancestor compositions.
+	 * @returns {Boolean} Current presentation visibility.
 	 * @type {Boolean}
 	 */
-	visible;
+	get visible() {
+		return this.#visible;
+	}
+
+	/**
+	 * Change presentation visibility and invalidate ancestor compositions.
+	 *
+	 * @param {Boolean} value Whether this Layer contributes pixels.
+	 * @returns {void}
+	 */
+	set visible( value ) {
+		const visible = Boolean( value );
+
+		if ( this.#visible !== visible ) {
+			this.#visible = visible;
+			if ( this.cache ) {
+				this.invalidate( 'visibility' );
+			}
+		}
+	}
+
+	/**
+	 * Stored presentation visibility, independent of simulation.
+	 * @type {Boolean}
+	 */
+	#visible = true;
 
 	/**
 	 * Whether rendering uses a private Buffer. False draws directly to parent.
@@ -54,7 +82,8 @@ export default class Layer {
 	buffered;
 
 	/**
-	 * Off-screen drawing surface owned by this layer.
+	 * Owned off-screen surface, or a borrowed destination during direct rendering.
+	 * Direct Layers expose null outside their render pass.
 	 *
 	 * @type {Buffer|null}
 	 */
@@ -98,7 +127,10 @@ export default class Layer {
 	 * Configure this layer after restoring its complete default state.
 	 *
 	 * The outer collection list is copied; member arrays retain their identities.
-	 * Changes to member arrays require explicit Cache invalidation.
+	 * Reconfiguration and cleanup must occur outside this Layer's render pass.
+	 * Changes to member arrays require explicit Cache invalidation. Child Layers
+	 * must name this Layer as parent; detached Layer references are ignored.
+	 * Cyclic ancestry throws TypeError before altering existing configuration.
 	 *
 	 * @param {Object|null} parent Destination with a Buffer and optional logical-pixel viewpoint.
 	 * @param {String} name Diagnostic layer name.
@@ -106,6 +138,7 @@ export default class Layer {
 	 * @param {Boolean} cached Whether unchanged pixels persist between frames.
 	 * @param {Boolean} buffered Use a private surface; defaults to true.
 	 * @returns {Layer} this
+	 * @throws {TypeError} When the requested Layer ancestry contains a cycle.
 	 */
 	set = (
 		parent   = null,
@@ -114,6 +147,14 @@ export default class Layer {
 		cached   = true,
 		buffered = true
 	) => {
+		const ancestors = new Set( [ this ] );
+
+		for ( let ancestor = parent; ancestor instanceof Layer; ancestor = ancestor.parent ) {
+			if ( ancestors.has( ancestor ) ) {
+				throw new TypeError( 'Layer ancestry must be acyclic.' );
+			}
+			ancestors.add( ancestor );
+		}
 		this.reset();
 
 		this.parent   = parent;
@@ -123,6 +164,7 @@ export default class Layer {
 			: [];
 		this.cached   = Boolean( cached );
 		this.buffered = Boolean( buffered );
+		this.invalidate( 'configured' );
 
 		return this;
 	}
@@ -132,12 +174,16 @@ export default class Layer {
 	 *
 	 * Existing Buffer resources are released and fresh Cache metadata is
 	 * created. Buffer allocation is deferred until resize or rendering. The
-	 * viewpoint snapshot starts empty so the first render always builds.
+	 * viewpoint snapshot starts empty so the first render always builds. Call
+	 * outside rendering; child membership and lifetimes remain caller-owned.
 	 *
 	 * @returns {Layer} this
 	 */
 	reset = () => {
-		if ( this.buffer ) {
+		if ( this.cache ) {
+			this.invalidate( 'reset' );
+		}
+		if ( this.buffered && this.buffer ) {
 			this.buffer.screen.ignore();
 			this.buffer.destroy();
 		}
@@ -146,7 +192,7 @@ export default class Layer {
 		this.name      = '';
 		this.groups    = [];
 		this.cached    = true;
-		this.visible   = true;
+		this.#visible  = true;
 		this.buffered  = true;
 		this.buffer    = null;
 		this.cache     = new Cache();
@@ -201,13 +247,17 @@ export default class Layer {
 	}
 
 	/**
-	 * Mark this layer's derived pixels stale after a presentation change.
+	 * Mark this Layer and its Layer ancestors stale after a presentation change.
 	 *
 	 * @param {String} reason Concise diagnostic reason for invalidation.
 	 * @returns {Layer} this
 	 */
 	invalidate = ( reason = 'changed' ) => {
 		this.cache.invalidate( reason );
+
+		if ( this.parent instanceof Layer ) {
+			this.parent.invalidate( reason );
+		}
 
 		return this;
 	}
@@ -217,7 +267,8 @@ export default class Layer {
 	 *
 	 * Live layers are always stale. Cached viewport layers additionally compare
 	 * the shared viewpoint position so scrolling cannot reuse incorrectly offset
-	 * pixels.
+	 * pixels. Visible stale descendants also require rebuilding, including live
+	 * children beneath cached ancestors. Hidden descendants do not force redraws.
 	 *
 	 * @returns {Boolean} Whether the layer Buffer must be rebuilt.
 	 */
@@ -228,6 +279,14 @@ export default class Layer {
 
 		if ( this.#viewpointChanged() && ! this.cache.dirty ) {
 			this.invalidate( 'viewpoint' );
+		}
+
+		for ( const group of this.groups ) {
+			for ( const child of group ) {
+				if ( child instanceof Layer && child.parent === this && child.visible && child.stale() ) {
+					return true;
+				}
+			}
 		}
 
 		return this.cache.stale();
@@ -248,7 +307,7 @@ export default class Layer {
 		}
 
 		if ( ! this.buffered ) {
-			this.#renderContents();
+			this.#renderDirect();
 			return this;
 		}
 		this.resize( this.parent.buffer.size );
@@ -276,7 +335,7 @@ export default class Layer {
 			return this;
 		}
 		if ( ! this.buffered ) {
-			this.#renderContents();
+			this.#renderDirect();
 			return this;
 		}
 		this.resize( this.parent.buffer.size );
@@ -302,19 +361,54 @@ export default class Layer {
 	}
 
 	/**
-	 * Release the owned Buffer and sever parent and group references.
+	 * Invalidate ancestor pixels, release the owned Buffer, and sever references.
+	 * Referenced child Layers and their collection membership remain caller-owned.
+	 * Call outside rendering so active drawing destinations remain valid.
 	 *
 	 * @returns {void}
 	 */
 	destroy = () => {
-		if ( this.buffer ) {
+		if ( this.buffered && this.buffer ) {
 			this.buffer.screen.ignore();
 			this.buffer.destroy();
 		}
 		this.buffer = null;
-		this.cache.invalidate( 'destroyed' );
+		this.invalidate( 'destroyed' );
 		this.parent   = null;
 		this.groups   = [];
+	}
+
+	/**
+	 * Resolve the logical viewpoint from the enclosing presentation host.
+	 * Layer viewpoint properties are cache snapshots, not camera owners.
+	 *
+	 * @returns {Object} Host coordinates in logical pixels, defaulting to zero.
+	 */
+	#position = () => {
+		let parent = this.parent;
+
+		while ( parent instanceof Layer ) {
+			parent = parent.parent;
+		}
+
+		return parent?.viewpoint ?? { x: 0, y: 0, z: 0 };
+	}
+
+	/**
+	 * Borrow the parent's active destination for child Layers during a pass.
+	 * The borrowed reference is restored after success or failure and never owned.
+	 *
+	 * @returns {void}
+	 */
+	#renderDirect = () => {
+		const buffer = this.buffer;
+		this.buffer = this.parent.buffer;
+
+		try {
+			this.#renderContents();
+		} finally {
+			this.buffer = buffer;
+		}
 	}
 
 	/**
@@ -323,7 +417,7 @@ export default class Layer {
 	 * @returns {Boolean} Whether any logical viewpoint coordinate changed.
 	 */
 	#viewpointChanged = () => {
-		const position = this.parent?.viewpoint ?? { x: 0, y: 0, z: 0 };
+		const position = this.#position();
 
 		return (
 			this.viewpoint.x !== position.x
@@ -340,7 +434,7 @@ export default class Layer {
 	 * @returns {void}
 	 */
 	#captureViewpoint = () => {
-		const position = this.parent?.viewpoint ?? { x: 0, y: 0, z: 0 };
+		const position = this.#position();
 
 		this.viewpoint.x = position.x;
 		this.viewpoint.y = position.y;
@@ -367,6 +461,8 @@ export default class Layer {
 
 					if (
 						typeof member?.render === 'function'
+						&&
+						( ! ( member instanceof Layer ) || member.parent === this )
 						&&
 						( contents[ i ] === member || contents.includes( member ) )
 					) {
