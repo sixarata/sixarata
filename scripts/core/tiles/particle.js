@@ -33,26 +33,6 @@ export default class Particle extends Tile {
 	fade = 1000;
 
 	/**
-	 * Read the legacy Particle creation timestamp.
-	 *
-	 * @deprecated Use bornAt.
-	 * @returns {Number} Shared monotonic creation time in milliseconds.
-	 */
-	get born() {
-		return this.bornAt;
-	}
-
-	/**
-	 * Update the Particle creation timestamp through its legacy property.
-	 *
-	 * @deprecated Use bornAt.
-	 * @param {Number} timestamp Shared monotonic creation time in milliseconds.
-	 */
-	set born( timestamp ) {
-		this.bornAt = timestamp;
-	}
-
-	/**
 	 * Construct the Particle.
 	 *
 	 * @param {array}    group

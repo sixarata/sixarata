@@ -240,7 +240,8 @@ test( 'Timer reports progress and preserves remaining time across pause', () => 
 	assert.equal( timer.elapsed(), 40 );
 	timer.resume();
 	assert.equal( timer.expiresAt, 560 );
-	assert.equal( timer.expires, timer.expiresAt );
+	assert.equal( 'starts' in timer, false );
+	assert.equal( 'expires' in timer, false );
 } );
 
 /** Contract: Timer can shift a timing window backward. */
@@ -251,10 +252,10 @@ test( 'Timer can shift a timing window backward', () => {
 
 	assert.equal( timer.startsAt, 80 );
 	assert.equal( timer.expiresAt, 180 );
-	timer.starts  = 70;
-	timer.expires = 170;
-	assert.equal( timer.startsAt, 70 );
-	assert.equal( timer.expiresAt, 170 );
+	timer.startsAt  = 70;
+	timer.expiresAt = 170;
+	assert.equal( timer.elapsed(), 30 );
+	assert.equal( timer.left(), 70 );
 } );
 
 /** Contract: Attributes reset without mutating defaults. */

@@ -55,46 +55,6 @@ export default class Timer {
 	interval;
 
 	/**
-	 * Read the legacy start timestamp.
-	 *
-	 * @deprecated Use startsAt.
-	 * @returns {Number} Shared monotonic start time in milliseconds.
-	 */
-	get starts() {
-		return this.startsAt;
-	}
-
-	/**
-	 * Update the start timestamp through its legacy property.
-	 *
-	 * @deprecated Use startsAt.
-	 * @param {Number} timestamp Shared monotonic start time in milliseconds.
-	 */
-	set starts( timestamp ) {
-		this.startsAt = timestamp;
-	}
-
-	/**
-	 * Read the legacy expiration timestamp.
-	 *
-	 * @deprecated Use expiresAt.
-	 * @returns {Number} Shared monotonic expiration time in milliseconds.
-	 */
-	get expires() {
-		return this.expiresAt;
-	}
-
-	/**
-	 * Update the expiration timestamp through its legacy property.
-	 *
-	 * @deprecated Use expiresAt.
-	 * @param {Number} timestamp Shared monotonic expiration time in milliseconds.
-	 */
-	set expires( timestamp ) {
-		this.expiresAt = timestamp;
-	}
-
-	/**
 	 * Construct and immediately start a timing window.
 	 *
 	 * @param {Number} ms Duration in milliseconds. Non-positive values are inert.
