@@ -1,5 +1,3 @@
-import Draw from '../utilities/draw.js';
-import Settings from '../../content/settings.js';
 import Game from '../game.js';
 import { Collision } from '../physics/exports.js';
 
@@ -17,9 +15,26 @@ export default class Collide {
 	 * @type {Object}
 	 */
 	static defaults = {
-		debug: false,
 		distance: 1,
 	}
+
+	/**
+	 * Moving Tile whose contacts are resolved, or null when unbound.
+	 * @type {Tile|null}
+	 */
+	tile;
+
+	/**
+	 * Whether listen() performs collision checks.
+	 * @type {Boolean}
+	 */
+	listening;
+
+	/**
+	 * Dimensionless broad-phase distance multiplier, defaulting to one.
+	 * @type {Number}
+	 */
+	distance;
 
 	/**
 	 * Reusable narrow-phase overlap detector.
@@ -64,21 +79,12 @@ export default class Collide {
 	reset = () => {
 		this.tile      = null;
 		this.listening = true;
-		this.debug     = Settings?.debug ?? Collide.defaults.debug;
 		this.distance  = Collide.defaults.distance;
 		this.collision.reset();
-
-		// Hook into tile render for debug visualization.
-		Game.Hooks.add( 'Tile.render', this.render );
 
 		// Return.
 		return this;
 	}
-
-	/**
-	 * Remove global hooks owned by this mechanic.
-	 */
-	unhooks = () => Game.Hooks.remove( 'Tile.render', this.render );
 
 	/**
 	 * Perform collision resolution for the current frame.
@@ -97,33 +103,6 @@ export default class Collide {
 
 		// Check nonzero-density tiles for collisions.
 		this.check( velocity );
-	}
-
-	/**
-	 * Render debug visualization.
-	 *
-	 * Uses the active Draw buffer and viewpoint during Tile rendering.
-	 * Outside a drawing pass this is inert.
-	 *
-	 * @param {Tile} tile The tile being rendered.
-	 * @returns {Void}
-	 */
-	render = (
-		tile = null
-	) => {
-
-		// Skip if not debugging.
-		if ( ! this.debug || ! Draw.buffer ) {
-			return;
-		}
-
-		// Skip if not the bound tile.
-		if ( tile !== this.tile ) {
-			return;
-		}
-
-		// Draw visualization.
-		this.visualize();
 	}
 
 	/**
@@ -210,58 +189,33 @@ export default class Collide {
 	}
 
 	/**
-	 * Visualize the collision detection area for debugging.
+	 * Describe a padded world-space envelope around the moving Tile.
 	 *
-	 * Draws a rectangle showing the broad-phase detection bounds.
+	 * Each edge extends by this Tile's corresponding dimension times distance.
+	 * This diagnostic envelope is not the exact candidate rejection region:
+	 * scan() also accounts for each candidate's dimensions. No state is mutated.
 	 *
-	 * @returns {Void}
+	 * @returns {Object|null} Logical-pixel position and size, or null when unbound.
 	 */
-	visualize = () => {
-		if ( ! Draw.buffer ) {
-			return;
+	bounds = () => {
+		if ( ! this.tile?.physics ) {
+			return null;
 		}
+		const { position, size } = this.tile.physics;
+		const x = size.w * this.distance;
+		const y = size.h * this.distance;
 
-
-		// Skip if no tile.
-		if ( ! this.tile ) {
-			return;
-		}
-
-		const tile = this.tile.physics;
-
-		// Calculate the detection area bounds.
-		// This represents how far we extend from the player's edge in each direction.
-		const maxDistX = tile.size.w * this.distance;
-		const maxDistY = tile.size.h * this.distance;
-
-		// Position and size of the detection rectangle.
-		// The box extends maxDistX/Y in each direction from the player.
-		const detectionPos = {
-			x: tile.position.x - maxDistX,
-			y: tile.position.y - maxDistY,
-			z: tile.position.z,
+		return {
+			position: {
+				x: position.x - x,
+				y: position.y - y,
+				z: position.z,
+			},
+			size: {
+				w: size.w + ( x * 2 ),
+				h: size.h + ( y * 2 ),
+				d: size.d,
+			},
 		};
-
-		const detectionSize = {
-			w: tile.size.w + ( maxDistX * 2 ),
-			h: tile.size.h + ( maxDistY * 2 ),
-			d: tile.size.d,
-		};
-
-		// Get camera offset position.
-		const camera = Draw.viewpoint ?? Game.Camera.position;
-		const offsetPos = {
-			x: detectionPos.x - camera.x,
-			y: detectionPos.y - camera.y,
-			z: detectionPos.z - camera.z,
-		};
-
-		// Draw the detection area as a semi-transparent rectangle.
-		Draw.buffer.rect(
-			'#ff00ff',
-			offsetPos,
-			detectionSize,
-			0.2
-		);
 	}
 }

@@ -77,7 +77,7 @@ recursive traversal of arbitrary arrays.
 
 Direct Layers borrow the active destination during rendering and allocate no
 canvas. Buffered Layers compose their own surfaces into that destination.
-Tiles and collision-debug drawing use `Draw.buffer` and `Draw.viewpoint`;
+Tiles and the optional Debug renderer use `Draw.buffer` and `Draw.viewpoint`;
 they have no permanent Layer reference and need no Buffer argument. Drawing a
 Tile outside a Draw scope is inert. `Draw.use( buffer, viewpoint, callback )`
 selects a synchronous scope and restores the previous state even after failure.
@@ -104,6 +104,15 @@ its parent and detach its children without destroying them; call these outside
 rendering. Child traversal snapshots at pass start, skips detached children, and
 defers new children until the next pass. Direct edits to content collections still
 require explicit invalidation of each affected cached Layer.
+
+`Settings.debug` enables the content-level `Debug` renderer at startup. It owns
+one `Tile.render` listener and draws each rendered Tile's Collide envelope in the
+active Layer scope. Collide owns no rendering hooks, color, opacity, Camera, or
+Draw dependency. `Collide.bounds()` returns world-space diagnostic geometry;
+its padded envelope is not the exact candidate-dependent rejection region.
+Replace `collide.debug`, `render()`, and `visualize()` calls with Debug controls;
+`debug.set( false )`, `reset()`, and `destroy()` remove its listener. Changing
+Settings.debug after startup does not reconfigure an existing Debug instance.
 
 Profile Room parsing, cached-layout reconstruction, complete Layer redraws,
 production fixed-camera Layer caching, and moving-Camera invalidation using the

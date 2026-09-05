@@ -19,6 +19,8 @@ Notable player-facing and engine-facing changes to Sixarata are recorded here. T
 
 ### Changed
 
+- Moved collision visualization from Collide into the optional content-level Debug renderer, enabled by `Settings.debug` at startup. Collide now exposes world-space `bounds()` without Draw, Camera, settings, or rendering hooks. Replace per-mechanic debug/render/visualize calls with Debug controls; Player no longer cleans up collision rendering hooks.
+
 - Replaced `Layer.groups` with one ordered `children` list containing managed Layers and live collection references. `add()`, `remove()`, and `has()` accept either entry type; mixed entries render in insertion order. Migrate group inspection to `children` and group attachment to `add()`. Existing constructor collection lists remain valid; invalid initial entries now throw before changing configuration.
 
 - Made Layer child membership authoritative through `add()` and `remove()`, with ordered children, automatic reparenting, cycle rejection, and invalidation. Layer parents are now read-only; constructors and `set()` accept only root drawing hosts. Migrate nested Layer constructor arguments and collection pushes to `parent.add( child )`. Reset and destruction detach children without destroying their resources.
