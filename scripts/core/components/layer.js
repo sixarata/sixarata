@@ -30,11 +30,11 @@ export default class Layer {
 	#parent = null;
 
 	/**
-	 * Snapshot of ordered child Layers. Editing it cannot alter membership.
-	 * Own content groups render before these children.
+	 * Snapshot of ordered Layers and live collection references. Editing this
+	 * outer array cannot alter presentation membership; collections remain live.
 	 *
-	 * @type {Array<Layer>}
-	 * @returns {Array<Layer>} Children in presentation order.
+	 * @type {Array<Layer|Array>}
+	 * @returns {Array<Layer|Array>} Children in presentation order.
 	 */
 	get children() {
 		return this.#children.slice();
@@ -42,7 +42,7 @@ export default class Layer {
 
 	/**
 	 * Authoritative ordered child membership, changed only by add/remove.
-	 * @type {Array<Layer>}
+	 * @type {Array<Layer|Array>}
 	 */
 	#children = [];
 
@@ -52,13 +52,6 @@ export default class Layer {
 	 * @type {String}
 	 */
 	name;
-
-	/**
-	 * Ordered collection references rendered by this layer.
-	 *
-	 * @type {Array<Array>}
-	 */
-	groups;
 
 	/**
 	 * Whether unchanged pixels may be reused between frames.
@@ -131,62 +124,69 @@ export default class Layer {
 
 	/**
 	 * Construct an ordered presentation Layer, optionally bound to a root host.
-	 * Layer children are attached afterward through add().
+	 * Initial children use the same managed membership as add().
 	 *
 	 * @param {Object|null} host Root destination with a Buffer and optional logical-pixel viewpoint; not a Layer.
 	 * @param {String} name Diagnostic layer name.
-	 * @param {Array<Array>} groups Ordered collection references.
+	 * @param {Array<Layer|Array>} children Ordered child Layers and collection references; defaults to empty.
 	 * @param {Boolean} cached Whether unchanged pixels persist between frames.
 	 * @param {Boolean} buffered Use a private surface; defaults to true.
 	 * @returns {Layer} this
-	 * @throws {TypeError} When host is a Layer; use add() for child membership.
+	 * @throws {TypeError} When host is a Layer or initial children are invalid.
 	 */
 	constructor(
 		host     = null,
 		name     = '',
-		groups   = [],
+		children = [],
 		cached   = true,
 		buffered = true
 	) {
-		return this.set( host, name, groups, cached, buffered );
+		return this.set( host, name, children, cached, buffered );
 	}
 
 	/**
 	 * Configure this layer after restoring its complete default state.
 	 *
-	 * The outer collection list is copied; member arrays retain their identities.
+	 * The outer child list is copied; referenced collections retain their identities.
 	 * Reconfiguration and cleanup must occur outside this Layer's render pass.
-	 * Changes to member arrays require explicit Cache invalidation. Layer children
-	 * must be attached through add(); Layer references in groups are ignored.
+	 * Changes to collection members require explicit Cache invalidation outside
+	 * rendering. Initial children are validated before existing state is changed.
 	 * Reconfiguration detaches this Layer and its children without destroying them.
 	 *
 	 * @param {Object|null} host Root destination with a Buffer and optional logical-pixel viewpoint; not a Layer.
 	 * @param {String} name Diagnostic layer name.
-	 * @param {Array<Array>} groups Ordered collection references.
+	 * @param {Array<Layer|Array>} children Ordered child Layers and collection references; defaults to empty.
 	 * @param {Boolean} cached Whether unchanged pixels persist between frames.
 	 * @param {Boolean} buffered Use a private surface; defaults to true.
 	 * @returns {Layer} this
-	 * @throws {TypeError} When host is a Layer; membership must use add().
+	 * @throws {TypeError} When host is a Layer or initial children are invalid or cyclic.
 	 */
 	set = (
 		host     = null,
 		name     = '',
-		groups   = [],
+		children = [],
 		cached   = true,
 		buffered = true
 	) => {
 		if ( host instanceof Layer ) {
 			throw new TypeError( 'Use Layer.add() to attach a child.' );
 		}
+		if ( ! Array.isArray( children ) ) {
+			throw new TypeError( 'Layer children must be an array.' );
+		}
+		const contents = children.slice();
+		for ( const child of contents ) {
+			this.#check( child );
+		}
 		this.reset();
 
 		this.#parent  = host;
 		this.name     = String( name );
-		this.groups   = Array.isArray( groups )
-			? groups.filter( Array.isArray )
-			: [];
 		this.cached   = Boolean( cached );
 		this.buffered = Boolean( buffered );
+		for ( const child of contents ) {
+			this.add( child );
+		}
 		this.invalidate( 'configured' );
 
 		return this;
@@ -213,7 +213,6 @@ export default class Layer {
 
 		this.#detach();
 		this.name      = '';
-		this.groups    = [];
 		this.cached    = true;
 		this.#visible  = true;
 		this.buffered  = true;
@@ -229,35 +228,32 @@ export default class Layer {
 	}
 
 	/**
-	 * Append a child Layer, moving it from its previous Layer parent if needed.
+	 * Append a Layer or live collection reference to the presentation order.
 	 *
 	 * Duplicate adds are inert and preserve order. Invalid input and cycles are
 	 * rejected before mutation. Both old and new compositions are invalidated.
-	 * Child buffers, content groups, and simulation membership are retained.
+	 * Layers move from their old parent. Collections may be shared by multiple
+	 * Layers; their members and lifecycle are never changed by attachment.
 	 *
-	 * @param {Layer} child Layer to attach; required.
+	 * @param {Layer|Array} child Layer or collection to attach; required.
 	 * @returns {Layer} this, for chained membership additions.
-	 * @throws {TypeError} When child is not a Layer or would create a cycle.
+	 * @throws {TypeError} When child is neither a Layer nor an array, or creates a cycle.
 	 */
 	add = child => {
-		if ( ! ( child instanceof Layer ) ) {
-			throw new TypeError( 'Layer children must be Layers.' );
-		}
-
-		for ( let ancestor = this; ancestor instanceof Layer; ancestor = ancestor.parent ) {
-			if ( ancestor === child ) {
-				throw new TypeError( 'Layer ancestry must be acyclic.' );
-			}
-		}
-		if ( child.parent === this ) {
+		this.#check( child );
+		if ( this.has( child ) ) {
 			return this;
 		}
-		if ( child.parent instanceof Layer ) {
+		if ( child instanceof Layer && child.parent instanceof Layer ) {
 			child.parent.remove( child );
 		}
 		this.#children.push( child );
-		child.#parent = this;
-		child.invalidate( 'attached' );
+		if ( child instanceof Layer ) {
+			child.#parent = this;
+			child.invalidate( 'attached' );
+		} else {
+			this.invalidate( 'attached' );
+		}
 
 		return this;
 	}
@@ -265,10 +261,10 @@ export default class Layer {
 	/**
 	 * Detach a child while preserving sibling order and the child's resources.
 	 *
-	 * Detachment invalidates the old composition and the child's cached pixels.
+	 * Detachment invalidates the old composition and, for Layers, the child's pixels.
 	 * It does not destroy descendants or change any simulation collection.
 	 *
-	 * @param {Layer} child Child to detach; missing or unrelated values are inert.
+	 * @param {Layer|Array} child Entry to detach; missing or unrelated values are inert.
 	 * @returns {Boolean} Whether this Layer contained and detached the child.
 	 */
 	remove = child => {
@@ -277,21 +273,25 @@ export default class Layer {
 		if ( index < 0 ) {
 			return false;
 		}
-		child.invalidate( 'detached' );
+		if ( child instanceof Layer ) {
+			child.invalidate( 'detached' );
+			child.#parent = null;
+		} else {
+			this.invalidate( 'detached' );
+		}
 		this.#children.splice( index, 1 );
-		child.#parent = null;
 
 		return true;
 	}
 
 	/**
-	 * Determine whether this layer references a collection.
+	 * Determine whether a Layer or collection is directly attached.
 	 *
-	 * @param {Array} group Collection to locate by identity.
-	 * @returns {Boolean} Whether the collection is included.
+	 * @param {Layer|Array} child Entry to locate by identity.
+	 * @returns {Boolean} Whether the entry is included; missing values return false.
 	 */
-	has = ( group = [] ) => {
-		return this.groups.includes( group );
+	has = child => {
+		return this.#children.includes( child );
 	}
 
 	/**
@@ -361,7 +361,7 @@ export default class Layer {
 		}
 
 		for ( const child of this.#children ) {
-			if ( child.visible && child.stale() ) {
+			if ( child instanceof Layer && child.visible && child.stale() ) {
 				return true;
 			}
 		}
@@ -459,7 +459,28 @@ export default class Layer {
 		this.buffer = null;
 		this.invalidate( 'destroyed' );
 		this.#detach();
-		this.groups   = [];
+	}
+
+	/**
+	 * Validate a child before changing membership or configuration.
+	 * Collections are leaves: only directly attached Layers form tree edges.
+	 *
+	 * @param {Layer|Array} child Proposed Layer or referenced collection.
+	 * @returns {void}
+	 * @throws {TypeError} When child is unsupported or introduces a Layer cycle.
+	 */
+	#check = child => {
+		if ( Array.isArray( child ) ) {
+			return;
+		}
+		if ( ! ( child instanceof Layer ) ) {
+			throw new TypeError( 'Layer children must be Layers or arrays.' );
+		}
+		for ( let ancestor = this; ancestor instanceof Layer; ancestor = ancestor.parent ) {
+			if ( ancestor === child ) {
+				throw new TypeError( 'Layer ancestry must be acyclic.' );
+			}
+		}
 	}
 
 	/**
@@ -543,50 +564,68 @@ export default class Layer {
 	}
 
 	/**
-	 * Render content groups, then managed children in their declared order.
-	 *
-	 * Each group snapshots its starting members. Removed members are skipped,
-	 * additions wait until the next pass, and changed membership invalidates
-	 * cached pixels. Sparse entries and nonrenderable data are ignored. Renderers
-	 * resolve the active parent Buffer through their own intrinsic destination.
-	 * Children snapshot at pass start; detached children are skipped and newly
-	 * attached children wait until the next pass.
+	 * Render Layers and referenced collections in their shared presentation order.
+	 * Children snapshot at pass start; removed entries are skipped and new entries
+	 * wait for the next pass. Collections retain their own membership lifecycle.
 	 *
 	 * @returns {void}
 	 */
 	#renderContents = () => {
 		const children = this.#children.slice();
 
-		for ( const contents of this.groups ) {
-			const members = contents.slice();
+		for ( let i = 0; i < children.length; i++ ) {
+			const child = children[ i ];
 
-			try {
-				for ( let i = 0; i < members.length; i++ ) {
-					const member = members[ i ];
-
-					if (
-						typeof member?.render === 'function'
-						&&
-						! ( member instanceof Layer )
-						&&
-						( contents[ i ] === member || contents.includes( member ) )
-					) {
-						member.render();
-					}
-				}
-			} finally {
-				if (
-					contents.length !== members.length
-					||
-					members.some( ( member, index ) => contents[ index ] !== member )
-				) {
-					this.invalidate( 'membership' );
-				}
+			if ( this.#children[ i ] !== child && ! this.has( child ) ) {
+				continue;
+			}
+			if ( child instanceof Layer ) {
+				child.render();
+			} else {
+				this.#renderCollection( child );
 			}
 		}
-		for ( const child of children ) {
-			if ( child.parent === this ) {
-				child.render();
+	}
+
+	/**
+	 * Render surviving starting members of a live collection.
+	 * Additions wait for its next pass. Membership changes invalidate cached
+	 * pixels, including after failure. Sparse entries, data, nested arrays, and
+	 * unmanaged Layer references are ignored. Renderers use their intrinsic
+	 * destination. Removing this collection stops its remaining callbacks.
+	 *
+	 * @param {Array} contents Referenced collection; never owned or emptied here.
+	 * @returns {void}
+	 */
+	#renderCollection = contents => {
+		const members = contents.slice();
+
+		try {
+			for ( let i = 0; i < members.length; i++ ) {
+				const member = members[ i ];
+
+				if ( ! this.has( contents ) ) {
+					break;
+				}
+				if (
+					typeof member?.render === 'function'
+					&&
+					! ( member instanceof Layer )
+					&&
+					! Array.isArray( member )
+					&&
+					( contents[ i ] === member || contents.includes( member ) )
+				) {
+					member.render();
+				}
+			}
+		} finally {
+			if (
+				contents.length !== members.length
+				||
+				members.some( ( member, index ) => contents[ index ] !== member )
+			) {
+				this.invalidate( 'membership' );
 			}
 		}
 	}

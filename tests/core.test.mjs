@@ -193,7 +193,7 @@ test( 'Layer owns buffered presentation and explicit invalidation', t => {
 	output.context.drawImage = () => composites++;
 	groups.push( 'external-change' );
 
-	assert.deepEqual( layer.groups, [ room.tiles.items ] );
+	assert.deepEqual( layer.children, [ room.tiles.items ] );
 	assert.equal( layer.has( room.tiles.items ), true );
 	assert.equal( layer.has( [] ), false );
 	assert.equal( layer.resize( output.size ), layer );
@@ -223,7 +223,7 @@ test( 'Layer owns buffered presentation and explicit invalidation', t => {
 	assert.equal( layer.reset(), layer );
 	assert.equal( canvas.removed, true );
 	assert.equal( layer.parent, null );
-	assert.deepEqual( layer.groups, [] );
+	assert.deepEqual( layer.children, [] );
 	assert.equal( layer.render(), layer );
 	assert.equal( layer.rebuild(), layer );
 	layer.destroy();

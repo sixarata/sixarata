@@ -228,7 +228,7 @@ test( 'Layer membership has one authoritative mutation API', () => {
 	assert.equal( parent.children.length, 3 );
 	assert.throws( () => { first.parent = third; }, TypeError );
 	assert.equal( first.parent, parent );
-	for ( const invalid of [ undefined, null, {}, [] ] ) {
+	for ( const invalid of [ undefined, null, {}, 1 ] ) {
 		assert.throws( () => parent.add( invalid ), TypeError );
 		assert.equal( parent.remove( invalid ), false );
 	}
@@ -259,7 +259,7 @@ test( 'Layer visits managed children safely during membership changes', () => {
 	const removed = new Layer( null, 'removed', [ [ { render: () => calls.push( 'removed' ) } ] ], false, false );
 	const last = new Layer( null, 'last', [ [ { render: () => calls.push( 'last' ) } ] ], false, false );
 	const added = new Layer( null, 'added', [ [ { render: () => calls.push( 'added' ) } ] ], false, false );
-	first.groups[ 0 ].push( { render: () => {
+	first.children[ 0 ].push( { render: () => {
 		parent.remove( first );
 		parent.remove( removed );
 		parent.add( added );
@@ -294,7 +294,7 @@ test( 'Layer reparenting preserves content and refreshes both hosts', () => {
 	second.cache.validate();
 	second.add( child );
 	assert.equal( child.buffer, buffer );
-	assert.equal( child.groups[ 0 ], contents );
+	assert.equal( child.children[ 0 ], contents );
 	assert.equal( contents.length, 1 );
 	assert.equal( first.cache.stale(), true );
 	assert.equal( second.cache.stale(), true );
@@ -331,4 +331,135 @@ test( 'Buffered child detachment restores the active destination', () => {
 	parent.destroy();
 	output.screen.ignore();
 	output.destroy();
+} );
+
+/** Contract: One child list interleaves live collections and managed Layers in exact insertion order. */
+test( 'Layer interleaves collections and Layers', () => {
+	for ( const buffered of [ true, false ] ) {
+		const host = { buffer: new Buffer() };
+		const calls = [];
+		const before = [ { render: () => calls.push( 'before' ) } ];
+		const after = [ { render: () => calls.push( 'after' ) } ];
+		const middle = new Layer( null, 'middle', [ [ { render: () => calls.push( 'middle' ) } ] ], false );
+		const entries = [ before, middle, after ];
+		const scene = new Layer( host, 'scene', entries, false, buffered );
+		entries.length = 0;
+		assert.deepEqual( scene.children, [ before, middle, after ] );
+		assert.equal( middle.parent, scene );
+		assert.equal( scene.has( middle ), true );
+		assert.equal( scene.has( before ), true );
+		assert.equal( 'groups' in scene, false );
+		scene.render();
+		assert.deepEqual( calls, [ 'before', 'middle', 'after' ] );
+		calls.length = 0;
+		before.push( { render: () => calls.push( 'new member' ) } );
+		scene.render();
+		assert.deepEqual( calls, [ 'before', 'new member', 'middle', 'after' ] );
+		middle.destroy();
+		scene.destroy();
+		host.buffer.screen.ignore();
+		host.buffer.destroy();
+	}
+} );
+
+/** Contract: Collections can be shared, added once per Layer, and detached or cleared without changing their members. */
+test( 'Layer references collections without owning their lifecycle', () => {
+	const member = { destroy: () => assert.fail( 'presentation destroyed a collection member' ) };
+	const collection = [ member ];
+	const first = new Layer();
+	const second = new Layer();
+	assert.equal( first.add( collection ), first );
+	first.cache.validate();
+	first.add( collection );
+	assert.equal( first.cache.valid(), true );
+	assert.deepEqual( first.children, [ collection ] );
+	second.add( collection );
+	assert.equal( first.has( collection ), true );
+	assert.equal( second.has( collection ), true );
+	assert.equal( first.remove( collection ), true );
+	assert.equal( first.cache.stale(), true );
+	assert.equal( second.has( collection ), true );
+	assert.deepEqual( collection, [ member ] );
+	first.add( collection );
+	first.reset();
+	second.destroy();
+	assert.deepEqual( first.children, [] );
+	assert.deepEqual( second.children, [] );
+	assert.deepEqual( collection, [ member ] );
+	assert.equal( Object.hasOwn( member, 'parent' ), false );
+	first.destroy();
+} );
+
+/** Contract: Invalid initial children are rejected before any existing tree, resources, or collection membership changes. */
+test( 'Layer validates its complete initial child list before reconfiguration', () => {
+	const collection = [];
+	const owner = new Layer();
+	const child = new Layer();
+	owner.add( child );
+	const target = new Layer( null, 'target', [ collection ] );
+	for ( const invalid of [ null, {}, [ child, {} ], [ child, target ] ] ) {
+		assert.throws( () => target.set( null, 'changed', invalid ), TypeError );
+		assert.equal( target.name, 'target' );
+		assert.deepEqual( target.children, [ collection ] );
+		assert.equal( child.parent, owner );
+	}
+	assert.throws( () => child.set( null, '', [ owner ] ), /acyclic/ );
+	assert.equal( child.parent, owner );
+	target.set( null, 'changed', [ collection, child ] );
+	assert.deepEqual( owner.children, [] );
+	assert.deepEqual( target.children, [ collection, child ] );
+	assert.equal( child.parent, target );
+	target.destroy();
+	assert.equal( child.parent, null );
+	child.destroy();
+	owner.destroy();
+} );
+
+/** Contract: Detaching a collection stops its remaining callbacks and defers newly added presentation entries. */
+test( 'Layer handles collection attachment changes during rendering', () => {
+	const host = { buffer: new Buffer() };
+	const scene = new Layer( host );
+	const calls = [];
+	const added = [ { render: () => calls.push( 'added' ) } ];
+	const removed = [ { render: () => calls.push( 'removed' ) } ];
+	const contents = [
+		{ render: () => {
+			calls.push( 'first' );
+			scene.remove( contents );
+			scene.remove( removed );
+			scene.add( added );
+		} },
+		{ render: () => calls.push( 'detached member' ) },
+	];
+	scene.add( contents ).add( removed );
+	scene.render();
+	assert.deepEqual( calls, [ 'first' ] );
+	assert.equal( scene.cache.stale(), true );
+	calls.length = 0;
+	scene.render();
+	assert.deepEqual( calls, [ 'added' ] );
+	assert.equal( scene.cache.valid(), true );
+	assert.equal( contents.length, 2 );
+	scene.destroy();
+	host.buffer.screen.ignore();
+	host.buffer.destroy();
+} );
+
+/** Contract: Collection members never create implicit Layer edges or recursive collection traversal. */
+test( 'Layer collections remain leaves in the presentation tree', () => {
+	const host = { buffer: new Buffer() };
+	let draws = 0;
+	const child = new Layer( host, 'unmanaged', [ [ { render: () => draws++ } ] ] );
+	const nested = [ { render: () => draws++ } ];
+	nested.render = () => assert.fail( 'nested array rendered' );
+	const collection = [ null, child, nested, { render: () => draws++ } ];
+	collection.push( collection );
+	const scene = new Layer( host, 'scene', [ collection ] );
+	scene.render();
+	assert.equal( draws, 1 );
+	assert.equal( child.parent, host );
+	scene.destroy();
+	child.destroy();
+	host.buffer.screen.ignore();
+	host.buffer.destroy();
 } );

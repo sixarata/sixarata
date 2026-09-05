@@ -32,7 +32,8 @@ Sixarata's unit tests use Node's built-in test runner and have no dependencies.
 sh tools/test.sh
 ```
 
-Layers reference ordered collections and a `parent` with an active `buffer`.
+Layers present one ordered list of child Layers and live collection references,
+with a `parent` exposing the active `buffer`.
 Renderable members resolve that destination intrinsically; other data is ignored
 by rendering. `visible` controls presentation only. `buffered: false` (the fifth
 constructor argument) draws directly without allocating a canvas; buffered Layers
@@ -47,25 +48,33 @@ Direct collection edits outside rendering still require explicit invalidation.
 An optional parent `viewpoint` supplies logical coordinates for cache invalidation.
 
 Build a presentation tree through `add()` and `remove()`. Each Layer has one
-managed parent and ordered children. `add()` appends once, moves a child from its
-previous Layer parent, rejects cycles, and invalidates both compositions:
+managed parent and ordered children. `add()` accepts a Layer or a collection,
+appends it once by identity, and invalidates the composition. Layer children move
+from their previous parent with cycle checks; collections remain shared references:
 
 ```javascript
 const scene = new Layer( view, 'scene', [], false, false );
-const scenery = new Layer( null, 'scenery', [ backgrounds ] );
 const actors = new Layer( null, 'actors', [ players, enemies ], false, false );
-scene.add( scenery ).add( actors );
+scene.add( backgrounds ).add( actors ).add( foregrounds );
 scene.render();
 scene.remove( actors );
 ```
 
 Only root Layers receive a drawing host such as View through the constructor or
-`set()`. Attach Layer children through `add()` instead of passing their parent
-to the constructor. `parent` is read-only; `children` returns an ordered snapshot.
-Replace old `children.push( child )` wiring with `scene.add( child )`. Layer
-references in content `groups` are ignored: those groups retain their independent
-simulation membership. A Layer renders its own content groups before its children;
-use sibling Layers to interleave different presentation groups.
+`set()`. Initial `children` (the third argument) use the same attachment rules as
+`add()`. `parent` is read-only; `children` returns an ordered snapshot whose
+collection references remain live. Layers and collections render in insertion
+order, so they can be interleaved without additional wrappers.
+
+`groups` has been removed. Read `children` to inspect presentation entries, and
+replace `groups.push( collection )` with `add( collection )`; remove entries through
+`remove()`. Existing constructor lists of collections remain valid. Invalid initial
+entries now throw before reconfiguration instead of being silently filtered.
+Collections retain their simulation membership and may be referenced by multiple
+Layers. Collection members with render methods draw normally; data, nested arrays,
+and unmanaged Layer references are ignored. Attach Layers directly to establish
+presentation parentage. This is a tree of Layers with collections as leaves, not
+recursive traversal of arbitrary arrays.
 
 Direct Layers borrow the active destination during rendering and allocate no
 canvas. Buffered Layers compose their own surfaces into that destination.
@@ -76,12 +85,12 @@ children before reusing pixels, so live or direct descendants require ancestor
 redraws. Hiding a child invalidates the old composition, then allows reuse while
 that child stays hidden. Nested Layers inherit the host's logical viewpoint.
 
-Removing a child detaches it without destroying its buffer, descendants, or
-simulation content. Reset, reconfiguration, and destruction detach the Layer from
+Removing a Layer detaches it without destroying its buffer or descendants.
+Removing a collection releases only that reference; its members remain untouched. Reset, reconfiguration, and destruction detach the Layer from
 its parent and detach its children without destroying them; call these outside
 rendering. Child traversal snapshots at pass start, skips detached children, and
 defers new children until the next pass. Direct edits to content collections still
-require explicit invalidation.
+require explicit invalidation of each affected cached Layer.
 
 Profile Room parsing, cached-layout reconstruction, complete Layer redraws,
 production fixed-camera Layer caching, and moving-Camera invalidation using the
